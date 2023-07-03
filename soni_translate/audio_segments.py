@@ -7,7 +7,7 @@ def create_translated_audio(result_diarize, audio_files, Output_name_file):
 
     # silent audio with total_duration
     combined_audio = AudioSegment.silent(duration=int(total_duration * 1000))
-    print(total_duration / 60, 'minutes of video')
+    print(round((total_duration / 60),2), 'minutes of video')
 
     for line, audio_file in tqdm(zip(result_diarize['segments'], audio_files)):
         start = float(line['start'])
@@ -20,7 +20,7 @@ def create_translated_audio(result_diarize, audio_files, Output_name_file):
           combined_audio = combined_audio.overlay(audio, position=start_time)
         except:
           print(f'ERROR AUDIO FILE {audio_file}')
-    
+
     os.system("rm -rf audio/*")
 
     # combined audio as a file

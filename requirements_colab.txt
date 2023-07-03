@@ -2,9 +2,9 @@ torch==2.0.1+cu117
 torchvision==0.15.2+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
 git+https://github.com/m-bain/whisperx.git
 yt-dlp --upgrade
-gradio
-gTTS
-pydub
-edge_tts
-deep_translator
+gradio==3.35.2
+gTTS==2.3.2
+pydub==0.25.1
+edge_tts==6.1.7
+deep_translator==1.11.4
 torchaudio==2.0.0
