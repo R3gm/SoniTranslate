@@ -1,5 +1,5 @@
-torch==2.0.1+cu117
-torchvision==0.15.2+cu117
+torch
+torchvision
 git+https://github.com/m-bain/whisperx.git
 yt-dlp
 gTTS
@@ -8,3 +8,4 @@ edge_tts
 deep_translator
 torchaudio==2.0.0
 gradio
+nest_asyncio
