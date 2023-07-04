@@ -45,11 +45,11 @@ def translate_from_video(
 
     OutputFile = 'Video.mp4'
     audio_wav = "audio.wav"
-    Output_name_file = "diar_output.ogg"
+    Output_name_file = "audio_dub_solo.ogg"
+    mix_audio = "audio_mix.ogg"
     #video_output = "diar_output.mp4"
-    os.system(f"rm {Output_name_file}")
+
     os.system("rm Video.mp4")
-    os.system("rm diar_output.mp4")
     os.system("rm audio.wav")
 
     if os.path.exists(video):
@@ -182,10 +182,12 @@ def translate_from_video(
     os.system("mv -f audio2/audio/*.ogg audio/")
 
     os.system(f"rm {Output_name_file}")
-
     create_translated_audio(result_diarize, audio_files, Output_name_file)
 
+    os.system(f"rm {mix_audio}")
+    os.system(f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}')
+
     os.system(f"rm {video_output}")
-    os.system(f"ffmpeg -i Video.mp4 -i {Output_name_file} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
+    os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
 
     return video_output
