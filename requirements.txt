@@ -1,11 +1,9 @@
-torch
-torchvision
-git+https://github.com/m-bain/whisperx.git
-yt-dlp
-gTTS
-pydub
-edge_tts
-deep_translator
-torchaudio==2.0.0
-gradio
 nest_asyncio
+--extra-index-url https://download.pytorch.org/whl/cu117 torch==2.0.0+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.0
+yt-dlp 
+gradio
+gTTS
+pydub==0.25.1
+edge_tts==6.1.7
+deep_translator==1.11.4
+git+https://github.com/m-bain/whisperx.git
