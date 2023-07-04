@@ -46,7 +46,7 @@ def translate_from_video(
     OutputFile = 'Video.mp4'
     audio_wav = "audio.wav"
     Output_name_file = "audio_dub_solo.ogg"
-    mix_audio = "audio_mix.ogg"
+    mix_audio = "audio_mix.mp3"
     #video_output = "diar_output.mp4"
 
     os.system("rm Video.mp4")
