@@ -14,11 +14,15 @@ Support for 'en', 'fr', 'de', 'es', 'it', 'ja', 'zh', 'nl', 'uk'
 
 
 ## Original audio
-https://github.com/R3gm/SoniTranslate/assets/114810545/65dc75c4-2342-4281-b551-c9a33ef8e965 
+
+https://github.com/R3gm/SoniTranslate/assets/114810545/db9e78c0-b228-4e81-9704-e62d5cc407a3
+
 
 
 ## Translated audio
-https://github.com/R3gm/SoniTranslate/assets/114810545/92b5962d-b7e3-47d4-af2f-237f27b4a62e
+
+https://github.com/R3gm/SoniTranslate/assets/114810545/6a8ddc65-a46f-4653-9726-6df2615f0ef9
+
 
 
 
