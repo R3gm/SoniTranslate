@@ -1,5 +1,5 @@
 # SoniTranslate
-Translation tool that allows you to convert audio content from one language to another
+Translate the audio of a video content from one language to another while preserving synchronization.
 
 | Description | Link |
 | ----------- | ---- |
