@@ -5,7 +5,7 @@ Translate the audio of a video content from one language to another while preser
 | ----------- | ---- |
 | 📙 Colab Notebook | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/R3gm/SoniTranslate/blob/main/SoniTranslate_Colab.ipynb) |
 | 🎉 Repository | [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?style=flat-square&logo=github)](https://github.com/R3gm/SoniTranslate/) |
-| 🚀 Online inference HF | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/>>>) |
+| 🚀 Online inference HF | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/r3gm/SoniTranslate_translate_audio_of_a_video_content) |
 
 
 Support for 'en', 'fr', 'de', 'es', 'it', 'ja', 'zh', 'nl', 'uk' 
