@@ -57,7 +57,7 @@ def translate_from_video(
             print('Creating preview video, 10 seconds')
             os.system(f'ffmpeg -y -i "{video}" -ss 00:00:20 -t 00:00:10 -c:v libx264 -c:a aac -strict experimental Video.mp4')
         else:
-            os.system(f"ffmpeg -y -i {video} -c:v libx264 -c:a aac -strict experimental Video.mp4")
+            os.system(f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4')
 
         os.system("ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav")
     else:
