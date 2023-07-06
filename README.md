@@ -8,26 +8,40 @@ Translate the audio of a video content from one language to another while preser
 | 🚀 Online inference HF | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/r3gm/SoniTranslate_translate_audio_of_a_video_content) |
 
 
-Support for 'en', 'fr', 'de', 'es', 'it', 'ja', 'zh', 'nl', 'uk' 
- and 'pt'
+## Supported languages for translation 
+
+| Language Code | Language |
+|---|---|
+| en | English |
+| fr | French |
+| de | German |
+| es | Spanish |
+| it | Italian |
+| ja | Japanese |
+| zh | Chinese |
+| nl | Dutch |
+| uk | Ukrainian |
+| pt | Portuguese |
 
 
+## Example:
 
-## Original audio
+### Original audio
 
 https://github.com/R3gm/SoniTranslate/assets/114810545/db9e78c0-b228-4e81-9704-e62d5cc407a3
 
 
 
-## Translated audio
+### Translated audio
 
 https://github.com/R3gm/SoniTranslate/assets/114810545/6a8ddc65-a46f-4653-9726-6df2615f0ef9
 
 
+## Contributing
+
+Welcome to contributions from the community! If you have any ideas, bug reports, or feature requests, please open an issue or submit a pull request. For more information, please refer to the contribution guidelines.
 
 
 
-
-
-# License
+## License
 Although the code is licensed under Apache 2, the models or weights may have commercial restrictions, as seen with pyannote diarization.
