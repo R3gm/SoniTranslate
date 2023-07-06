@@ -21,6 +21,7 @@ def translate_from_video(
     WHISPER_MODEL_SIZE="large-v1",
     batch_size=16,
     compute_type="float16",
+    SOURCE_LANGUAGE= "Automatic detection",
     TRANSLATE_AUDIO_TO="en",
     min_speakers=1,
     max_speakers=2,
@@ -75,11 +76,14 @@ def translate_from_video(
 
     print("Set file complete.")
 
+    SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
+
     # 1. Transcribe with original whisper (batched)
     model = whisperx.load_model(
         WHISPER_MODEL_SIZE,
         device,
-        compute_type=compute_type
+        compute_type=compute_type,
+        language= SOURCE_LANGUAGE,
         )
     audio = whisperx.load_audio(audio_wav)
     result = model.transcribe(audio, batch_size=batch_size)
@@ -101,6 +105,10 @@ def translate_from_video(
         )
     gc.collect(); torch.cuda.empty_cache(); del model_a
     print("Align complete")
+
+    if result['segments'] == []:
+      print('No active speech found in audio')
+      return
 
     # 3. Assign speaker labels
     diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
@@ -127,7 +135,7 @@ def translate_from_video(
         'SPEAKER_05': tts_voice05
     }
 
-    for segment in result_diarize['segments']:
+    for segment in tqdm(result_diarize['segments']):
 
         text = segment['text']
         start = segment['start']
@@ -144,7 +152,7 @@ def translate_from_video(
         filename = f"audio/{start}.ogg"
 
         if speaker in speaker_to_voice and speaker_to_voice[speaker] != 'None':
-            make_voice(text, speaker_to_voice[speaker], filename)
+            make_voice(text, speaker_to_voice[speaker], filename, TRANSLATE_AUDIO_TO)
         elif speaker == "SPEAKER_99":
             try:
                 tts = gTTS(text, lang=TRANSLATE_AUDIO_TO)
@@ -153,7 +161,7 @@ def translate_from_video(
             except:
                 tts = gTTS('a', lang=TRANSLATE_AUDIO_TO)
                 tts.save(filename)
-                print('ERROR AUDIO GTTS')
+                print('Error: Audio will be replaced.')
 
         # duration
         duration_true = end - start
