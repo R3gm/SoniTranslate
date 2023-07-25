@@ -13,6 +13,7 @@ import os
 from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import make_voice
 from soni_translate.translate_segments import translate_text
+import time
 
 def translate_from_video(
     video,
@@ -34,6 +35,9 @@ def translate_from_video(
     video_output="video_dub.mp4"
     ):
 
+    if YOUR_HF_TOKEN == "" or YOUR_HF_TOKEN == None:
+      YOUR_HF_TOKEN = os.getenv("YOUR_HF_TOKEN")    
+
     if not os.path.exists('audio'):
         os.makedirs('audio')
 
@@ -48,9 +52,9 @@ def translate_from_video(
     audio_wav = "audio.wav"
     Output_name_file = "audio_dub_solo.ogg"
     mix_audio = "audio_mix.mp3"
-    #video_output = "diar_output.mp4"
 
     os.system("rm Video.mp4")
+    os.system("rm audio.webm")
     os.system("rm audio.wav")
 
     if os.path.exists(video):
@@ -67,12 +71,24 @@ def translate_from_video(
             #https://github.com/yt-dlp/yt-dlp/issues/2220
             mp4_ = f'yt-dlp -f "mp4" --downloader ffmpeg --downloader-args "ffmpeg_i: -ss 00:00:20 -t 00:00:10" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
             wav_ = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+            os.system(mp4_)
+            os.system(wav_)
         else:
             mp4_ = f'yt-dlp -f "mp4" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
             wav_ = f'python -m yt_dlp --output {audio_wav} --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --extract-audio --audio-format wav {video}'
 
-        os.system(mp4_)
-        os.system(wav_)
+            os.system(wav_)
+
+            for i in range (120):
+                time.sleep(1)
+                print('process audio')
+                if os.path.exists(audio_wav) and not os.path.exists('audio.webm'):
+                    time.sleep(1)
+                    os.system(mp4_)
+                    break
+                if i == 119:
+                  print('Error donwloading the audio')
+                  return
 
     print("Set file complete.")
 
