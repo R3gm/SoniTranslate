@@ -475,7 +475,7 @@ with gr.Blocks(theme=theme) as demo:
                         [
                             "./assets/Video_main.mp4",
                             "",
-                            True,
+                            False,
                             "base",
                             16,
                             "float32",
@@ -618,7 +618,7 @@ with gr.Blocks(theme=theme) as demo:
                         [
                             "https://www.youtube.com/watch?v=5ZeHtRKHl7Y",
                             "",
-                            True,
+                            False,
                             "base",
                             16,
                             "float32",
