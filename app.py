@@ -15,14 +15,18 @@ import os
 from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import make_voice_gradio
 from soni_translate.translate_segments import translate_text
+import time
+import shutil
+
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 
 news = """ ## 📖 News
-        🔥 2023/07/26: new UI and mix options add.
+        🔥 2023/07/26: new UI and add mix options.
+        🔥 2023/07/27: fix some bug processing the video and audio.
         """
 
-description = """ 
+description = """
 ### 🎥 **Translate videos easily with SoniTranslate!** 📽️
 
 Upload a video or provide a video link.
@@ -37,7 +41,7 @@ See the tab labeled 'Help' for instructions on how to use it. Let's start having
 
 
 
-tutorial = """ 
+tutorial = """
 ## 🔰 **Instructions for use:**
 
 1. 📤 **Upload a video** on the first tab or 🌐 **use a video link** on the second tab.
@@ -106,13 +110,17 @@ def translate_from_video(
     tts_voice05="en-GB-MaisieNeural-Female",
     video_output="video_dub.mp4",
     AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
+    progress=gr.Progress(),
     ):
 
     if YOUR_HF_TOKEN == "" or YOUR_HF_TOKEN == None:
       YOUR_HF_TOKEN = os.getenv("YOUR_HF_TOKEN")
       if YOUR_HF_TOKEN == None:
         print('No valid token')
-        return 
+        return "No valid token"
+    
+    video = video if isinstance(video, str) else video.name
+    print(video)
 
     if "SET_LIMIT" == os.getenv("DEMO"):
       preview=True
@@ -157,14 +165,42 @@ def translate_from_video(
     os.system("rm audio.webm")
     os.system("rm audio.wav")
 
+    progress(0.15, desc="Set video...")
+
     if os.path.exists(video):
         if preview:
             print('Creating a preview video of 10 seconds, to disable this option, go to advanced settings and turn off preview.')
             os.system(f'ffmpeg -y -i "{video}" -ss 00:00:20 -t 00:00:10 -c:v libx264 -c:a aac -strict experimental Video.mp4')
         else:
-            os.system(f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4')
+            # Check if the file ends with ".mp4" extension
+            if video.endswith(".mp4"):
+                destination_path = os.path.join(os.getcwd(), "Video.mp4")
+                shutil.move(video, destination_path)
+            else:
+                print("File does not have the '.mp4' extension. Converting video.")
+                os.system(f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4')
+        
+            for i in range (120):
+                time.sleep(1)
+                print('process video...')
+                if os.path.exists(OutputFile):
+                    time.sleep(1)
+                    os.system("ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav")
+                    time.sleep(1)
+                    break
+                if i == 119:
+                  print('Error processing video')
+                  return
 
-        os.system("ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav")
+            for i in range (120):
+                time.sleep(1)
+                print('process audio...')
+                if os.path.exists(audio_wav):
+                    break
+                if i == 119:
+                  print("Error can't create the audio")
+                  return
+
     else:
         if preview:
             print('Creating a preview from the link, 10 seconds to disable this option, go to advanced settings and turn off preview.')
@@ -190,6 +226,7 @@ def translate_from_video(
                   print('Error donwloading the audio')
                   return
 
+    progress(0.30, desc="Transcribing...")
     print("Set file complete.")
 
     SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
@@ -205,6 +242,8 @@ def translate_from_video(
     result = model.transcribe(audio, batch_size=batch_size)
     gc.collect(); torch.cuda.empty_cache(); del model
     print("Transcript complete")
+
+    progress(0.45, desc="Aligning...")
 
     # 2. Align whisper output
     model_a, metadata = whisperx.load_align_model(
@@ -226,6 +265,8 @@ def translate_from_video(
       print('No active speech found in audio')
       return
 
+    progress(0.60, desc="Diarizing...")
+
     # 3. Assign speaker labels
     diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
     diarize_segments = diarize_model(
@@ -236,8 +277,12 @@ def translate_from_video(
     gc.collect(); torch.cuda.empty_cache(); del diarize_model
     print("Diarize complete")
 
+    progress(0.75, desc="Translating...")
+
     result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO)
     print("Translation complete")
+
+    progress(0.85, desc="Text_to_speech...")
 
     audio_files = []
 
@@ -306,6 +351,9 @@ def translate_from_video(
     os.system("mv -f audio2/audio/*.ogg audio/")
 
     os.system(f"rm {Output_name_file}")
+
+    progress(0.90, desc="Creating translated audio...")
+
     create_translated_audio(result_diarize, audio_files, Output_name_file)
 
     os.system(f"rm {mix_audio}")
@@ -352,6 +400,10 @@ def read_logs():
     with open("output.log", "r") as f:
         return f.read()
 
+def submit_file_func(file):
+    print(file.name)
+    return file.name, file.name
+
 # max tts
 MAX_TTS = 6
 
@@ -365,7 +417,11 @@ with gr.Blocks(theme=theme) as demo:
     with gr.Tab("Audio Translation for a Video"):
         with gr.Row():
             with gr.Column():
-                video_input = gr.Video() # height=300,width=300
+                #video_input = gr.UploadButton("Click to Upload a video", file_types=["video"], file_count="single") #gr.Video() # height=300,width=300
+                video_input = gr.File(label="VIDEO") 
+                #link = gr.HTML()
+                #video_input.change(submit_file_func, video_input, [video_input, link], show_progress='full')
+
                 SOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'English (en)', 'French (fr)', 'German (de)', 'Spanish (es)', 'Italian (it)', 'Japanese (ja)', 'Chinese (zh)', 'Dutch (nl)', 'Ukrainian (uk)', 'Portuguese (pt)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
                 TRANSLATE_AUDIO_TO = gr.Dropdown(['English (en)', 'French (fr)', 'German (de)', 'Spanish (es)', 'Italian (it)', 'Japanese (ja)', 'Chinese (zh)', 'Dutch (nl)', 'Ukrainian (uk)', 'Portuguese (pt)'], value='English (en)',label = 'Translate audio to', info="Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
 
@@ -389,15 +445,15 @@ with gr.Blocks(theme=theme) as demo:
 
                 with gr.Column():
                       with gr.Accordion("Advanced Settings", open=False):
-                        
+
                           AUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
-                          
+
                           gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
                           WHISPER_MODEL_SIZE = gr.inputs.Dropdown(['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2'], default=whisper_model_default, label="Whisper model")
                           batch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
                           compute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
-                          
+
                           gr.HTML("<hr></h2>")
                           VIDEO_OUTPUT_NAME = gr.Textbox(label="Translated file name" ,value="video_output.mp4", info="The name of the output file")
                           PREVIEW = gr.Checkbox(label="Preview", info="Preview cuts the video to only 10 seconds for testing purposes. Please deactivate it to retrieve the full video duration.")
@@ -406,7 +462,7 @@ with gr.Blocks(theme=theme) as demo:
                 with gr.Row():
                     video_button = gr.Button("TRANSLATE", )
                 with gr.Row():
-                    video_output = gr.Video()
+                    video_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") #gr.Video()
 
                 line_ = gr.HTML("<hr></h2>")
                 if os.getenv("YOUR_HF_TOKEN") == None or os.getenv("YOUR_HF_TOKEN") == "":
@@ -524,7 +580,7 @@ with gr.Blocks(theme=theme) as demo:
 
                 with gr.Column():
                       with gr.Accordion("Advanced Settings", open=False):
-                          
+
                           bAUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
 
                           gr.HTML("<hr></h2>")
@@ -548,7 +604,7 @@ with gr.Blocks(theme=theme) as demo:
                 with gr.Row():
                     text_button = gr.Button("TRANSLATE")
                 with gr.Row():
-                    blink_output = gr.Video() #gr.outputs.File(label="Download!") # gr.Video()
+                    blink_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") # gr.Video()
 
 
                 bline_ = gr.HTML("<hr></h2>")
@@ -658,5 +714,5 @@ with gr.Blocks(theme=theme) as demo:
         bAUDIO_MIX,
         ], outputs=blink_output)
 
+#demo.launch(debug=True, enable_queue=True)
 demo.launch(share=True, enable_queue=True)
-#demo.launch()
