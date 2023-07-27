@@ -352,7 +352,7 @@ def translate_from_video(
 
     os.system(f"rm {Output_name_file}")
 
-    progress(0.90, desc="Creating translated audio...")
+    progress(0.90, desc="Creating final translated video...")
 
     create_translated_audio(result_diarize, audio_files, Output_name_file)
 
@@ -476,9 +476,9 @@ with gr.Blocks(theme=theme) as demo:
                             "./assets/Video_main.mp4",
                             "",
                             False,
-                            "base",
+                            "large-v1",
                             16,
-                            "float32",
+                            "float16",
                             "Spanish (es)",
                             "English (en)",
                             1,
@@ -619,9 +619,9 @@ with gr.Blocks(theme=theme) as demo:
                             "https://www.youtube.com/watch?v=5ZeHtRKHl7Y",
                             "",
                             False,
-                            "base",
+                            "large-v1",
                             16,
-                            "float32",
+                            "float16",
                             "Japanese (ja)",
                             "English (en)",
                             1,
