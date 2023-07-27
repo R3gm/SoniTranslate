@@ -1,11 +1,18 @@
-# SoniTranslate
-Translate the audio of a video content from one language to another while preserving synchronization.
+# 🎥 SoniTranslate 🈷️
+
+🎬 Video Translation with Synchronized Audio 🌐
+
+SonyTranslate is a powerful and user-friendly web application that allows you to easily translate videos into different languages. This repository hosts the code for the SonyTranslate web UI, which is built with the Gradio library to provide a seamless and interactive user experience.
+
 
 | Description | Link |
 | ----------- | ---- |
 | 📙 Colab Notebook | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/R3gm/SoniTranslate/blob/main/SoniTranslate_Colab.ipynb) |
 | 🎉 Repository | [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?style=flat-square&logo=github)](https://github.com/R3gm/SoniTranslate/) |
-| 🚀 Online inference HF | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/r3gm/SoniTranslate_translate_audio_of_a_video_content) |
+| 🚀 Online DEMO | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/r3gm/SoniTranslate_translate_audio_of_a_video_content) |
+
+## SonyTranslate's web UI, which features a browser interface built on the Gradio library.
+![image](https://github.com/R3gm/SoniTranslate/assets/114810545/53800b08-3a18-4f8a-be15-8710dc9102ec)
 
 
 ## Supported languages for translation 
@@ -22,7 +29,6 @@ Translate the audio of a video content from one language to another while preser
 | nl | Dutch |
 | uk | Ukrainian |
 | pt | Portuguese |
-
 
 ## Example:
 
