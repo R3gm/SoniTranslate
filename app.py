@@ -165,7 +165,7 @@ def translate_from_video(
     os.system("rm audio.webm")
     os.system("rm audio.wav")
 
-    progress(0.15, desc="Set video...")
+    progress(0.15, desc="Processing video...")
 
     if os.path.exists(video):
         if preview:
@@ -175,31 +175,31 @@ def translate_from_video(
             # Check if the file ends with ".mp4" extension
             if video.endswith(".mp4"):
                 destination_path = os.path.join(os.getcwd(), "Video.mp4")
-                shutil.move(video, destination_path)
+                shutil.copy(video, destination_path)
             else:
                 print("File does not have the '.mp4' extension. Converting video.")
                 os.system(f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4')
-        
-            for i in range (120):
-                time.sleep(1)
-                print('process video...')
-                if os.path.exists(OutputFile):
-                    time.sleep(1)
-                    os.system("ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav")
-                    time.sleep(1)
-                    break
-                if i == 119:
-                  print('Error processing video')
-                  return
 
-            for i in range (120):
+        for i in range (120):
+            time.sleep(1)
+            print('process video...')
+            if os.path.exists(OutputFile):
                 time.sleep(1)
-                print('process audio...')
-                if os.path.exists(audio_wav):
-                    break
-                if i == 119:
-                  print("Error can't create the audio")
-                  return
+                os.system("ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav")
+                time.sleep(1)
+                break
+            if i == 119:
+              print('Error processing video')
+              return
+
+        for i in range (120):
+            time.sleep(1)
+            print('process audio...')
+            if os.path.exists(audio_wav):
+                break
+            if i == 119:
+              print("Error can't create the audio")
+              return
 
     else:
         if preview:
