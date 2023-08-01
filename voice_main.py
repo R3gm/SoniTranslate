@@ -12,6 +12,10 @@ import numpy as np
 import os
 from fairseq import checkpoint_utils
 import soundfile as sf
+from gtts import gTTS
+import edge_tts
+import asyncio
+import nest_asyncio
 
 # model load
 def get_vc(sid, to_return_protect0, to_return_protect1):
@@ -343,11 +347,11 @@ class ClassVoices:
     def custom_voice(self,
         _values, # filter indices
         audio_files, # all audio files
-        model_voice_path='ayaka-v2.pth',
+        model_voice_path='',
         transpose=12,
         f0method='pm',
         file_index='',
-        file_index2='logs/ayaka-v2/added_IVF1018_Flat_nprobe_1_ayaka_v2.index',
+        file_index2='',
         ):
 
         #hubert_model = None
@@ -359,8 +363,12 @@ class ClassVoices:
         )
 
         for _value_item in _values:
-            filename = "audio2/"+audio_files[_value_item]
-            print(audio_files[_value_item], model_voice_path)
+            filename = "audio2/"+audio_files[_value_item] if _value_item != "test" else audio_files[0]
+            #filename = "audio2/"+audio_files[_value_item]
+            try:
+                print(audio_files[_value_item], model_voice_path)
+            except:
+                pass
 
             info_, (sample_, audio_output_) = vc_single(
                 sid=0,
@@ -385,6 +393,47 @@ class ClassVoices:
             )
 
         # detele the model
+
+    def make_test(self, 
+        tts_text, 
+        tts_voice, 
+        model_path,
+        index_path,
+        transpose,
+        f0_method,
+        ):
+        os.system("rm -rf test")
+        filename = "test/test.wav"
+        language = tts_voice[:2]
+        try:
+          os.system("mkdir test")
+          #nest_asyncio.apply() # gradio;not
+          asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
+        except:
+          try:
+              tts = gTTS(tts_text, lang=language)
+              tts.save(filename)
+              tts.save
+              print(f'No audio was received. Please change the tts voice for {tts_voice}. USING gTTS.')
+          except:
+            tts = gTTS('a', lang=language)
+            tts.save(filename)
+            print('Error: Audio will be replaced.')
+
+        os.system("cp test/test.wav test/real_test.wav")
+
+        self([],[]) # start modules
+
+        self.custom_voice(
+            ["test"], # filter indices
+            ["test/test.wav"], # all audio files
+            model_voice_path=model_path,
+            transpose=transpose,
+            f0method=f0_method,
+            file_index='',
+            file_index2=index_path,
+        )
+        return "test/test.wav", "test/real_test.wav"
 
     def __call__(self, speakers_list, audio_files):
 
