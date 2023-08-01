@@ -301,9 +301,9 @@ class Config:
 # call inference
 class ClassVoices:
     def __init__(self):
-        pass
+        self.file_index = "" # root
 
-    def apply_conf(self, f0method, file_index,
+    def apply_conf(self, f0method,
                    model_voice_path00, transpose00, file_index2_00,
                    model_voice_path01, transpose01, file_index2_01,
                    model_voice_path02, transpose02, file_index2_02,
@@ -314,8 +314,7 @@ class ClassVoices:
 
         #self.filename = filename
         self.f0method = f0method # pm
-        self.file_index = file_index # root
-
+        
         self.model_voice_path00 = model_voice_path00
         self.transpose00 = transpose00
         self.file_index200 = file_index2_00
@@ -343,12 +342,13 @@ class ClassVoices:
         self.model_voice_path99 = model_voice_path99
         self.transpose99 = transpose99
         self.file_index299 = file_index2_99
+        return "CONFIGURATION APPLIED"
 
     def custom_voice(self,
         _values, # filter indices
         audio_files, # all audio files
         model_voice_path='',
-        transpose=12,
+        transpose=0,
         f0method='pm',
         file_index='',
         file_index2='',
