@@ -118,6 +118,8 @@ def translate_from_video(
       if YOUR_HF_TOKEN == None:
         print('No valid token')
         return "No valid token"
+      else:
+        os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
     
     video = video if isinstance(video, str) else video.name
     print(video)
