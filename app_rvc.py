@@ -2,6 +2,9 @@
 import numpy as np
 import gradio as gr
 import whisperx
+from whisperx.utils import LANGUAGES as LANG_TRANSCRIPT
+from whisperx.alignment import DEFAULT_ALIGN_MODELS_TORCH as DAMT, DEFAULT_ALIGN_MODELS_HF as DAMHF
+from IPython.utils import capture
 import torch
 from gtts import gTTS
 import librosa
@@ -26,17 +29,19 @@ import rarfile
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 
 news = """ ## 📖 News
-        🔥 2023/07/26: new UI and add mix options.
+        🔥 2023/07/26: New UI and add mix options.
 
-        🔥 2023/07/27: fix some bug processing the video and audio.
+        🔥 2023/07/27: Fix some bug processing the video and audio.
 
-        🔥 2023/08/01: add options for use RVC models.
+        🔥 2023/08/01: Add options for use RVC models.
+
+        🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
         """
 
 description = """
 ### 🎥 **Translate videos easily with SoniTranslate!** 📽️
 
-Upload a video or provide a video link. 📽️ ** Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+Upload a video or provide a video link. 📽️ **Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
 
 See the tab labeled `Help` for instructions on how to use it. Let's start having fun with video translation! 🚀🎉
 """
@@ -73,11 +78,12 @@ print('Working in: ', device)
 list_tts = ['af-ZA-AdriNeural-Female', 'af-ZA-WillemNeural-Male', 'am-ET-AmehaNeural-Male', 'am-ET-MekdesNeural-Female', 'ar-AE-FatimaNeural-Female', 'ar-AE-HamdanNeural-Male', 'ar-BH-AliNeural-Male', 'ar-BH-LailaNeural-Female', 'ar-DZ-AminaNeural-Female', 'ar-DZ-IsmaelNeural-Male', 'ar-EG-SalmaNeural-Female', 'ar-EG-ShakirNeural-Male', 'ar-IQ-BasselNeural-Male', 'ar-IQ-RanaNeural-Female', 'ar-JO-SanaNeural-Female', 'ar-JO-TaimNeural-Male', 'ar-KW-FahedNeural-Male', 'ar-KW-NouraNeural-Female', 'ar-LB-LaylaNeural-Female', 'ar-LB-RamiNeural-Male', 'ar-LY-ImanNeural-Female', 'ar-LY-OmarNeural-Male', 'ar-MA-JamalNeural-Male', 'ar-MA-MounaNeural-Female', 'ar-OM-AbdullahNeural-Male', 'ar-OM-AyshaNeural-Female', 'ar-QA-AmalNeural-Female', 'ar-QA-MoazNeural-Male', 'ar-SA-HamedNeural-Male', 'ar-SA-ZariyahNeural-Female', 'ar-SY-AmanyNeural-Female', 'ar-SY-LaithNeural-Male', 'ar-TN-HediNeural-Male', 'ar-TN-ReemNeural-Female', 'ar-YE-MaryamNeural-Female', 'ar-YE-SalehNeural-Male', 'az-AZ-BabekNeural-Male', 'az-AZ-BanuNeural-Female', 'bg-BG-BorislavNeural-Male', 'bg-BG-KalinaNeural-Female', 'bn-BD-NabanitaNeural-Female', 'bn-BD-PradeepNeural-Male', 'bn-IN-BashkarNeural-Male', 'bn-IN-TanishaaNeural-Female', 'bs-BA-GoranNeural-Male', 'bs-BA-VesnaNeural-Female', 'ca-ES-EnricNeural-Male', 'ca-ES-JoanaNeural-Female', 'cs-CZ-AntoninNeural-Male', 'cs-CZ-VlastaNeural-Female', 'cy-GB-AledNeural-Male', 'cy-GB-NiaNeural-Female', 'da-DK-ChristelNeural-Female', 'da-DK-JeppeNeural-Male', 'de-AT-IngridNeural-Female', 'de-AT-JonasNeural-Male', 'de-CH-JanNeural-Male', 'de-CH-LeniNeural-Female', 'de-DE-AmalaNeural-Female', 'de-DE-ConradNeural-Male', 'de-DE-KatjaNeural-Female', 'de-DE-KillianNeural-Male', 'el-GR-AthinaNeural-Female', 'el-GR-NestorasNeural-Male', 'en-AU-NatashaNeural-Female', 'en-AU-WilliamNeural-Male', 'en-CA-ClaraNeural-Female', 'en-CA-LiamNeural-Male', 'en-GB-LibbyNeural-Female', 'en-GB-MaisieNeural-Female', 'en-GB-RyanNeural-Male', 'en-GB-SoniaNeural-Female', 'en-GB-ThomasNeural-Male', 'en-HK-SamNeural-Male', 'en-HK-YanNeural-Female', 'en-IE-ConnorNeural-Male', 'en-IE-EmilyNeural-Female', 'en-IN-NeerjaExpressiveNeural-Female', 'en-IN-NeerjaNeural-Female', 'en-IN-PrabhatNeural-Male', 'en-KE-AsiliaNeural-Female', 'en-KE-ChilembaNeural-Male', 'en-NG-AbeoNeural-Male', 'en-NG-EzinneNeural-Female', 'en-NZ-MitchellNeural-Male', 'en-NZ-MollyNeural-Female', 'en-PH-JamesNeural-Male', 'en-PH-RosaNeural-Female', 'en-SG-LunaNeural-Female', 'en-SG-WayneNeural-Male', 'en-TZ-ElimuNeural-Male', 'en-TZ-ImaniNeural-Female', 'en-US-AnaNeural-Female', 'en-US-AriaNeural-Female', 'en-US-ChristopherNeural-Male', 'en-US-EricNeural-Male', 'en-US-GuyNeural-Male', 'en-US-JennyNeural-Female', 'en-US-MichelleNeural-Female', 'en-US-RogerNeural-Male', 'en-US-SteffanNeural-Male', 'en-ZA-LeahNeural-Female', 'en-ZA-LukeNeural-Male', 'es-AR-ElenaNeural-Female', 'es-AR-TomasNeural-Male', 'es-BO-MarceloNeural-Male', 'es-BO-SofiaNeural-Female', 'es-CL-CatalinaNeural-Female', 'es-CL-LorenzoNeural-Male', 'es-CO-GonzaloNeural-Male', 'es-CO-SalomeNeural-Female', 'es-CR-JuanNeural-Male', 'es-CR-MariaNeural-Female', 'es-CU-BelkysNeural-Female', 'es-CU-ManuelNeural-Male', 'es-DO-EmilioNeural-Male', 'es-DO-RamonaNeural-Female', 'es-EC-AndreaNeural-Female', 'es-EC-LuisNeural-Male', 'es-ES-AlvaroNeural-Male', 'es-ES-ElviraNeural-Female', 'es-GQ-JavierNeural-Male', 'es-GQ-TeresaNeural-Female', 'es-GT-AndresNeural-Male', 'es-GT-MartaNeural-Female', 'es-HN-CarlosNeural-Male', 'es-HN-KarlaNeural-Female', 'es-MX-DaliaNeural-Female', 'es-MX-JorgeNeural-Male', 'es-NI-FedericoNeural-Male', 'es-NI-YolandaNeural-Female', 'es-PA-MargaritaNeural-Female', 'es-PA-RobertoNeural-Male', 'es-PE-AlexNeural-Male', 'es-PE-CamilaNeural-Female', 'es-PR-KarinaNeural-Female', 'es-PR-VictorNeural-Male', 'es-PY-MarioNeural-Male', 'es-PY-TaniaNeural-Female', 'es-SV-LorenaNeural-Female', 'es-SV-RodrigoNeural-Male', 'es-US-AlonsoNeural-Male', 'es-US-PalomaNeural-Female', 'es-UY-MateoNeural-Male', 'es-UY-ValentinaNeural-Female', 'es-VE-PaolaNeural-Female', 'es-VE-SebastianNeural-Male', 'et-EE-AnuNeural-Female', 'et-EE-KertNeural-Male', 'fa-IR-DilaraNeural-Female', 'fa-IR-FaridNeural-Male', 'fi-FI-HarriNeural-Male', 'fi-FI-NooraNeural-Female', 'fil-PH-AngeloNeural-Male', 'fil-PH-BlessicaNeural-Female', 'fr-BE-CharlineNeural-Female', 'fr-BE-GerardNeural-Male', 'fr-CA-AntoineNeural-Male', 'fr-CA-JeanNeural-Male', 'fr-CA-SylvieNeural-Female', 'fr-CH-ArianeNeural-Female', 'fr-CH-FabriceNeural-Male', 'fr-FR-DeniseNeural-Female', 'fr-FR-EloiseNeural-Female', 'fr-FR-HenriNeural-Male', 'ga-IE-ColmNeural-Male', 'ga-IE-OrlaNeural-Female', 'gl-ES-RoiNeural-Male', 'gl-ES-SabelaNeural-Female', 'gu-IN-DhwaniNeural-Female', 'gu-IN-NiranjanNeural-Male', 'he-IL-AvriNeural-Male', 'he-IL-HilaNeural-Female', 'hi-IN-MadhurNeural-Male', 'hi-IN-SwaraNeural-Female', 'hr-HR-GabrijelaNeural-Female', 'hr-HR-SreckoNeural-Male', 'hu-HU-NoemiNeural-Female', 'hu-HU-TamasNeural-Male', 'id-ID-ArdiNeural-Male', 'id-ID-GadisNeural-Female', 'is-IS-GudrunNeural-Female', 'is-IS-GunnarNeural-Male', 'it-IT-DiegoNeural-Male', 'it-IT-ElsaNeural-Female', 'it-IT-IsabellaNeural-Female', 'ja-JP-KeitaNeural-Male', 'ja-JP-NanamiNeural-Female', 'jv-ID-DimasNeural-Male', 'jv-ID-SitiNeural-Female', 'ka-GE-EkaNeural-Female', 'ka-GE-GiorgiNeural-Male', 'kk-KZ-AigulNeural-Female', 'kk-KZ-DauletNeural-Male', 'km-KH-PisethNeural-Male', 'km-KH-SreymomNeural-Female', 'kn-IN-GaganNeural-Male', 'kn-IN-SapnaNeural-Female', 'ko-KR-InJoonNeural-Male', 'ko-KR-SunHiNeural-Female', 'lo-LA-ChanthavongNeural-Male', 'lo-LA-KeomanyNeural-Female', 'lt-LT-LeonasNeural-Male', 'lt-LT-OnaNeural-Female', 'lv-LV-EveritaNeural-Female', 'lv-LV-NilsNeural-Male', 'mk-MK-AleksandarNeural-Male', 'mk-MK-MarijaNeural-Female', 'ml-IN-MidhunNeural-Male', 'ml-IN-SobhanaNeural-Female', 'mn-MN-BataaNeural-Male', 'mn-MN-YesuiNeural-Female', 'mr-IN-AarohiNeural-Female', 'mr-IN-ManoharNeural-Male', 'ms-MY-OsmanNeural-Male', 'ms-MY-YasminNeural-Female', 'mt-MT-GraceNeural-Female', 'mt-MT-JosephNeural-Male', 'my-MM-NilarNeural-Female', 'my-MM-ThihaNeural-Male', 'nb-NO-FinnNeural-Male', 'nb-NO-PernilleNeural-Female', 'ne-NP-HemkalaNeural-Female', 'ne-NP-SagarNeural-Male', 'nl-BE-ArnaudNeural-Male', 'nl-BE-DenaNeural-Female', 'nl-NL-ColetteNeural-Female', 'nl-NL-FennaNeural-Female', 'nl-NL-MaartenNeural-Male', 'pl-PL-MarekNeural-Male', 'pl-PL-ZofiaNeural-Female', 'ps-AF-GulNawazNeural-Male', 'ps-AF-LatifaNeural-Female', 'pt-BR-AntonioNeural-Male', 'pt-BR-FranciscaNeural-Female', 'pt-PT-DuarteNeural-Male', 'pt-PT-RaquelNeural-Female', 'ro-RO-AlinaNeural-Female', 'ro-RO-EmilNeural-Male', 'ru-RU-DmitryNeural-Male', 'ru-RU-SvetlanaNeural-Female', 'si-LK-SameeraNeural-Male', 'si-LK-ThiliniNeural-Female', 'sk-SK-LukasNeural-Male', 'sk-SK-ViktoriaNeural-Female', 'sl-SI-PetraNeural-Female', 'sl-SI-RokNeural-Male', 'so-SO-MuuseNeural-Male', 'so-SO-UbaxNeural-Female', 'sq-AL-AnilaNeural-Female', 'sq-AL-IlirNeural-Male', 'sr-RS-NicholasNeural-Male', 'sr-RS-SophieNeural-Female', 'su-ID-JajangNeural-Male', 'su-ID-TutiNeural-Female', 'sv-SE-MattiasNeural-Male', 'sv-SE-SofieNeural-Female', 'sw-KE-RafikiNeural-Male', 'sw-KE-ZuriNeural-Female', 'sw-TZ-DaudiNeural-Male', 'sw-TZ-RehemaNeural-Female', 'ta-IN-PallaviNeural-Female', 'ta-IN-ValluvarNeural-Male', 'ta-LK-KumarNeural-Male', 'ta-LK-SaranyaNeural-Female', 'ta-MY-KaniNeural-Female', 'ta-MY-SuryaNeural-Male', 'ta-SG-AnbuNeural-Male', 'ta-SG-VenbaNeural-Female', 'te-IN-MohanNeural-Male', 'te-IN-ShrutiNeural-Female', 'th-TH-NiwatNeural-Male', 'th-TH-PremwadeeNeural-Female', 'tr-TR-AhmetNeural-Male', 'tr-TR-EmelNeural-Female', 'uk-UA-OstapNeural-Male', 'uk-UA-PolinaNeural-Female', 'ur-IN-GulNeural-Female', 'ur-IN-SalmanNeural-Male', 'ur-PK-AsadNeural-Male', 'ur-PK-UzmaNeural-Female', 'uz-UZ-MadinaNeural-Female', 'uz-UZ-SardorNeural-Male', 'vi-VN-HoaiMyNeural-Female', 'vi-VN-NamMinhNeural-Male', 'zh-CN-XiaoxiaoNeural-Female', 'zh-CN-XiaoyiNeural-Female', 'zh-CN-YunjianNeural-Male', 'zh-CN-YunxiNeural-Male', 'zh-CN-YunxiaNeural-Male', 'zh-CN-YunyangNeural-Male', 'zh-CN-liaoning-XiaobeiNeural-Female', 'zh-CN-shaanxi-XiaoniNeural-Female']
 
 ### voices
-
-os.system('mkdir downloads')
-os.system('mkdir logs')
-os.system('mkdir weights')
-os.system('mkdir downloads')
+with capture.capture_output() as cap:
+    os.system('mkdir downloads')
+    os.system('mkdir logs')
+    os.system('mkdir weights')
+    os.system('mkdir downloads')
+    del cap
 
 def upload_model_list():
     weight_root = "weights"
@@ -250,16 +256,31 @@ def translate_from_video(
 
     LANGUAGES = {
         'Automatic detection': 'Automatic detection',
+        'Arabic (ar)': 'ar',
+        'Chinese (zh)': 'zh',
+        'Czech (cs)': 'cs',
+        'Danish (da)': 'da',
+        'Dutch (nl)': 'nl',
         'English (en)': 'en',
+        'Finnish (fi)': 'fi',
         'French (fr)': 'fr',
         'German (de)': 'de',
-        'Spanish (es)': 'es',
+        'Greek (el)': 'el',
+        'Hebrew (he)': 'he',
+        'Hungarian (hu)': 'hu',
         'Italian (it)': 'it',
         'Japanese (ja)': 'ja',
-        'Chinese (zh)': 'zh',
-        'Dutch (nl)': 'nl',
+        'Korean (ko)': 'ko',
+        'Persian (fa)': 'fa',
+        'Polish (pl)': 'pl',
+        'Portuguese (pt)': 'pt',
+        'Russian (ru)': 'ru',
+        'Spanish (es)': 'es',
+        'Turkish (tr)': 'tr',
         'Ukrainian (uk)': 'uk',
-        'Portuguese (pt)': 'pt'
+        'Urdu (ur)': 'ur',
+        'Vietnamese (vi)': 'vi',
+        'Hindi (hi)': 'hi',
     }
 
     TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
@@ -286,7 +307,6 @@ def translate_from_video(
     os.system("rm audio.wav")
 
     progress(0.15, desc="Processing video...")
-
     if os.path.exists(video):
         if preview:
             print('Creating a preview video of 10 seconds, to disable this option, go to advanced settings and turn off preview.')
@@ -346,39 +366,45 @@ def translate_from_video(
                   print('Error donwloading the audio')
                   return
 
-    progress(0.30, desc="Transcribing...")
     print("Set file complete.")
+    progress(0.30, desc="Transcribing...")
 
     SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
 
     # 1. Transcribe with original whisper (batched)
-    model = whisperx.load_model(
-        WHISPER_MODEL_SIZE,
-        device,
-        compute_type=compute_type,
-        language= SOURCE_LANGUAGE,
-        )
+    with capture.capture_output() as cap:
+      model = whisperx.load_model(
+          WHISPER_MODEL_SIZE,
+          device,
+          compute_type=compute_type,
+          language= SOURCE_LANGUAGE,
+          )
+      del cap
     audio = whisperx.load_audio(audio_wav)
     result = model.transcribe(audio, batch_size=batch_size)
     gc.collect(); torch.cuda.empty_cache(); del model
     print("Transcript complete")
 
-    progress(0.45, desc="Aligning...")
+    
 
     # 2. Align whisper output
-    try:
-      model_a, metadata = whisperx.load_align_model(
-          language_code=result["language"],
-          device=device
-          )
-    except:
-      print(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
-      gc.collect(); torch.cuda.empty_cache()
-      try:
-        del model_a
-      except:
-        pass
-      return
+    progress(0.45, desc="Aligning...")
+    DAMHF.update(DAMT) #lang align
+    EXTRA_ALIGN = {
+        "hi": "theainerd/Wav2Vec2-large-xlsr-hindi"
+    } # add new align models here
+    #print(result['language'], DAM.keys(), EXTRA_ALIGN.keys())
+    if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
+        audio = result = None
+        print("Automatic detection: Source language not incompatible")
+        print(f"Detected language {LANG_TRANSCRIPT[result['language']]}  incompatible, you can select the source language to avoid this error.")
+        return
+
+    model_a, metadata = whisperx.load_align_model(
+        language_code=result["language"],
+        device=device,
+        model_name = None if result["language"] in DAMHF.keys() else EXTRA_ALIGN[result["language"]]
+        )
     result = whisperx.align(
         result["segments"],
         model_a,
@@ -391,13 +417,14 @@ def translate_from_video(
     print("Align complete")
 
     if result['segments'] == []:
-      print('No active speech found in audio')
-      return
-
-    progress(0.60, desc="Diarizing...")
+        print('No active speech found in audio')
+        return
 
     # 3. Assign speaker labels
-    diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
+    progress(0.60, desc="Diarizing...")
+    with capture.capture_output() as cap:
+      diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
+      del cap
     diarize_segments = diarize_model(
         audio_wav,
         min_speakers=min_speakers,
@@ -407,12 +434,14 @@ def translate_from_video(
     print("Diarize complete")
 
     progress(0.75, desc="Translating...")
-
+    if TRANSLATE_AUDIO_TO == "zh":
+        TRANSLATE_AUDIO_TO = "zh-CN"
+    if TRANSLATE_AUDIO_TO == "he":
+        TRANSLATE_AUDIO_TO = "iw"
     result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO)
     print("Translation complete")
 
     progress(0.85, desc="Text_to_speech...")
-
     audio_files = []
     speakers_list = []
 
@@ -437,7 +466,7 @@ def translate_from_video(
         except KeyError:
             segment['speaker'] = "SPEAKER_99"
             speaker = segment['speaker']
-            print("NO SPEAKER DETECT IN SEGMENT")
+            print(f"NO SPEAKER DETECT IN SEGMENT: TTS auxiliary will be used in the segment time {segment['start'], segment['text']}")
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
@@ -558,8 +587,8 @@ with gr.Blocks(theme=theme) as demo:
                 #link = gr.HTML()
                 #video_input.change(submit_file_func, video_input, [video_input, link], show_progress='full')
 
-                SOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'English (en)', 'French (fr)', 'German (de)', 'Spanish (es)', 'Italian (it)', 'Japanese (ja)', 'Chinese (zh)', 'Dutch (nl)', 'Ukrainian (uk)', 'Portuguese (pt)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
-                TRANSLATE_AUDIO_TO = gr.Dropdown(['English (en)', 'French (fr)', 'German (de)', 'Spanish (es)', 'Italian (it)', 'Japanese (ja)', 'Chinese (zh)', 'Dutch (nl)', 'Ukrainian (uk)', 'Portuguese (pt)'], value='English (en)',label = 'Translate audio to', info="Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
+                SOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
+                TRANSLATE_AUDIO_TO = gr.Dropdown(['Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='English (en)',label = 'Translate audio to', info="Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
 
                 line_ = gr.HTML("<hr></h2>")
                 gr.Markdown("Select how many people are speaking in the video.")
@@ -612,7 +641,7 @@ with gr.Blocks(theme=theme) as demo:
                             "./assets/Video_main.mp4",
                             "",
                             False,
-                            "large-v1",
+                            "large-v2",
                             16,
                             "float16",
                             "Spanish (es)",
@@ -661,39 +690,9 @@ with gr.Blocks(theme=theme) as demo:
             with gr.Column():
 
                 blink_input = gr.Textbox(label="Media link.", info="Example: www.youtube.com/watch?v=g_9rPvbENUw", placeholder="URL goes here...")
-                # bSOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'en', 'fr', 'de', 'es', 'it', 'ja', 'zh', 'nl', 'uk', 'pt'], value='en',label = 'Source language')
 
-                # gr.HTML("<hr></h2>")
-
-                # bHFKEY = gr.Textbox(label="HF Token", info="One important step is to accept the license agreement for using Pyannote. You need to have an account on Hugging Face and accept the license to use the models: https://huggingface.co/pyannote/speaker-diarization and https://huggingface.co/pyannote/segmentation. Get your KEY TOKEN here: https://hf.co/settings/tokens", placeholder="Token goes here...")
-
-                # gr.Markdown("Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
-                # bTRANSLATE_AUDIO_TO = gr.inputs.Dropdown(['en', 'fr', 'de', 'es', 'it', 'ja', 'zh', 'nl', 'uk', 'pt'], default='en',label = 'Translate audio to')
-
-                # gr.Markdown("Select how many people are speaking in the video.")
-                # bmin_speakers = gr.inputs.Slider(1, 6, default=1, label="min_speakers", step=1, )
-                # bmax_speakers = gr.inputs.Slider(1, 6, default=2, label="max_speakers",step=1)
-
-                # gr.Markdown("Select the voice you want for each speaker.")
-                # btts_voice00 = gr.inputs.Dropdown(list_tts, default='en-AU-WilliamNeural-Male', label = 'TTS Speaker 1')
-                # btts_voice01 = gr.inputs.Dropdown(list_tts, default='en-CA-ClaraNeural-Female', label = 'TTS Speaker 2')
-                # btts_voice02 = gr.inputs.Dropdown(list_tts, default='en-GB-ThomasNeural-Male', label = 'TTS Speaker 3')
-                # btts_voice03 = gr.inputs.Dropdown(list_tts, default='en-GB-SoniaNeural-Female', label = 'TTS Speaker 4')
-                # btts_voice04 = gr.inputs.Dropdown(list_tts, default='en-NZ-MitchellNeural-Male', label = 'TTS Speaker 5')
-                # btts_voice05 = gr.inputs.Dropdown(list_tts, default='en-GB-MaisieNeural-Female', label = 'TTS Speaker 6')
-
-                # with gr.Column():
-                #       with gr.Accordion("Advanced Settings", open=False):
-                #           gr.Markdown("Default configuration of Whisper.")
-                #           bWHISPER_MODEL_SIZE = gr.inputs.Dropdown(['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2'], default=whisper_model_default, label="Whisper model")
-                #           bbatch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
-                #           bcompute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
-
-                #           bPREVIEW = gr.inputs.Checkbox(label="Preview cuts the video to only 10 seconds for testing purposes. Please deactivate it to retrieve the full video duration.")
-                #           bVIDEO_OUTPUT_NAME = gr.Textbox(label="Translated file name" ,value="video_output.mp4")
-
-                bSOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'English (en)', 'French (fr)', 'German (de)', 'Spanish (es)', 'Italian (it)', 'Japanese (ja)', 'Chinese (zh)', 'Dutch (nl)', 'Ukrainian (uk)', 'Portuguese (pt)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
-                bTRANSLATE_AUDIO_TO = gr.Dropdown(['English (en)', 'French (fr)', 'German (de)', 'Spanish (es)', 'Italian (it)', 'Japanese (ja)', 'Chinese (zh)', 'Dutch (nl)', 'Ukrainian (uk)', 'Portuguese (pt)'], value='English (en)',label = 'Translate audio to', info="Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
+                bSOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
+                bTRANSLATE_AUDIO_TO = gr.Dropdown(['Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='English (en)',label = 'Translate audio to', info="Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
 
                 bline_ = gr.HTML("<hr></h2>")
                 gr.Markdown("Select how many people are speaking in the video.")
@@ -729,13 +728,6 @@ with gr.Blocks(theme=theme) as demo:
                           bVIDEO_OUTPUT_NAME = gr.Textbox(label="Translated file name" ,value="video_output.mp4", info="The name of the output file")
                           bPREVIEW = gr.Checkbox(label="Preview", info="Preview cuts the video to only 10 seconds for testing purposes. Please deactivate it to retrieve the full video duration.")
 
-
-
-                # text_button = gr.Button("Translate audio of video")
-                # link_output = gr.Video() #gr.outputs.File(label="Download!")
-
-
-
             with gr.Column(variant='compact'):
                 with gr.Row():
                     text_button = gr.Button("TRANSLATE")
@@ -755,7 +747,7 @@ with gr.Blocks(theme=theme) as demo:
                             "https://www.youtube.com/watch?v=5ZeHtRKHl7Y",
                             "",
                             False,
-                            "large-v1",
+                            "large-v2",
                             16,
                             "float16",
                             "Japanese (ja)",
