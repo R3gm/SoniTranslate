@@ -12,7 +12,7 @@ def make_voice(tts_text, tts_voice, filename,language):
       try:
           tts = gTTS(tts_text, lang=language)
           tts.save(filename)
-          print(f'No audio was received. Please change the tts voice for {tts_voice}. USING gTTS.')
+          print(f'No audio was received. Please change the tts voice for {tts_voice}. TTS auxiliary will be used in the segment')
       except:
         tts = gTTS('a', lang=language)
         tts.save(filename)
@@ -26,7 +26,7 @@ def make_voice_gradio(tts_text, tts_voice, filename, language):
       try:
         tts = gTTS(tts_text, lang=language)
         tts.save(filename)
-        print(f'No audio was received. Please change the tts voice for {tts_voice}. USING gTTS.')
+        print(f'No audio was received. Please change the tts voice for {tts_voice}. TTS auxiliary will be used in the segment')
       except:
         tts = gTTS('a', lang=language)
         tts.save(filename)

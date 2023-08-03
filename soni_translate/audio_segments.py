@@ -24,4 +24,4 @@ def create_translated_audio(result_diarize, audio_files, Output_name_file):
     os.system("rm -rf audio/*")
 
     # combined audio as a file
-    combined_audio.export(Output_name_file, format="ogg")
+    combined_audio.export(Output_name_file, format="wav") # best than ogg, change if the audio is anomalous

@@ -43,6 +43,19 @@ https://github.com/R3gm/SoniTranslate/assets/114810545/db9e78c0-b228-4e81-9704-e
 https://github.com/R3gm/SoniTranslate/assets/114810545/6a8ddc65-a46f-4653-9726-6df2615f0ef9
 
 
+## 📖 News
+
+🔥 2023/07/26: New UI and add mix options.
+
+🔥 2023/07/27: Fix some bug processing the video and audio.
+
+🔥 2023/08/01: Add options for use RVC models.
+
+🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
+
+🔥 2023/08/03: Changed default options and added directory view of downloads.
+
+
 ## Contributing
 
 Welcome to contributions from the community! If you have any ideas, bug reports, or feature requests, please open an issue or submit a pull request. For more information, please refer to the contribution guidelines.
