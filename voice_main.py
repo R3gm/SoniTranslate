@@ -404,6 +404,12 @@ class ClassVoices:
         ):
         os.system("rm -rf test")
         filename = "test/test.wav"
+
+        if "SET_LIMIT" == os.getenv("DEMO"):
+          if len(tts_text) > 60:
+            tts_text = tts_text[:60]
+            print("DEMO; limit to 60 characters")
+
         language = tts_voice[:2]
         try:
           os.system("mkdir test")
