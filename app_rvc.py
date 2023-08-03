@@ -23,7 +23,10 @@ import shutil
 from urllib.parse import unquote
 import zipfile
 import rarfile
-
+import logging
+logging.getLogger("numba").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("markdown_it").setLevel(logging.WARNING)
 
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
