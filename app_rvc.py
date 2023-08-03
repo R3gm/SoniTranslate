@@ -49,7 +49,8 @@ See the tab labeled `Help` for instructions on how to use it. Let's start having
 
 
 tutorial = """
-## 🔰 **Instructions for use:**
+
+# 🔰 **Instructions for use:**
 
 1. 📤 **Upload a video** on the first tab or 🌐 **use a video link** on the second tab.
 
@@ -58,6 +59,24 @@ tutorial = """
 3. 🗣️ Specify the **number of people speaking** in the video and **assign each one a text-to-speech voice** suitable for the translation language.
 
 4. 🚀 Press the '**Translate**' button to obtain the results.
+
+
+# 🎤 How to Use RVC and RVC2 Voices 🎶
+
+The goal is to apply a RVC (Retrieval-based Voice Conversion) to the generated TTS (Text-to-Speech) 🎙️
+
+1. In the `Custom Voice RVC` tab, download the models you need 📥 You can use links from Hugging Face and Google Drive in formats like zip, pth, or index. You can also download complete repositories, but this option is not very stable 😕
+
+2. Now, go to `Replace voice: TTS to RVC` and check the `enable` box ✅ After this, you can choose the models you want to apply to each TTS speaker 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+3. Adjust the F0 method that will be applied to all RVCs 🎛️
+
+4. Press `APPLY CONFIGURATION` to apply the changes you made 🔄
+
+5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the RVCs 🗣️
+
+Tip: You can use `Test RVC` to experiment and find the best TTS or configurations to apply to the RVC 🧪🔍
+
 """
 
 
@@ -67,7 +86,7 @@ if torch.cuda.is_available():
     device = "cuda"
     list_compute_type = ['float16', 'float32']
     compute_type_default = 'float16'
-    whisper_model_default = 'large-v1'
+    whisper_model_default = 'large-v2'
 else:
     device = "cpu"
     list_compute_type = ['float32']
@@ -115,10 +134,13 @@ def manual_download(url, dst):
             os.system(f'gdown "{url}" -O {dst} --fuzzy -c')
     elif 'huggingface' in url:
         print("HuggingFace link")
-        if '/blob/' in url:
-            url = url.replace('/blob/', '/resolve/')
-        parsed_link = '\n{}\n\tout={}'.format(url, unquote(url.split('/')[-1]))
-        os.system(f'echo -e "{parsed_link}" | aria2c --header={user_header} --console-log-level=error --summary-interval=10 -i- -j5 -x16 -s16 -k1M -c -d "{dst}"')
+        if '/blob/' in url or '/resolve/' in url:
+          if '/blob/' in url:
+              url = url.replace('/blob/', '/resolve/')
+          parsed_link = '\n{}\n\tout={}'.format(url, unquote(url.split('/')[-1]))
+          os.system(f'echo -e "{parsed_link}" | aria2c --header={user_header} --console-log-level=error --summary-interval=10 -i- -j5 -x16 -s16 -k1M -c -d "{dst}"')
+        else:
+          os.system(f"git clone {url} {dst+'repo/'}")
     elif 'http' in url or 'magnet' in url:
         parsed_link = '"{}"'.format(url)
         os.system(f'aria2c --optimize-concurrent-downloads --console-log-level=error --summary-interval=10 -j5 -x16 -s16 -k1M -c -d {dst} -Z {parsed_link}')
@@ -140,7 +162,7 @@ def download_list(text_downloads):
     select_zip_and_rar_files("downloads/")
 
     models, _ = upload_model_list()
-
+    os.system("rm -rf downloads/repo")
     return f"Downloaded = {models}"
 
 def select_zip_and_rar_files(directory_path="downloads/"):
@@ -533,7 +555,7 @@ def translate_from_video(
             os.system(f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}')
         except:
             # volume mix except
-            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume=0.15[a];[1:0]volume=1.90[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume=0.25[a];[1:0]volume=1.80[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
 
     os.system(f"rm {video_output}")
     os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
@@ -917,8 +939,8 @@ with gr.Blocks(theme=theme) as demo:
 
 
     with gr.Tab("Help"):
-        gr.Markdown(news)
         gr.Markdown(tutorial)
+        gr.Markdown(news)
 
     with gr.Accordion("Logs", open = False):
         logs = gr.Textbox()
