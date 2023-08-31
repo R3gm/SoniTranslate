@@ -856,8 +856,8 @@ with gr.Blocks(theme=theme) as demo:
 
     with gr.Tab("Custom voice RVC"):
         with gr.Column():
-          with gr.Accordion("Download RVC Models", open=True):
-            url_links = gr.Textbox(label="URLs", value="",info="Automatically download the RVC models from the URL. You can use links from HuggingFace or Drive, and you can include several links, each one separated by a comma.", placeholder="urls here...", lines=1)
+          with gr.Accordion("Get the RVC Models", open=True):
+            url_links = gr.Textbox(label="URLs", value="",info="Automatically download the RVC models from the URL. You can use links from HuggingFace or Drive, and you can include several links, each one separated by a comma. Example: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index", placeholder="urls here...", lines=1)
             download_finish = gr.HTML()
             download_button = gr.Button("DOWNLOAD MODELS")
 
@@ -882,7 +882,7 @@ with gr.Blocks(theme=theme) as demo:
                 enable_custom_voice.change(custom_model_voice_enable, [enable_custom_voice], [])
 
                 gr.Markdown("### 2. Select a voice that will be applied to each TTS of each corresponding speaker and apply the configurations.")
-                
+                gr.Markdown("Depending on how many "TTS Speaker" you will use, each one needs its respective model. Additionally, there is an auxiliary one if for some reason the speaker is not detected correctly.")
                 gr.Markdown("Voice to apply to the first speaker.")
                 with gr.Row():
                   model_voice_path00 = gr.Dropdown(models, label = 'Model-1', visible=True, interactive= True)
