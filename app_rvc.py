@@ -460,8 +460,8 @@ def translate_from_video(
     #print(result['language'], DAM.keys(), EXTRA_ALIGN.keys())
     if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
         audio = result = None
-        print("Automatic detection: Source language not incompatible")
-        print(f"Detected language {LANG_TRANSCRIPT[result['language']]}  incompatible, you can select the source language to avoid this error.")
+        print("Automatic detection: Source language not compatible")
+        print(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
         return
 
     model_a, metadata = whisperx.load_align_model(
