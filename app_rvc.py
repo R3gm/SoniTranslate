@@ -296,6 +296,7 @@ def translate_from_video(
     tts_voice05="en-GB-MaisieNeural-Female",
     video_output="video_dub.mp4",
     AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
+    max_accelerate_audio = 2.1,
     progress=gr.Progress(),
     ):
 
@@ -554,8 +555,8 @@ def translate_from_video(
         # porcentaje
         porcentaje = duration_tts / duration_true
 
-        if porcentaje > 2.1:
-            porcentaje = 2.1
+        if porcentaje > max_accelerate_audio:
+            porcentaje = max_accelerate_audio
         elif porcentaje <= 1.2 and porcentaje >= 0.8:
             porcentaje = 1.0
         elif porcentaje <= 0.79:
@@ -674,6 +675,7 @@ with gr.Blocks(theme=theme) as demo:
 
                 with gr.Column():
                       with gr.Accordion("Advanced Settings", open=False):
+                          audio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
 
                           AUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
 
@@ -742,6 +744,7 @@ with gr.Blocks(theme=theme) as demo:
                     tts_voice05,
                     VIDEO_OUTPUT_NAME,
                     AUDIO_MIX,
+                    audio_accelerate,
                     ],
                     outputs=[video_output],
                     cache_examples=False,
@@ -779,6 +782,7 @@ with gr.Blocks(theme=theme) as demo:
 
                 with gr.Column():
                       with gr.Accordion("Advanced Settings", open=False):
+                          baudio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
 
                           bAUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
 
@@ -847,7 +851,8 @@ with gr.Blocks(theme=theme) as demo:
                     btts_voice04,
                     btts_voice05,
                     bVIDEO_OUTPUT_NAME,
-                    bAUDIO_MIX
+                    bAUDIO_MIX,
+                    baudio_accelerate,
                     ],
                     outputs=[blink_output],
                     cache_examples=False,
@@ -1008,6 +1013,7 @@ with gr.Blocks(theme=theme) as demo:
         tts_voice05,
         VIDEO_OUTPUT_NAME,
         AUDIO_MIX,
+        audio_accelerate,
         ], outputs=video_output)
     text_button.click(translate_from_video, inputs=[
         blink_input,
@@ -1028,6 +1034,7 @@ with gr.Blocks(theme=theme) as demo:
         btts_voice05,
         bVIDEO_OUTPUT_NAME,
         bAUDIO_MIX,
+        baudio_accelerate,
         ], outputs=blink_output)
 
 #demo.launch(debug=True, enable_queue=True)
