@@ -36,7 +36,7 @@ news = """ ## 📖 News
 
         🔥 2023/07/27: Fix some bug processing the video and audio.
 
-        🔥 2023/08/01: Add options for use RVC models.
+        🔥 2023/08/01: Add options for use R.V.C. models.
 
         🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
 
@@ -66,21 +66,21 @@ tutorial = """
 4. 🚀 Press the '**Translate**' button to obtain the results.
 
 
-# 🎤 How to Use RVC and RVC2 Voices 🎶
+# 🎤 How to Use R.V.C. and R.V.C.2 Voices (Optional) 🎶
 
-The goal is to apply a RVC (Retrieval-based Voice Conversion) to the generated TTS (Text-to-Speech) 🎙️
+The goal is to apply a R.V.C. to the generated TTS (Text-to-Speech) 🎙️
 
-1. In the `Custom Voice RVC` tab, download the models you need 📥 You can use links from Hugging Face and Google Drive in formats like zip, pth, or index. You can also download complete HF space repositories, but this option is not very stable 😕
+1. In the `Custom Voice R.V.C.` tab, download the models you need 📥 You can use links from Hugging Face and Google Drive in formats like zip, pth, or index. You can also download complete HF space repositories, but this option is not very stable 😕
 
-2. Now, go to `Replace voice: TTS to RVC` and check the `enable` box ✅ After this, you can choose the models you want to apply to each TTS speaker 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+2. Now, go to `Replace voice: TTS to R.V.C.` and check the `enable` box ✅ After this, you can choose the models you want to apply to each TTS speaker 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
 
-3. Adjust the F0 method that will be applied to all RVCs 🎛️
+3. Adjust the F0 method that will be applied to all R.V.C. 🎛️
 
 4. Press `APPLY CONFIGURATION` to apply the changes you made 🔄
 
-5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the RVCs 🗣️
+5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the R.V.C. 🗣️
 
-Tip: You can use `Test RVC` to experiment and find the best TTS or configurations to apply to the RVC 🧪🔍
+Tip: You can use `Test R.V.C.` to experiment and find the best TTS or configurations to apply to the R.V.C. 🧪🔍
 
 """
 
@@ -854,10 +854,10 @@ with gr.Blocks(theme=theme) as demo:
                 )
 
 
-    with gr.Tab("Custom voice RVC"):
+    with gr.Tab("Custom voice R.V.C."):
         with gr.Column():
-          with gr.Accordion("Get the RVC Models", open=True):
-            url_links = gr.Textbox(label="URLs", value="",info="Automatically download the RVC models from the URL. You can use links from HuggingFace or Drive, and you can include several links, each one separated by a comma. Example: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index", placeholder="urls here...", lines=1)
+          with gr.Accordion("Get the R.V.C. Models", open=True):
+            url_links = gr.Textbox(label="URLs", value="",info="Automatically download the R.V.C. models from the URL. You can use links from HuggingFace or Drive, and you can include several links, each one separated by a comma. Example: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index", placeholder="urls here...", lines=1)
             download_finish = gr.HTML()
             download_button = gr.Button("DOWNLOAD MODELS")
 
@@ -874,7 +874,7 @@ with gr.Blocks(theme=theme) as demo:
                 return [value for value in dict_changes.values()]
 
         with gr.Column():
-          with gr.Accordion("Replace voice: TTS to RVC", open=False):
+          with gr.Accordion("Replace voice: TTS to R.V.C.", open=False):
             with gr.Column(variant='compact'):
               with gr.Column():
                 gr.Markdown("### 1. To enable its use, mark it as enable.")
@@ -946,7 +946,7 @@ with gr.Blocks(theme=theme) as demo:
 
 
           with gr.Column():
-                with gr.Accordion("Test RVC", open=False):
+                with gr.Accordion("Test R.V.C.", open=False):
 
                   with gr.Row(variant='compact'):
                     text_test = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5)
