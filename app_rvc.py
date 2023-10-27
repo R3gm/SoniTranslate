@@ -190,7 +190,7 @@ def download_list(text_downloads):
     path_download = "downloads/"
     for url in urls:
       manual_download(url, path_download)
-    
+
     # Tree
     print('####################################')
     print_tree_directory("downloads", indent='')
@@ -297,6 +297,8 @@ def translate_from_video(
     video_output="video_dub.mp4",
     AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
     max_accelerate_audio = 2.1,
+    volume_original_audio = 0.25,
+    volume_translated_audio = 1.80,
     progress=gr.Progress(),
     ):
 
@@ -450,7 +452,7 @@ def translate_from_video(
     gc.collect(); torch.cuda.empty_cache(); del model
     print("Transcript complete")
 
-    
+
 
     # 2. Align whisper output
     progress(0.45, desc="Aligning...")
@@ -465,6 +467,7 @@ def translate_from_video(
         print(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
         return
 
+    align_language = result["language"]
     model_a, metadata = whisperx.load_align_model(
         language_code=result["language"],
         device=device,
@@ -591,14 +594,14 @@ def translate_from_video(
     # TYPE MIX AUDIO
     if AUDIO_MIX_METHOD == 'Adjusting volumes and mixing audio':
         # volume mix
-        os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume=0.15[a];[1:0]volume=1.90[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+        os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
     else:
         try:
             # background mix
             os.system(f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}')
         except:
             # volume mix except
-            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume=0.25[a];[1:0]volume=1.80[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
 
     os.system(f"rm {video_output}")
     os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
@@ -678,6 +681,8 @@ with gr.Blocks(theme=theme) as demo:
                           audio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
 
                           AUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
+                          volume_original_mix = gr.Slider(label = 'Volume original audio for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True, info="")
+                          volume_translated_mix = gr.Slider(label = 'Volume translated audio for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True, info="")
 
                           gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
@@ -745,6 +750,8 @@ with gr.Blocks(theme=theme) as demo:
                     VIDEO_OUTPUT_NAME,
                     AUDIO_MIX,
                     audio_accelerate,
+                    volume_original_mix,
+                    volume_translated_mix,
                     ],
                     outputs=[video_output],
                     cache_examples=False,
@@ -785,6 +792,8 @@ with gr.Blocks(theme=theme) as demo:
                           baudio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
 
                           bAUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
+                          bvolume_original_mix = gr.Slider(label = 'Volume original audio for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True, info="")
+                          bvolume_translated_mix = gr.Slider(label = 'Volume translated audio for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True, info="")
 
                           gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
@@ -853,6 +862,8 @@ with gr.Blocks(theme=theme) as demo:
                     bVIDEO_OUTPUT_NAME,
                     bAUDIO_MIX,
                     baudio_accelerate,
+                    bvolume_original_mix,
+                    bvolume_translated_mix,
                     ],
                     outputs=[blink_output],
                     cache_examples=False,
@@ -868,7 +879,7 @@ with gr.Blocks(theme=theme) as demo:
 
             def update_models():
               models, index_paths = upload_model_list()
-              for i in range(8):                      
+              for i in range(8):
                 dict_models = {
                     f'model_voice_path{i:02d}': gr.update(choices=models) for i in range(8)
                 }
@@ -955,12 +966,12 @@ with gr.Blocks(theme=theme) as demo:
 
                   with gr.Row(variant='compact'):
                     text_test = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5)
-                    with gr.Column(): 
+                    with gr.Column():
                       tts_test = gr.Dropdown(list_tts, value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
                       model_voice_path07 = gr.Dropdown(models, label = 'Model', visible=True, interactive= True) #value=''
                       file_index2_07 = gr.Dropdown(index_paths, label = 'Index', visible=True, interactive= True) #value=''
                       transpose_test = gr.Number(label = 'Transpose', value=0, visible=True, interactive= True, info="integer, number of semitones, raise by an octave: 12, lower by an octave: -12")
-                      f0method_test = gr.Dropdown(f0_methods_voice, value='pm', label = 'F0 method', visible=True, interactive= True) 
+                      f0method_test = gr.Dropdown(f0_methods_voice, value='pm', label = 'F0 method', visible=True, interactive= True)
                   with gr.Row(variant='compact'):
                     button_test = gr.Button("Test audio")
 
@@ -978,7 +989,7 @@ with gr.Blocks(theme=theme) as demo:
                         f0method_test,
                         ], outputs=[ttsvoice, original_ttsvoice])
 
-                download_button.click(download_list, [url_links], [download_finish]).then(update_models, [], 
+                download_button.click(download_list, [url_links], [download_finish]).then(update_models, [],
                                   [
                                     model_voice_path00, model_voice_path01, model_voice_path02, model_voice_path03, model_voice_path04, model_voice_path05, model_voice_path06, model_voice_path07,
                                     file_index2_00, file_index2_01, file_index2_02, file_index2_03, file_index2_04, file_index2_05, file_index2_06, file_index2_07
@@ -1014,6 +1025,8 @@ with gr.Blocks(theme=theme) as demo:
         VIDEO_OUTPUT_NAME,
         AUDIO_MIX,
         audio_accelerate,
+        volume_original_mix,
+        volume_translated_mix,
         ], outputs=video_output)
     text_button.click(translate_from_video, inputs=[
         blink_input,
@@ -1035,6 +1048,8 @@ with gr.Blocks(theme=theme) as demo:
         bVIDEO_OUTPUT_NAME,
         bAUDIO_MIX,
         baudio_accelerate,
+        bvolume_original_mix,
+        bvolume_translated_mix,
         ], outputs=blink_output)
 
 #demo.launch(debug=True, enable_queue=True)
