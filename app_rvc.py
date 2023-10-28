@@ -3,6 +3,7 @@ import numpy as np
 import gradio as gr
 import whisperx
 from whisperx.utils import LANGUAGES as LANG_TRANSCRIPT
+from whisperx.utils import get_writer
 from whisperx.alignment import DEFAULT_ALIGN_MODELS_TORCH as DAMT, DEFAULT_ALIGN_MODELS_HF as DAMHF
 from IPython.utils import capture
 import torch
@@ -18,12 +19,8 @@ import os
 from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import make_voice_gradio
 from soni_translate.translate_segments import translate_text
-import time
-import shutil
 from urllib.parse import unquote
-import zipfile
-import rarfile
-import logging
+import copy, logging, rarfile, zipfile, shutil, time
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("markdown_it").setLevel(logging.WARNING)
@@ -299,6 +296,7 @@ def translate_from_video(
     max_accelerate_audio = 2.1,
     volume_original_audio = 0.25,
     volume_translated_audio = 1.80,
+    output_format_subtitle = "srt",
     progress=gr.Progress(),
     ):
 
@@ -497,15 +495,19 @@ def translate_from_video(
         audio_wav,
         min_speakers=min_speakers,
         max_speakers=max_speakers)
+    global result_diarize
     result_diarize = whisperx.assign_word_speakers(diarize_segments, result)
     gc.collect(); torch.cuda.empty_cache(); del diarize_model
     print("Diarize complete")
+
+    deep_copied_result = copy.deepcopy(result_diarize)
 
     progress(0.75, desc="Translating...")
     if TRANSLATE_AUDIO_TO == "zh":
         TRANSLATE_AUDIO_TO = "zh-CN"
     if TRANSLATE_AUDIO_TO == "he":
         TRANSLATE_AUDIO_TO = "iw"
+
     result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO)
     print("Translation complete")
 
@@ -606,7 +608,58 @@ def translate_from_video(
     os.system(f"rm {video_output}")
     os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
 
+    # Write subtitle
+    #output_format_subtitle = ["srt", "vtt", "txt", "tsv", "json", "aud"]
+    #output_format_subtitle = "vtt"
+    name_ori = "sub_ori."
+    name_tra = "sub_tra."
+    deep_copied_result["language"] = align_language
+    result_diarize["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh-CN"] else align_language
+
+    writer = get_writer(output_format_subtitle, output_dir=".")
+    word_options = {
+        "highlight_words": False,
+        "max_line_count" : None,
+        "max_line_width" : None,
+    }
+
+    if os.path.exists(name_ori+output_format_subtitle): os.remove(name_ori+output_format_subtitle)
+    if os.path.exists(name_tra+output_format_subtitle): os.remove(name_tra+output_format_subtitle)
+    # original lang
+    # for segment in deep_copied_result["segments"]:
+    #     for dictionary in segment:
+    #         dictionary.pop('speaker', None)
+
+    #deep_copied_result["segments"][0].pop('speaker')
+    for i in range(len(deep_copied_result["segments"])):
+        deep_copied_result["segments"][i].pop('speaker')
+    writer(
+        deep_copied_result,
+        name_ori[:-1]+".mp3",
+        word_options,
+    )
+    # translated lang
+    # result_diarize.pop('word_segments')
+    # result_diarize["segments"][0].pop('speaker')
+    # result_diarize["segments"][0].pop('chars')
+    # result_diarize["segments"][0].pop('words')
+    result_diarize.pop('word_segments')
+    for i in range(len(result_diarize["segments"])):
+        result_diarize["segments"][i].pop('speaker')
+        result_diarize["segments"][i].pop('chars')
+        result_diarize["segments"][i].pop('words')
+    writer(
+        result_diarize,
+        name_tra[:-1]+".mp3",
+        word_options,
+    )
+
     return video_output
+
+
+def get_subs_path(type_subs):
+  return f"sub_ori.{type_subs}", f"sub_tra.{type_subs}"
+
 
 import sys
 
@@ -685,6 +738,9 @@ with gr.Blocks(theme=theme) as demo:
                           volume_translated_mix = gr.Slider(label = 'Volume translated audio for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True, info="")
 
                           gr.HTML("<hr></h2>")
+                          sub_type_output = gr.inputs.Dropdown(["srt", "vtt", "txt", "tsv", "json", "aud"], default="srt", label="Subtitle type")
+
+                          gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
                           WHISPER_MODEL_SIZE = gr.inputs.Dropdown(['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2'], default=whisper_model_default, label="Whisper model")
                           batch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
@@ -699,6 +755,10 @@ with gr.Blocks(theme=theme) as demo:
                     video_button = gr.Button("TRANSLATE", )
                 with gr.Row():
                     video_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") #gr.Video()
+                    with gr.Column():
+                        with gr.Row():
+                            sub_ori_output = gr.outputs.File(label="Subtitles")
+                            sub_tra_output = gr.outputs.File(label="Translated subtitles")
 
                 line_ = gr.HTML("<hr></h2>")
                 if os.getenv("YOUR_HF_TOKEN") == None or os.getenv("YOUR_HF_TOKEN") == "":
@@ -752,6 +812,7 @@ with gr.Blocks(theme=theme) as demo:
                     audio_accelerate,
                     volume_original_mix,
                     volume_translated_mix,
+                    sub_type_output,
                     ],
                     outputs=[video_output],
                     cache_examples=False,
@@ -796,6 +857,9 @@ with gr.Blocks(theme=theme) as demo:
                           bvolume_translated_mix = gr.Slider(label = 'Volume translated audio for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True, info="")
 
                           gr.HTML("<hr></h2>")
+                          bsub_type_output = gr.inputs.Dropdown(["srt", "vtt", "txt", "tsv", "json", "aud"], default="srt", label="Subtitle type")
+
+                          gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
                           bWHISPER_MODEL_SIZE = gr.inputs.Dropdown(['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2'], default=whisper_model_default, label="Whisper model")
                           bbatch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
@@ -810,7 +874,10 @@ with gr.Blocks(theme=theme) as demo:
                     text_button = gr.Button("TRANSLATE")
                 with gr.Row():
                     blink_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") # gr.Video()
-
+                    with gr.Column():
+                        with gr.Row():
+                            bsub_ori_output = gr.outputs.File(label="Subtitles")
+                            bsub_tra_output = gr.outputs.File(label="Translated subtitles")
 
                 bline_ = gr.HTML("<hr></h2>")
                 if os.getenv("YOUR_HF_TOKEN") == None or os.getenv("YOUR_HF_TOKEN") == "":
@@ -864,6 +931,7 @@ with gr.Blocks(theme=theme) as demo:
                     baudio_accelerate,
                     bvolume_original_mix,
                     bvolume_translated_mix,
+                    bsub_type_output,
                     ],
                     outputs=[blink_output],
                     cache_examples=False,
@@ -1027,7 +1095,8 @@ with gr.Blocks(theme=theme) as demo:
         audio_accelerate,
         volume_original_mix,
         volume_translated_mix,
-        ], outputs=video_output)
+        sub_type_output,
+        ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
     text_button.click(translate_from_video, inputs=[
         blink_input,
         bHFKEY,
@@ -1050,7 +1119,8 @@ with gr.Blocks(theme=theme) as demo:
         baudio_accelerate,
         bvolume_original_mix,
         bvolume_translated_mix,
-        ], outputs=blink_output)
+        bsub_type_output,
+        ], outputs=blink_output).then(get_subs_path, [bsub_type_output], [bsub_ori_output, bsub_tra_output])
 
 #demo.launch(debug=True, enable_queue=True)
 demo.launch(share=True, enable_queue=True, quiet=True, debug=False)
