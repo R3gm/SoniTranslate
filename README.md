@@ -17,18 +17,33 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 
 ## Supported languages for translation 
 
-| Language Code | Language |
-|---|---|
-| en | English |
-| fr | French |
-| de | German |
-| es | Spanish |
-| it | Italian |
-| ja | Japanese |
-| zh | Chinese |
-| nl | Dutch |
-| uk | Ukrainian |
-| pt | Portuguese |
+| Language Code | Language   |
+|---------------|------------|
+| en            | English    |
+| fr            | French     |
+| de            | German     |
+| es            | Spanish    |
+| it            | Italian    |
+| ja            | Japanese   |
+| zh            | Chinese    |
+| nl            | Dutch      |
+| uk            | Ukrainian  |
+| pt            | Portuguese |
+| ar            | Arabic     |
+| cs            | Czech      |
+| da            | Danish     |
+| fi            | Finnish    |
+| el            | Greek      |
+| he            | Hebrew     |
+| hu            | Hungarian  |
+| ko            | Korean     |
+| fa            | Persian    |
+| pl            | Polish     |
+| ru            | Russian    |
+| tr            | Turkish    |
+| ur            | Urdu       |
+| hi            | Hindi      |
+| vi            | Vietnamese |
 
 ## Example:
 
@@ -44,6 +59,8 @@ https://github.com/R3gm/SoniTranslate/assets/114810545/6a8ddc65-a46f-4653-9726-6
 
 
 ## 📖 News
+
+🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
 
 🔥 2023/07/26: New UI and add mix options.
 

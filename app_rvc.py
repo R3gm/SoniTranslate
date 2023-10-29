@@ -3,6 +3,7 @@ import numpy as np
 import gradio as gr
 import whisperx
 from whisperx.utils import LANGUAGES as LANG_TRANSCRIPT
+from whisperx.utils import get_writer
 from whisperx.alignment import DEFAULT_ALIGN_MODELS_TORCH as DAMT, DEFAULT_ALIGN_MODELS_HF as DAMHF
 from IPython.utils import capture
 import torch
@@ -18,12 +19,8 @@ import os
 from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import make_voice_gradio
 from soni_translate.translate_segments import translate_text
-import time
-import shutil
 from urllib.parse import unquote
-import zipfile
-import rarfile
-import logging
+import copy, logging, rarfile, zipfile, shutil, time, json, subprocess
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("markdown_it").setLevel(logging.WARNING)
@@ -32,11 +29,13 @@ logging.getLogger("markdown_it").setLevel(logging.WARNING)
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 
 news = """ ## 📖 News
+        🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
+
         🔥 2023/07/26: New UI and add mix options.
 
         🔥 2023/07/27: Fix some bug processing the video and audio.
 
-        🔥 2023/08/01: Add options for use RVC models.
+        🔥 2023/08/01: Add options for use R.V.C. models.
 
         🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
 
@@ -66,21 +65,21 @@ tutorial = """
 4. 🚀 Press the '**Translate**' button to obtain the results.
 
 
-# 🎤 How to Use RVC and RVC2 Voices 🎶
+# 🎤 How to Use R.V.C. and R.V.C.2 Voices (Optional) 🎶
 
-The goal is to apply a RVC (Retrieval-based Voice Conversion) to the generated TTS (Text-to-Speech) 🎙️
+The goal is to apply a R.V.C. to the generated TTS (Text-to-Speech) 🎙️
 
-1. In the `Custom Voice RVC` tab, download the models you need 📥 You can use links from Hugging Face and Google Drive in formats like zip, pth, or index. You can also download complete HF space repositories, but this option is not very stable 😕
+1. In the `Custom Voice R.V.C.` tab, download the models you need 📥 You can use links from Hugging Face and Google Drive in formats like zip, pth, or index. You can also download complete HF space repositories, but this option is not very stable 😕
 
-2. Now, go to `Replace voice: TTS to RVC` and check the `enable` box ✅ After this, you can choose the models you want to apply to each TTS speaker 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+2. Now, go to `Replace voice: TTS to R.V.C.` and check the `enable` box ✅ After this, you can choose the models you want to apply to each TTS speaker 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
 
-3. Adjust the F0 method that will be applied to all RVCs 🎛️
+3. Adjust the F0 method that will be applied to all R.V.C. 🎛️
 
 4. Press `APPLY CONFIGURATION` to apply the changes you made 🔄
 
-5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the RVCs 🗣️
+5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the R.V.C. 🗣️
 
-Tip: You can use `Test RVC` to experiment and find the best TTS or configurations to apply to the RVC 🧪🔍
+Tip: You can use `Test R.V.C.` to experiment and find the best TTS or configurations to apply to the R.V.C. 🧪🔍
 
 """
 
@@ -102,13 +101,11 @@ print('Working in: ', device)
 list_tts = ['af-ZA-AdriNeural-Female', 'af-ZA-WillemNeural-Male', 'am-ET-AmehaNeural-Male', 'am-ET-MekdesNeural-Female', 'ar-AE-FatimaNeural-Female', 'ar-AE-HamdanNeural-Male', 'ar-BH-AliNeural-Male', 'ar-BH-LailaNeural-Female', 'ar-DZ-AminaNeural-Female', 'ar-DZ-IsmaelNeural-Male', 'ar-EG-SalmaNeural-Female', 'ar-EG-ShakirNeural-Male', 'ar-IQ-BasselNeural-Male', 'ar-IQ-RanaNeural-Female', 'ar-JO-SanaNeural-Female', 'ar-JO-TaimNeural-Male', 'ar-KW-FahedNeural-Male', 'ar-KW-NouraNeural-Female', 'ar-LB-LaylaNeural-Female', 'ar-LB-RamiNeural-Male', 'ar-LY-ImanNeural-Female', 'ar-LY-OmarNeural-Male', 'ar-MA-JamalNeural-Male', 'ar-MA-MounaNeural-Female', 'ar-OM-AbdullahNeural-Male', 'ar-OM-AyshaNeural-Female', 'ar-QA-AmalNeural-Female', 'ar-QA-MoazNeural-Male', 'ar-SA-HamedNeural-Male', 'ar-SA-ZariyahNeural-Female', 'ar-SY-AmanyNeural-Female', 'ar-SY-LaithNeural-Male', 'ar-TN-HediNeural-Male', 'ar-TN-ReemNeural-Female', 'ar-YE-MaryamNeural-Female', 'ar-YE-SalehNeural-Male', 'az-AZ-BabekNeural-Male', 'az-AZ-BanuNeural-Female', 'bg-BG-BorislavNeural-Male', 'bg-BG-KalinaNeural-Female', 'bn-BD-NabanitaNeural-Female', 'bn-BD-PradeepNeural-Male', 'bn-IN-BashkarNeural-Male', 'bn-IN-TanishaaNeural-Female', 'bs-BA-GoranNeural-Male', 'bs-BA-VesnaNeural-Female', 'ca-ES-EnricNeural-Male', 'ca-ES-JoanaNeural-Female', 'cs-CZ-AntoninNeural-Male', 'cs-CZ-VlastaNeural-Female', 'cy-GB-AledNeural-Male', 'cy-GB-NiaNeural-Female', 'da-DK-ChristelNeural-Female', 'da-DK-JeppeNeural-Male', 'de-AT-IngridNeural-Female', 'de-AT-JonasNeural-Male', 'de-CH-JanNeural-Male', 'de-CH-LeniNeural-Female', 'de-DE-AmalaNeural-Female', 'de-DE-ConradNeural-Male', 'de-DE-KatjaNeural-Female', 'de-DE-KillianNeural-Male', 'el-GR-AthinaNeural-Female', 'el-GR-NestorasNeural-Male', 'en-AU-NatashaNeural-Female', 'en-AU-WilliamNeural-Male', 'en-CA-ClaraNeural-Female', 'en-CA-LiamNeural-Male', 'en-GB-LibbyNeural-Female', 'en-GB-MaisieNeural-Female', 'en-GB-RyanNeural-Male', 'en-GB-SoniaNeural-Female', 'en-GB-ThomasNeural-Male', 'en-HK-SamNeural-Male', 'en-HK-YanNeural-Female', 'en-IE-ConnorNeural-Male', 'en-IE-EmilyNeural-Female', 'en-IN-NeerjaExpressiveNeural-Female', 'en-IN-NeerjaNeural-Female', 'en-IN-PrabhatNeural-Male', 'en-KE-AsiliaNeural-Female', 'en-KE-ChilembaNeural-Male', 'en-NG-AbeoNeural-Male', 'en-NG-EzinneNeural-Female', 'en-NZ-MitchellNeural-Male', 'en-NZ-MollyNeural-Female', 'en-PH-JamesNeural-Male', 'en-PH-RosaNeural-Female', 'en-SG-LunaNeural-Female', 'en-SG-WayneNeural-Male', 'en-TZ-ElimuNeural-Male', 'en-TZ-ImaniNeural-Female', 'en-US-AnaNeural-Female', 'en-US-AriaNeural-Female', 'en-US-ChristopherNeural-Male', 'en-US-EricNeural-Male', 'en-US-GuyNeural-Male', 'en-US-JennyNeural-Female', 'en-US-MichelleNeural-Female', 'en-US-RogerNeural-Male', 'en-US-SteffanNeural-Male', 'en-ZA-LeahNeural-Female', 'en-ZA-LukeNeural-Male', 'es-AR-ElenaNeural-Female', 'es-AR-TomasNeural-Male', 'es-BO-MarceloNeural-Male', 'es-BO-SofiaNeural-Female', 'es-CL-CatalinaNeural-Female', 'es-CL-LorenzoNeural-Male', 'es-CO-GonzaloNeural-Male', 'es-CO-SalomeNeural-Female', 'es-CR-JuanNeural-Male', 'es-CR-MariaNeural-Female', 'es-CU-BelkysNeural-Female', 'es-CU-ManuelNeural-Male', 'es-DO-EmilioNeural-Male', 'es-DO-RamonaNeural-Female', 'es-EC-AndreaNeural-Female', 'es-EC-LuisNeural-Male', 'es-ES-AlvaroNeural-Male', 'es-ES-ElviraNeural-Female', 'es-GQ-JavierNeural-Male', 'es-GQ-TeresaNeural-Female', 'es-GT-AndresNeural-Male', 'es-GT-MartaNeural-Female', 'es-HN-CarlosNeural-Male', 'es-HN-KarlaNeural-Female', 'es-MX-DaliaNeural-Female', 'es-MX-JorgeNeural-Male', 'es-NI-FedericoNeural-Male', 'es-NI-YolandaNeural-Female', 'es-PA-MargaritaNeural-Female', 'es-PA-RobertoNeural-Male', 'es-PE-AlexNeural-Male', 'es-PE-CamilaNeural-Female', 'es-PR-KarinaNeural-Female', 'es-PR-VictorNeural-Male', 'es-PY-MarioNeural-Male', 'es-PY-TaniaNeural-Female', 'es-SV-LorenaNeural-Female', 'es-SV-RodrigoNeural-Male', 'es-US-AlonsoNeural-Male', 'es-US-PalomaNeural-Female', 'es-UY-MateoNeural-Male', 'es-UY-ValentinaNeural-Female', 'es-VE-PaolaNeural-Female', 'es-VE-SebastianNeural-Male', 'et-EE-AnuNeural-Female', 'et-EE-KertNeural-Male', 'fa-IR-DilaraNeural-Female', 'fa-IR-FaridNeural-Male', 'fi-FI-HarriNeural-Male', 'fi-FI-NooraNeural-Female', 'fil-PH-AngeloNeural-Male', 'fil-PH-BlessicaNeural-Female', 'fr-BE-CharlineNeural-Female', 'fr-BE-GerardNeural-Male', 'fr-CA-AntoineNeural-Male', 'fr-CA-JeanNeural-Male', 'fr-CA-SylvieNeural-Female', 'fr-CH-ArianeNeural-Female', 'fr-CH-FabriceNeural-Male', 'fr-FR-DeniseNeural-Female', 'fr-FR-EloiseNeural-Female', 'fr-FR-HenriNeural-Male', 'ga-IE-ColmNeural-Male', 'ga-IE-OrlaNeural-Female', 'gl-ES-RoiNeural-Male', 'gl-ES-SabelaNeural-Female', 'gu-IN-DhwaniNeural-Female', 'gu-IN-NiranjanNeural-Male', 'he-IL-AvriNeural-Male', 'he-IL-HilaNeural-Female', 'hi-IN-MadhurNeural-Male', 'hi-IN-SwaraNeural-Female', 'hr-HR-GabrijelaNeural-Female', 'hr-HR-SreckoNeural-Male', 'hu-HU-NoemiNeural-Female', 'hu-HU-TamasNeural-Male', 'id-ID-ArdiNeural-Male', 'id-ID-GadisNeural-Female', 'is-IS-GudrunNeural-Female', 'is-IS-GunnarNeural-Male', 'it-IT-DiegoNeural-Male', 'it-IT-ElsaNeural-Female', 'it-IT-IsabellaNeural-Female', 'ja-JP-KeitaNeural-Male', 'ja-JP-NanamiNeural-Female', 'jv-ID-DimasNeural-Male', 'jv-ID-SitiNeural-Female', 'ka-GE-EkaNeural-Female', 'ka-GE-GiorgiNeural-Male', 'kk-KZ-AigulNeural-Female', 'kk-KZ-DauletNeural-Male', 'km-KH-PisethNeural-Male', 'km-KH-SreymomNeural-Female', 'kn-IN-GaganNeural-Male', 'kn-IN-SapnaNeural-Female', 'ko-KR-InJoonNeural-Male', 'ko-KR-SunHiNeural-Female', 'lo-LA-ChanthavongNeural-Male', 'lo-LA-KeomanyNeural-Female', 'lt-LT-LeonasNeural-Male', 'lt-LT-OnaNeural-Female', 'lv-LV-EveritaNeural-Female', 'lv-LV-NilsNeural-Male', 'mk-MK-AleksandarNeural-Male', 'mk-MK-MarijaNeural-Female', 'ml-IN-MidhunNeural-Male', 'ml-IN-SobhanaNeural-Female', 'mn-MN-BataaNeural-Male', 'mn-MN-YesuiNeural-Female', 'mr-IN-AarohiNeural-Female', 'mr-IN-ManoharNeural-Male', 'ms-MY-OsmanNeural-Male', 'ms-MY-YasminNeural-Female', 'mt-MT-GraceNeural-Female', 'mt-MT-JosephNeural-Male', 'my-MM-NilarNeural-Female', 'my-MM-ThihaNeural-Male', 'nb-NO-FinnNeural-Male', 'nb-NO-PernilleNeural-Female', 'ne-NP-HemkalaNeural-Female', 'ne-NP-SagarNeural-Male', 'nl-BE-ArnaudNeural-Male', 'nl-BE-DenaNeural-Female', 'nl-NL-ColetteNeural-Female', 'nl-NL-FennaNeural-Female', 'nl-NL-MaartenNeural-Male', 'pl-PL-MarekNeural-Male', 'pl-PL-ZofiaNeural-Female', 'ps-AF-GulNawazNeural-Male', 'ps-AF-LatifaNeural-Female', 'pt-BR-AntonioNeural-Male', 'pt-BR-FranciscaNeural-Female', 'pt-PT-DuarteNeural-Male', 'pt-PT-RaquelNeural-Female', 'ro-RO-AlinaNeural-Female', 'ro-RO-EmilNeural-Male', 'ru-RU-DmitryNeural-Male', 'ru-RU-SvetlanaNeural-Female', 'si-LK-SameeraNeural-Male', 'si-LK-ThiliniNeural-Female', 'sk-SK-LukasNeural-Male', 'sk-SK-ViktoriaNeural-Female', 'sl-SI-PetraNeural-Female', 'sl-SI-RokNeural-Male', 'so-SO-MuuseNeural-Male', 'so-SO-UbaxNeural-Female', 'sq-AL-AnilaNeural-Female', 'sq-AL-IlirNeural-Male', 'sr-RS-NicholasNeural-Male', 'sr-RS-SophieNeural-Female', 'su-ID-JajangNeural-Male', 'su-ID-TutiNeural-Female', 'sv-SE-MattiasNeural-Male', 'sv-SE-SofieNeural-Female', 'sw-KE-RafikiNeural-Male', 'sw-KE-ZuriNeural-Female', 'sw-TZ-DaudiNeural-Male', 'sw-TZ-RehemaNeural-Female', 'ta-IN-PallaviNeural-Female', 'ta-IN-ValluvarNeural-Male', 'ta-LK-KumarNeural-Male', 'ta-LK-SaranyaNeural-Female', 'ta-MY-KaniNeural-Female', 'ta-MY-SuryaNeural-Male', 'ta-SG-AnbuNeural-Male', 'ta-SG-VenbaNeural-Female', 'te-IN-MohanNeural-Male', 'te-IN-ShrutiNeural-Female', 'th-TH-NiwatNeural-Male', 'th-TH-PremwadeeNeural-Female', 'tr-TR-AhmetNeural-Male', 'tr-TR-EmelNeural-Female', 'uk-UA-OstapNeural-Male', 'uk-UA-PolinaNeural-Female', 'ur-IN-GulNeural-Female', 'ur-IN-SalmanNeural-Male', 'ur-PK-AsadNeural-Male', 'ur-PK-UzmaNeural-Female', 'uz-UZ-MadinaNeural-Female', 'uz-UZ-SardorNeural-Male', 'vi-VN-HoaiMyNeural-Female', 'vi-VN-NamMinhNeural-Male', 'zh-CN-XiaoxiaoNeural-Female', 'zh-CN-XiaoyiNeural-Female', 'zh-CN-YunjianNeural-Male', 'zh-CN-YunxiNeural-Male', 'zh-CN-YunxiaNeural-Male', 'zh-CN-YunyangNeural-Male', 'zh-CN-liaoning-XiaobeiNeural-Female', 'zh-CN-shaanxi-XiaoniNeural-Female']
 
 ### voices
-with capture.capture_output() as cap:
-    os.system('mkdir downloads')
-    os.system('mkdir logs')
-    os.system('mkdir weights')
-    os.system('mkdir downloads')
-    del cap
 
+directories = ['downloads', 'logs', 'weights']
+for directory in directories:
+    if not os.path.exists(directory):
+        os.mkdir(directory)
 
 def print_tree_directory(root_dir, indent=''):
     if not os.path.exists(root_dir):
@@ -184,13 +181,15 @@ def download_list(text_downloads):
     except:
       return 'No valid link'
 
-    os.system('mkdir downloads')
-    os.system('mkdir logs')
-    os.system('mkdir weights')
+    directories = ['downloads', 'logs', 'weights']
+    for directory in directories:
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
     path_download = "downloads/"
     for url in urls:
       manual_download(url, path_download)
-    
+
     # Tree
     print('####################################')
     print_tree_directory("downloads", indent='')
@@ -276,6 +275,10 @@ def translate_from_video(video, WHISPER_MODEL_SIZE, batch_size, compute_type,
 
     return video_output
 '''
+def remove_files(file_list):
+    for file in file_list:
+        if os.path.exists(file):
+            os.remove(file)
 
 def translate_from_video(
     video,
@@ -296,6 +299,13 @@ def translate_from_video(
     tts_voice05="en-GB-MaisieNeural-Female",
     video_output="video_dub.mp4",
     AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
+    max_accelerate_audio = 2.1,
+    volume_original_audio = 0.25,
+    volume_translated_audio = 1.80,
+    output_format_subtitle = "srt",
+    get_translated_text = False,
+    get_video_from_text_json = False,
+    text_json = "{}",
     progress=gr.Progress(),
     ):
 
@@ -350,6 +360,7 @@ def translate_from_video(
     TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
     SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
 
+    global result_diarize, result, align_language, deep_copied_result
 
     if not os.path.exists('audio'):
         os.makedirs('audio')
@@ -366,144 +377,196 @@ def translate_from_video(
     Output_name_file = "audio_dub_solo.ogg"
     mix_audio = "audio_mix.mp3"
 
-    os.system("rm Video.mp4")
-    os.system("rm audio.webm")
-    os.system("rm audio.wav")
+    if not get_video_from_text_json:
 
-    progress(0.15, desc="Processing video...")
-    if os.path.exists(video):
-        if preview:
-            print('Creating a preview video of 10 seconds, to disable this option, go to advanced settings and turn off preview.')
-            os.system(f'ffmpeg -y -i "{video}" -ss 00:00:20 -t 00:00:10 -c:v libx264 -c:a aac -strict experimental Video.mp4')
-        else:
-            # Check if the file ends with ".mp4" extension
-            if video.endswith(".mp4"):
-                destination_path = os.path.join(os.getcwd(), "Video.mp4")
-                shutil.copy(video, destination_path)
+        previous_files_to_remove = [OutputFile, "audio.webm", audio_wav]
+        remove_files(previous_files_to_remove)
+
+        progress(0.15, desc="Processing video...")
+
+        if os.path.exists(video):
+            if preview:
+                print('Creating a preview video of 10 seconds, to disable this option, go to advanced settings and turn off preview.')
+                command = f'ffmpeg -y -i "{video}" -ss 00:00:20 -t 00:00:10 -c:v libx264 -c:a aac -strict experimental Video.mp4'
+                result_convert_video = subprocess.run(command, capture_output=True, text=True, shell=True)
             else:
-                print("File does not have the '.mp4' extension. Converting video.")
-                os.system(f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4')
+                # Check if the file ends with ".mp4" extension
+                if video.endswith(".mp4"):
+                    destination_path = os.path.join(os.getcwd(), "Video.mp4")
+                    shutil.copy(video, destination_path)
+                    result_convert_video = {}
+                    result_convert_video = subprocess.run("echo Video copied", capture_output=True, text=True, shell=True)
+                else:
+                    print("File does not have the '.mp4' extension. Converting video.")
+                    command = f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4'
+                    result_convert_video = subprocess.run(command, capture_output=True, text=True, shell=True)
 
-        for i in range (120):
-            time.sleep(1)
-            print('process video...')
-            if os.path.exists(OutputFile):
-                time.sleep(1)
-                os.system("ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav")
-                time.sleep(1)
-                break
-            if i == 119:
-              print('Error processing video')
-              return
-
-        for i in range (120):
-            time.sleep(1)
-            print('process audio...')
-            if os.path.exists(audio_wav):
-                break
-            if i == 119:
-              print("Error can't create the audio")
-              return
-
-    else:
-        if preview:
-            print('Creating a preview from the link, 10 seconds to disable this option, go to advanced settings and turn off preview.')
-            #https://github.com/yt-dlp/yt-dlp/issues/2220
-            mp4_ = f'yt-dlp -f "mp4" --downloader ffmpeg --downloader-args "ffmpeg_i: -ss 00:00:20 -t 00:00:10" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
-            wav_ = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
-            os.system(mp4_)
-            os.system(wav_)
-        else:
-            mp4_ = f'yt-dlp -f "mp4" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
-            wav_ = f'python -m yt_dlp --output {audio_wav} --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --extract-audio --audio-format wav {video}'
-
-            os.system(wav_)
+            if result_convert_video.returncode in [1, 2]:
+                print("Error can't convert the video")
+                return
 
             for i in range (120):
                 time.sleep(1)
-                print('process audio...')
-                if os.path.exists(audio_wav) and not os.path.exists('audio.webm'):
+                print('Process video...')
+                if os.path.exists(OutputFile):
                     time.sleep(1)
-                    os.system(mp4_)
+                    command = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+                    result_convert_audio = subprocess.run(command, capture_output=True, text=True, shell=True)
+                    time.sleep(1)
                     break
                 if i == 119:
-                  print('Error donwloading the audio')
+                  # if not os.path.exists(OutputFile):
+                  print('Error processing video')
+                  return
+            
+            if result_convert_audio.returncode in [1, 2]:
+                print(f"Error can't create the audio file: {result_convert_audio.stderr}")
+                return
+            
+            for i in range (120):
+                time.sleep(1)
+                print('process audio...')
+                if os.path.exists(audio_wav):
+                    break
+                if i == 119:
+                  print("Error can't create the audio file")
                   return
 
-    print("Set file complete.")
-    progress(0.30, desc="Transcribing...")
+        else:
+            video = video.strip()
+            if preview:
+                print('Creating a preview from the link, 10 seconds to disable this option, go to advanced settings and turn off preview.')
+                #https://github.com/yt-dlp/yt-dlp/issues/2220
+                mp4_ = f'yt-dlp -f "mp4" --downloader ffmpeg --downloader-args "ffmpeg_i: -ss 00:00:20 -t 00:00:10" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
+                wav_ = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+                result_convert_video = subprocess.run(mp4_, capture_output=True, text=True, shell=True)
+                result_convert_audio = subprocess.run(wav_, capture_output=True, text=True, shell=True)
+                if result_convert_audio.returncode in [1, 2]:
+                    print("Error can't download a preview")
+                    return
+            else:
+                mp4_ = f'yt-dlp -f "mp4" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
+                wav_ = f'python -m yt_dlp --output {audio_wav} --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --extract-audio --audio-format wav {video}'
+                
+                result_convert_audio = subprocess.run(wav_, capture_output=True, text=True, shell=True)
+                
+                if result_convert_audio.returncode in [1, 2]:
+                    print("Error can't download the audio")
+                    return
 
-    SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
+                for i in range (120):
+                    time.sleep(1)
+                    print('process audio...')
+                    if os.path.exists(audio_wav) and not os.path.exists('audio.webm'):
+                        time.sleep(1)
+                        result_convert_video = subprocess.run(mp4_, capture_output=True, text=True, shell=True)
+                        break
+                    if i == 119:
+                        print('Error downloading the audio')
+                        return
 
-    # 1. Transcribe with original whisper (batched)
-    with capture.capture_output() as cap:
-      model = whisperx.load_model(
-          WHISPER_MODEL_SIZE,
-          device,
-          compute_type=compute_type,
-          language= SOURCE_LANGUAGE,
-          )
-      del cap
-    audio = whisperx.load_audio(audio_wav)
-    result = model.transcribe(audio, batch_size=batch_size)
-    gc.collect(); torch.cuda.empty_cache(); del model
-    print("Transcript complete")
+                if result_convert_video.returncode in [1, 2]:
+                    print("Error can't download the video")
+                    return
 
-    
+        print("Set file complete.")
+        progress(0.30, desc="Transcribing...")
 
-    # 2. Align whisper output
-    progress(0.45, desc="Aligning...")
-    DAMHF.update(DAMT) #lang align
-    EXTRA_ALIGN = {
-        "hi": "theainerd/Wav2Vec2-large-xlsr-hindi"
-    } # add new align models here
-    #print(result['language'], DAM.keys(), EXTRA_ALIGN.keys())
-    if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
-        audio = result = None
-        print("Automatic detection: Source language not compatible")
-        print(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
-        return
+        SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
 
-    model_a, metadata = whisperx.load_align_model(
-        language_code=result["language"],
-        device=device,
-        model_name = None if result["language"] in DAMHF.keys() else EXTRA_ALIGN[result["language"]]
-        )
-    result = whisperx.align(
-        result["segments"],
-        model_a,
-        metadata,
-        audio,
-        device,
-        return_char_alignments=True,
-        )
-    gc.collect(); torch.cuda.empty_cache(); del model_a
-    print("Align complete")
+        # 1. Transcribe with original whisper (batched)
+        with capture.capture_output() as cap:
+          model = whisperx.load_model(
+              WHISPER_MODEL_SIZE,
+              device,
+              compute_type=compute_type,
+              language= SOURCE_LANGUAGE,
+              )
+          del cap
+        audio = whisperx.load_audio(audio_wav)
+        result = model.transcribe(audio, batch_size=batch_size)
+        gc.collect(); torch.cuda.empty_cache(); del model
+        print("Transcript complete")
 
-    if result['segments'] == []:
-        print('No active speech found in audio')
-        return
 
-    # 3. Assign speaker labels
-    progress(0.60, desc="Diarizing...")
-    with capture.capture_output() as cap:
-      diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
-      del cap
-    diarize_segments = diarize_model(
-        audio_wav,
-        min_speakers=min_speakers,
-        max_speakers=max_speakers)
-    result_diarize = whisperx.assign_word_speakers(diarize_segments, result)
-    gc.collect(); torch.cuda.empty_cache(); del diarize_model
-    print("Diarize complete")
 
-    progress(0.75, desc="Translating...")
-    if TRANSLATE_AUDIO_TO == "zh":
-        TRANSLATE_AUDIO_TO = "zh-CN"
-    if TRANSLATE_AUDIO_TO == "he":
-        TRANSLATE_AUDIO_TO = "iw"
-    result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO)
-    print("Translation complete")
+        # 2. Align whisper output
+        progress(0.45, desc="Aligning...")
+        DAMHF.update(DAMT) #lang align
+        EXTRA_ALIGN = {
+            "hi": "theainerd/Wav2Vec2-large-xlsr-hindi"
+        } # add new align models here
+        #print(result['language'], DAM.keys(), EXTRA_ALIGN.keys())
+        if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
+            audio = result = None
+            print("Automatic detection: Source language not compatible")
+            print(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
+            return
+
+        align_language = result["language"]
+        model_a, metadata = whisperx.load_align_model(
+            language_code=result["language"],
+            device=device,
+            model_name = None if result["language"] in DAMHF.keys() else EXTRA_ALIGN[result["language"]]
+            )
+        result = whisperx.align(
+            result["segments"],
+            model_a,
+            metadata,
+            audio,
+            device,
+            return_char_alignments=True,
+            )
+        gc.collect(); torch.cuda.empty_cache(); del model_a
+        print("Align complete")
+
+        if result['segments'] == []:
+            print('No active speech found in audio')
+            return
+
+        # 3. Assign speaker labels
+        progress(0.60, desc="Diarizing...")
+        with capture.capture_output() as cap:
+          diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
+          del cap
+        diarize_segments = diarize_model(
+            audio_wav,
+            min_speakers=min_speakers,
+            max_speakers=max_speakers)
+
+        result_diarize = whisperx.assign_word_speakers(diarize_segments, result)
+        gc.collect(); torch.cuda.empty_cache(); del diarize_model
+        print("Diarize complete")
+
+        deep_copied_result = copy.deepcopy(result_diarize)
+
+        progress(0.75, desc="Translating...")
+        if TRANSLATE_AUDIO_TO == "zh":
+            TRANSLATE_AUDIO_TO = "zh-CN"
+        if TRANSLATE_AUDIO_TO == "he":
+            TRANSLATE_AUDIO_TO = "iw"
+
+        result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO)
+        print("Translation complete")
+
+    if get_translated_text:
+        json_data = []
+        for segment in result_diarize['segments']:
+            start = segment['start']
+            text = segment['text']
+            json_data.append({'start': start, 'text': text})
+
+        # Convert the list of dictionaries to a JSON string with indentation
+        json_string = json.dumps(json_data, indent=2)
+        #segments[line]['text'] = translated_line
+        return json_string
+
+    if get_video_from_text_json:
+        # with open('text_json.json', 'r') as file:
+        text_json_loaded = json.loads(text_json)
+        for i, segment in enumerate(result_diarize['segments']):
+            segment['text'] = text_json_loaded[i]['text']
+
 
     progress(0.85, desc="Text_to_speech...")
     audio_files = []
@@ -554,8 +617,8 @@ def translate_from_video(
         # porcentaje
         porcentaje = duration_tts / duration_true
 
-        if porcentaje > 2.1:
-            porcentaje = 2.1
+        if porcentaje > max_accelerate_audio:
+            porcentaje = max_accelerate_audio
         elif porcentaje <= 1.2 and porcentaje >= 0.8:
             porcentaje = 1.0
         elif porcentaje <= 0.79:
@@ -590,19 +653,72 @@ def translate_from_video(
     # TYPE MIX AUDIO
     if AUDIO_MIX_METHOD == 'Adjusting volumes and mixing audio':
         # volume mix
-        os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume=0.15[a];[1:0]volume=1.90[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+        os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
     else:
         try:
             # background mix
             os.system(f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}')
         except:
             # volume mix except
-            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume=0.25[a];[1:0]volume=1.80[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
 
     os.system(f"rm {video_output}")
     os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
 
+    # Write subtitle
+    #output_format_subtitle = ["srt", "vtt", "txt", "tsv", "json", "aud"]
+    #output_format_subtitle = "vtt"
+    name_ori = "sub_ori."
+    name_tra = "sub_tra."
+    deep_copied_result["language"] = align_language
+    result_diarize["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh-CN"] else align_language
+
+    writer = get_writer(output_format_subtitle, output_dir=".")
+    word_options = {
+        "highlight_words": False,
+        "max_line_count" : None,
+        "max_line_width" : None,
+    }
+
+    if os.path.exists(name_ori+output_format_subtitle): os.remove(name_ori+output_format_subtitle)
+    if os.path.exists(name_tra+output_format_subtitle): os.remove(name_tra+output_format_subtitle)
+    # original lang
+    # for segment in deep_copied_result["segments"]:
+    #     for dictionary in segment:
+    #         dictionary.pop('speaker', None)
+
+    #deep_copied_result["segments"][0].pop('speaker')
+    subs_copy_result = copy.deepcopy(deep_copied_result)
+    for i in range(len(subs_copy_result["segments"])):
+        subs_copy_result["segments"][i].pop('speaker')
+    writer(
+        subs_copy_result,
+        name_ori[:-1]+".mp3",
+        word_options,
+    )
+    # translated lang
+    # result_diarize.pop('word_segments')
+    # result_diarize["segments"][0].pop('speaker')
+    # result_diarize["segments"][0].pop('chars')
+    # result_diarize["segments"][0].pop('words')
+    subs_tra_copy_result = copy.deepcopy(result_diarize)
+    subs_tra_copy_result.pop('word_segments')
+    for i in range(len(subs_tra_copy_result["segments"])):
+        subs_tra_copy_result["segments"][i].pop('speaker')
+        subs_tra_copy_result["segments"][i].pop('chars')
+        subs_tra_copy_result["segments"][i].pop('words')
+    writer(
+        subs_tra_copy_result,
+        name_tra[:-1]+".mp3",
+        word_options,
+    )
+
     return video_output
+
+
+def get_subs_path(type_subs):
+  return f"sub_ori.{type_subs}", f"sub_tra.{type_subs}"
+
 
 import sys
 
@@ -674,8 +790,14 @@ with gr.Blocks(theme=theme) as demo:
 
                 with gr.Column():
                       with gr.Accordion("Advanced Settings", open=False):
+                          audio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
 
                           AUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
+                          volume_original_mix = gr.Slider(label = 'Volume original audio', info='for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
+                          volume_translated_mix = gr.Slider(label = 'Volume translated audio', info='for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
+
+                          gr.HTML("<hr></h2>")
+                          sub_type_output = gr.inputs.Dropdown(["srt", "vtt", "txt", "tsv", "json", "aud"], default="srt", label="Subtitle type")
 
                           gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
@@ -688,10 +810,25 @@ with gr.Blocks(theme=theme) as demo:
                           PREVIEW = gr.Checkbox(label="Preview", info="Preview cuts the video to only 10 seconds for testing purposes. Please deactivate it to retrieve the full video duration.")
 
             with gr.Column(variant='compact'):
+
+                edit_sub_check = gr.Checkbox(label="Edit generated subtitles", info="Edit generated subtitles: Allows you to run the translation in 2 steps. First with the 'GET SUBTITLES AND EDIT' button, you get the subtitles to edit them, and then with the 'TRANSLATE' button, you can generate the video")
+                dummy_false_check = gr.Checkbox(False, visible= False,)
+                def visible_component_subs(input_bool):
+                    if input_bool:
+                        return gr.update(visible=True), gr.update(visible=True)
+                    else:
+                        return gr.update(visible=False), gr.update(visible=False)
+                subs_button = gr.Button("GET SUBTITLES AND EDIT", visible= False,)
+                subs_edit_space = gr.Textbox(visible= False, lines=10, label="Generated subtitles", info="Feel free to edit the text in the generated subtitles here. You can make changes to the interface options before clicking the 'TRANSLATE' button, except for 'Source language', 'Translate audio to', and 'Max speakers', to avoid errors. Once you're finished, click the 'TRANSLATE' button.", placeholder="First press 'GET SUBTITLES AND EDIT' to get the subtitles")
+                edit_sub_check.change(visible_component_subs, [edit_sub_check], [subs_button, subs_edit_space])
+
                 with gr.Row():
                     video_button = gr.Button("TRANSLATE", )
                 with gr.Row():
                     video_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") #gr.Video()
+                with gr.Row():
+                    sub_ori_output = gr.outputs.File(label="Subtitles")
+                    sub_tra_output = gr.outputs.File(label="Translated subtitles")
 
                 line_ = gr.HTML("<hr></h2>")
                 if os.getenv("YOUR_HF_TOKEN") == None or os.getenv("YOUR_HF_TOKEN") == "":
@@ -742,6 +879,10 @@ with gr.Blocks(theme=theme) as demo:
                     tts_voice05,
                     VIDEO_OUTPUT_NAME,
                     AUDIO_MIX,
+                    audio_accelerate,
+                    volume_original_mix,
+                    volume_translated_mix,
+                    sub_type_output,
                     ],
                     outputs=[video_output],
                     cache_examples=False,
@@ -779,8 +920,14 @@ with gr.Blocks(theme=theme) as demo:
 
                 with gr.Column():
                       with gr.Accordion("Advanced Settings", open=False):
+                          baudio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
 
                           bAUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
+                          bvolume_original_mix = gr.Slider(label = 'Volume original audio', info='for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
+                          bvolume_translated_mix = gr.Slider(label = 'Volume translated audio', info='for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
+
+                          gr.HTML("<hr></h2>")
+                          bsub_type_output = gr.inputs.Dropdown(["srt", "vtt", "txt", "tsv", "json", "aud"], default="srt", label="Subtitle type")
 
                           gr.HTML("<hr></h2>")
                           gr.Markdown("Default configuration of Whisper.")
@@ -793,11 +940,25 @@ with gr.Blocks(theme=theme) as demo:
                           bPREVIEW = gr.Checkbox(label="Preview", info="Preview cuts the video to only 10 seconds for testing purposes. Please deactivate it to retrieve the full video duration.")
 
             with gr.Column(variant='compact'):
+
+                bedit_sub_check = gr.Checkbox(label="Edit generated subtitles", info="Edit generated subtitles: Allows you to run the translation in 2 steps. First with the 'GET SUBTITLES AND EDIT' button, you get the subtitles to edit them, and then with the 'TRANSLATE' button, you can generate the video")
+                # dummy_false_check = gr.Checkbox(False, visible= False,)
+                # def visible_component_subs(input_bool):
+                #     if input_bool:
+                #         return gr.update(visible=True), gr.update(visible=True)
+                #     else:
+                #         return gr.update(visible=False), gr.update(visible=False)
+                bsubs_button = gr.Button("GET SUBTITLES AND EDIT", visible= False,)
+                bsubs_edit_space = gr.Textbox(visible= False, lines=10, label="Generated subtitles", info="Feel free to edit the text in the generated subtitles here. You can make changes to the interface options before clicking the 'TRANSLATE' button, except for 'Source language', 'Translate audio to', and 'Max speakers', to avoid errors. Once you're finished, click the 'TRANSLATE' button.", placeholder="First press 'GET SUBTITLES AND EDIT' to get the subtitles")
+                bedit_sub_check.change(visible_component_subs, [bedit_sub_check], [bsubs_button, bsubs_edit_space])
+
                 with gr.Row():
                     text_button = gr.Button("TRANSLATE")
                 with gr.Row():
                     blink_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") # gr.Video()
-
+                with gr.Row():
+                    bsub_ori_output = gr.outputs.File(label="Subtitles")
+                    bsub_tra_output = gr.outputs.File(label="Translated subtitles")
 
                 bline_ = gr.HTML("<hr></h2>")
                 if os.getenv("YOUR_HF_TOKEN") == None or os.getenv("YOUR_HF_TOKEN") == "":
@@ -847,23 +1008,27 @@ with gr.Blocks(theme=theme) as demo:
                     btts_voice04,
                     btts_voice05,
                     bVIDEO_OUTPUT_NAME,
-                    bAUDIO_MIX
+                    bAUDIO_MIX,
+                    baudio_accelerate,
+                    bvolume_original_mix,
+                    bvolume_translated_mix,
+                    bsub_type_output,
                     ],
                     outputs=[blink_output],
                     cache_examples=False,
                 )
 
 
-    with gr.Tab("Custom voice RVC"):
+    with gr.Tab("Custom voice R.V.C. (Optional)"):
         with gr.Column():
-          with gr.Accordion("Get the RVC Models", open=True):
-            url_links = gr.Textbox(label="URLs", value="",info="Automatically download the RVC models from the URL. You can use links from HuggingFace or Drive, and you can include several links, each one separated by a comma. Example: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index", placeholder="urls here...", lines=1)
+          with gr.Accordion("Get the R.V.C. Models", open=True):
+            url_links = gr.Textbox(label="URLs", value="",info="Automatically download the R.V.C. models from the URL. You can use links from HuggingFace or Drive, and you can include several links, each one separated by a comma. Example: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index", placeholder="urls here...", lines=1)
             download_finish = gr.HTML()
             download_button = gr.Button("DOWNLOAD MODELS")
 
             def update_models():
               models, index_paths = upload_model_list()
-              for i in range(8):                      
+              for i in range(8):
                 dict_models = {
                     f'model_voice_path{i:02d}': gr.update(choices=models) for i in range(8)
                 }
@@ -874,7 +1039,7 @@ with gr.Blocks(theme=theme) as demo:
                 return [value for value in dict_changes.values()]
 
         with gr.Column():
-          with gr.Accordion("Replace voice: TTS to RVC", open=False):
+          with gr.Accordion("Replace voice: TTS to R.V.C.", open=False):
             with gr.Column(variant='compact'):
               with gr.Column():
                 gr.Markdown("### 1. To enable its use, mark it as enable.")
@@ -946,16 +1111,16 @@ with gr.Blocks(theme=theme) as demo:
 
 
           with gr.Column():
-                with gr.Accordion("Test RVC", open=False):
+                with gr.Accordion("Test R.V.C.", open=False):
 
                   with gr.Row(variant='compact'):
                     text_test = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5)
-                    with gr.Column(): 
+                    with gr.Column():
                       tts_test = gr.Dropdown(list_tts, value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
                       model_voice_path07 = gr.Dropdown(models, label = 'Model', visible=True, interactive= True) #value=''
                       file_index2_07 = gr.Dropdown(index_paths, label = 'Index', visible=True, interactive= True) #value=''
                       transpose_test = gr.Number(label = 'Transpose', value=0, visible=True, interactive= True, info="integer, number of semitones, raise by an octave: 12, lower by an octave: -12")
-                      f0method_test = gr.Dropdown(f0_methods_voice, value='pm', label = 'F0 method', visible=True, interactive= True) 
+                      f0method_test = gr.Dropdown(f0_methods_voice, value='pm', label = 'F0 method', visible=True, interactive= True)
                   with gr.Row(variant='compact'):
                     button_test = gr.Button("Test audio")
 
@@ -973,7 +1138,7 @@ with gr.Blocks(theme=theme) as demo:
                         f0method_test,
                         ], outputs=[ttsvoice, original_ttsvoice])
 
-                download_button.click(download_list, [url_links], [download_finish]).then(update_models, [], 
+                download_button.click(download_list, [url_links], [download_finish]).then(update_models, [],
                                   [
                                     model_voice_path00, model_voice_path01, model_voice_path02, model_voice_path03, model_voice_path04, model_voice_path05, model_voice_path06, model_voice_path07,
                                     file_index2_00, file_index2_01, file_index2_02, file_index2_03, file_index2_04, file_index2_05, file_index2_06, file_index2_07
@@ -988,7 +1153,63 @@ with gr.Blocks(theme=theme) as demo:
         logs = gr.Textbox()
         demo.load(read_logs, None, logs, every=1)
 
-    # run
+    # run translate text
+    subs_button.click(translate_from_video, inputs=[
+        video_input,
+        HFKEY,
+        PREVIEW,
+        WHISPER_MODEL_SIZE,
+        batch_size,
+        compute_type,
+        SOURCE_LANGUAGE,
+        TRANSLATE_AUDIO_TO,
+        min_speakers,
+        max_speakers,
+        tts_voice00,
+        tts_voice01,
+        tts_voice02,
+        tts_voice03,
+        tts_voice04,
+        tts_voice05,
+        VIDEO_OUTPUT_NAME,
+        AUDIO_MIX,
+        audio_accelerate,
+        volume_original_mix,
+        volume_translated_mix,
+        sub_type_output,
+        edit_sub_check, # TRUE BY DEFAULT
+        dummy_false_check, # dummy false
+        subs_edit_space,
+        ], outputs=subs_edit_space)
+    bsubs_button.click(translate_from_video, inputs=[
+        blink_input,
+        bHFKEY,
+        bPREVIEW,
+        bWHISPER_MODEL_SIZE,
+        bbatch_size,
+        bcompute_type,
+        bSOURCE_LANGUAGE,
+        bTRANSLATE_AUDIO_TO,
+        bmin_speakers,
+        bmax_speakers,
+        btts_voice00,
+        btts_voice01,
+        btts_voice02,
+        btts_voice03,
+        btts_voice04,
+        btts_voice05,
+        bVIDEO_OUTPUT_NAME,
+        bAUDIO_MIX,
+        baudio_accelerate,
+        bvolume_original_mix,
+        bvolume_translated_mix,
+        bsub_type_output,
+        bedit_sub_check, # TRUE BY DEFAULT
+        dummy_false_check, # dummy false
+        bsubs_edit_space,
+        ], outputs=bsubs_edit_space)
+
+    # run translate
     video_button.click(translate_from_video, inputs=[
         video_input,
         HFKEY,
@@ -1008,7 +1229,14 @@ with gr.Blocks(theme=theme) as demo:
         tts_voice05,
         VIDEO_OUTPUT_NAME,
         AUDIO_MIX,
-        ], outputs=video_output)
+        audio_accelerate,
+        volume_original_mix,
+        volume_translated_mix,
+        sub_type_output,
+        dummy_false_check,
+        edit_sub_check,
+        subs_edit_space,
+        ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
     text_button.click(translate_from_video, inputs=[
         blink_input,
         bHFKEY,
@@ -1028,7 +1256,14 @@ with gr.Blocks(theme=theme) as demo:
         btts_voice05,
         bVIDEO_OUTPUT_NAME,
         bAUDIO_MIX,
-        ], outputs=blink_output)
+        baudio_accelerate,
+        bvolume_original_mix,
+        bvolume_translated_mix,
+        bsub_type_output,
+        dummy_false_check,
+        bedit_sub_check,
+        bsubs_edit_space,
+        ], outputs=blink_output).then(get_subs_path, [bsub_type_output], [bsub_ori_output, bsub_tra_output])
 
 #demo.launch(debug=True, enable_queue=True)
 demo.launch(share=True, enable_queue=True, quiet=True, debug=False)
