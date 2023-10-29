@@ -62,15 +62,15 @@ https://github.com/R3gm/SoniTranslate/assets/114810545/6a8ddc65-a46f-4653-9726-6
 
 🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
 
-🔥 2023/07/26: New UI and add mix options.
-
-🔥 2023/07/27: Fix some bug processing the video and audio.
-
-🔥 2023/08/01: Add options for use RVC models.
+🔥 2023/08/03: Changed default options and added directory view of downloads.
 
 🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
 
-🔥 2023/08/03: Changed default options and added directory view of downloads.
+🔥 2023/08/01: Add options for use RVC models.
+
+🔥 2023/07/27: Fix some bug processing the video and audio.
+
+🔥 2023/07/26: New UI and add mix options.
 
 
 ## Contributing
