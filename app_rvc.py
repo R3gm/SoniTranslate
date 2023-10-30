@@ -559,7 +559,7 @@ def translate_from_video(
         # Convert the list of dictionaries to a JSON string with indentation
         json_string = json.dumps(json_data, indent=2)
         #segments[line]['text'] = translated_line
-        return json_string
+        return json_string.encode().decode('unicode_escape')
 
     if get_video_from_text_json:
         # with open('text_json.json', 'r') as file:
