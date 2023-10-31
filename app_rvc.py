@@ -368,6 +368,9 @@ def translate_from_video(
     if not os.path.exists('audio2/audio'):
         os.makedirs('audio2/audio')
 
+    if tts_voice00[:2] != TRANSLATE_AUDIO_TO[:2]:
+        print("WARNING: Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
+
     # Check GPU
     device = "cuda" if torch.cuda.is_available() else "cpu"
     compute_type = "float32" if device == "cpu" else compute_type
@@ -418,11 +421,11 @@ def translate_from_video(
                   # if not os.path.exists(OutputFile):
                   print('Error processing video')
                   return
-            
+
             if result_convert_audio.returncode in [1, 2]:
                 print(f"Error can't create the audio file: {result_convert_audio.stderr}")
                 return
-            
+
             for i in range (120):
                 time.sleep(1)
                 print('process audio...')
@@ -447,9 +450,9 @@ def translate_from_video(
             else:
                 mp4_ = f'yt-dlp -f "mp4" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
                 wav_ = f'python -m yt_dlp --output {audio_wav} --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --extract-audio --audio-format wav {video}'
-                
+
                 result_convert_audio = subprocess.run(wav_, capture_output=True, text=True, shell=True)
-                
+
                 if result_convert_audio.returncode in [1, 2]:
                     print("Error can't download the audio")
                     return
@@ -690,7 +693,9 @@ def translate_from_video(
     #deep_copied_result["segments"][0].pop('speaker')
     subs_copy_result = copy.deepcopy(deep_copied_result)
     for i in range(len(subs_copy_result["segments"])):
-        subs_copy_result["segments"][i].pop('speaker')
+        if 'speaker' in subs_copy_result["segments"][i]:
+            subs_copy_result["segments"][i].pop('speaker')
+
     writer(
         subs_copy_result,
         name_ori[:-1]+".mp3",
