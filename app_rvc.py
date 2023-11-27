@@ -4,7 +4,6 @@ import gradio as gr
 import whisperx
 from whisperx.utils import LANGUAGES as LANG_TRANSCRIPT
 from whisperx.utils import get_writer
-from whisperx.alignment import DEFAULT_ALIGN_MODELS_TORCH as DAMT, DEFAULT_ALIGN_MODELS_HF as DAMHF
 from IPython.utils import capture
 import torch
 from gtts import gTTS
@@ -17,9 +16,12 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 import os
 from soni_translate.audio_segments import create_translated_audio
-from soni_translate.text_to_speech import make_voice_gradio
+from soni_translate.text_to_speech import make_voice_gradio, audio_segmentation_to_voice
 from soni_translate.translate_segments import translate_text
+from soni_translate.preprocessor import audio_video_preprocessor
+from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list
 from urllib.parse import unquote
+from soni_translate.speech_segmentation import transcribe_speech, align_speech, diarize_speech
 import copy, logging, rarfile, zipfile, shutil, time, json, subprocess
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -107,139 +109,6 @@ for directory in directories:
     if not os.path.exists(directory):
         os.mkdir(directory)
 
-def print_tree_directory(root_dir, indent=''):
-    if not os.path.exists(root_dir):
-        print(f"{indent}Invalid directory or file: {root_dir}")
-        return
-
-    items = os.listdir(root_dir)
-
-    for index, item in enumerate(sorted(items)):
-        item_path = os.path.join(root_dir, item)
-        is_last_item = index == len(items) - 1
-
-        if os.path.isfile(item_path) and item_path.endswith('.zip'):
-            with zipfile.ZipFile(item_path, 'r') as zip_file:
-                print(f"{indent}{'└──' if is_last_item else '├──'} {item} (zip file)")
-                zip_contents = zip_file.namelist()
-                for zip_item in sorted(zip_contents):
-                    print(f"{indent}{'    ' if is_last_item else '│   '}{zip_item}")
-        else:
-            print(f"{indent}{'└──' if is_last_item else '├──'} {item}")
-
-            if os.path.isdir(item_path):
-                new_indent = indent + ('    ' if is_last_item else '│   ')
-                print_tree_directory(item_path, new_indent)
-
-
-def upload_model_list():
-    weight_root = "weights"
-    models = []
-    for name in os.listdir(weight_root):
-        if name.endswith(".pth"):
-            models.append(name)
-
-    index_root = "logs"
-    index_paths = []
-    for name in os.listdir(index_root):
-        if name.endswith(".index"):
-            index_paths.append("logs/"+name)
-
-    print(models, index_paths)
-    return models, index_paths
-
-def manual_download(url, dst):
-    token = os.getenv("YOUR_HF_TOKEN")
-    user_header = f"\"Authorization: Bearer {token}\""
-
-    if 'drive.google' in url:
-        print("Drive link")
-        if 'folders' in url:
-            print("folder")
-            os.system(f'gdown --folder "{url}" -O {dst} --fuzzy -c')
-        else:
-            print("single")
-            os.system(f'gdown "{url}" -O {dst} --fuzzy -c')
-    elif 'huggingface' in url:
-        print("HuggingFace link")
-        if '/blob/' in url or '/resolve/' in url:
-          if '/blob/' in url:
-              url = url.replace('/blob/', '/resolve/')
-          #parsed_link = '\n{}\n\tout={}'.format(url, unquote(url.split('/')[-1]))
-          #os.system(f'echo -e "{parsed_link}" | aria2c --header={user_header} --console-log-level=error --summary-interval=10 -i- -j5 -x16 -s16 -k1M -c -d "{dst}"')
-          os.system(f"wget -P {dst} {url}")
-        else:
-          os.system(f"git clone {url} {dst+'repo/'}")
-    elif 'http' in url or 'magnet' in url:
-        parsed_link = '"{}"'.format(url)
-        os.system(f'aria2c --optimize-concurrent-downloads --console-log-level=error --summary-interval=10 -j5 -x16 -s16 -k1M -c -d {dst} -Z {parsed_link}')
-
-
-def download_list(text_downloads):
-    try:
-      urls = [elem.strip() for elem in text_downloads.split(',')]
-    except:
-      return 'No valid link'
-
-    directories = ['downloads', 'logs', 'weights']
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.mkdir(directory)
-
-    path_download = "downloads/"
-    for url in urls:
-      manual_download(url, path_download)
-
-    # Tree
-    print('####################################')
-    print_tree_directory("downloads", indent='')
-    print('####################################')
-
-    # Place files
-    select_zip_and_rar_files("downloads/")
-
-    models, _ = upload_model_list()
-    os.system("rm -rf downloads/repo")
-
-    return f"Downloaded = {models}"
-
-
-def select_zip_and_rar_files(directory_path="downloads/"):
-    #filter
-    zip_files = []
-    rar_files = []
-
-    for file_name in os.listdir(directory_path):
-        if file_name.endswith(".zip"):
-            zip_files.append(file_name)
-        elif file_name.endswith(".rar"):
-            rar_files.append(file_name)
-
-    # extract
-    for file_name in zip_files:
-        file_path = os.path.join(directory_path, file_name)
-        with zipfile.ZipFile(file_path, 'r') as zip_ref:
-            zip_ref.extractall(directory_path)
-
-    for file_name in rar_files:
-        file_path = os.path.join(directory_path, file_name)
-        with rarfile.RarFile(file_path, 'r') as rar_ref:
-            rar_ref.extractall(directory_path)
-
-    # set in path
-    def move_files_with_extension(src_dir, extension, destination_dir):
-        for root, _, files in os.walk(src_dir):
-            for file_name in files:
-                if file_name.endswith(extension):
-                    source_file = os.path.join(root, file_name)
-                    destination = os.path.join(destination_dir, file_name)
-                    shutil.move(source_file, destination)
-
-    move_files_with_extension(directory_path, ".index", "logs/")
-    move_files_with_extension(directory_path, ".pth", "weights/")
-
-    return 'Download complete'
-
 def custom_model_voice_enable(enable_custom_voice):
     if enable_custom_voice:
       os.environ["VOICES_MODELS"] = 'ENABLE'
@@ -255,30 +124,8 @@ f0_methods_voice = ["pm", "harvest", "crepe", "rmvpe"]
 from voice_main import ClassVoices
 voices = ClassVoices()
 
-'''
-def translate_from_video(video, WHISPER_MODEL_SIZE, batch_size, compute_type,
-                         TRANSLATE_AUDIO_TO, min_speakers, max_speakers,
-                         tts_voice00, tts_voice01,tts_voice02,tts_voice03,tts_voice04,tts_voice05):
 
-    YOUR_HF_TOKEN = os.getenv("My_hf_token")
 
-    create_translated_audio(result_diarize, audio_files, Output_name_file)
-
-    os.system("rm audio_dub_stereo.wav")
-    os.system("ffmpeg -i audio_dub_solo.wav -ac 1 audio_dub_stereo.wav")
-
-    os.system(f"rm {mix_audio}")
-    os.system(f'ffmpeg -y -i audio.wav -i audio_dub_stereo.wav -filter_complex "[0:0]volume=0.15[a];[1:0]volume=1.90[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
-
-    os.system(f"rm {video_output}")
-    os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
-
-    return video_output
-'''
-def remove_files(file_list):
-    for file in file_list:
-        if os.path.exists(file):
-            os.remove(file)
 
 def translate_from_video(
     video,
@@ -381,166 +228,26 @@ def translate_from_video(
     mix_audio = "audio_mix.mp3"
 
     if not get_video_from_text_json:
-
-        previous_files_to_remove = [OutputFile, "audio.webm", audio_wav]
-        remove_files(previous_files_to_remove)
-
         progress(0.15, desc="Processing video...")
-
-        if os.path.exists(video):
-            if preview:
-                print('Creating a preview video of 10 seconds, to disable this option, go to advanced settings and turn off preview.')
-                command = f'ffmpeg -y -i "{video}" -ss 00:00:20 -t 00:00:10 -c:v libx264 -c:a aac -strict experimental Video.mp4'
-                result_convert_video = subprocess.run(command, capture_output=True, text=True, shell=True)
-            else:
-                # Check if the file ends with ".mp4" extension
-                if video.endswith(".mp4"):
-                    destination_path = os.path.join(os.getcwd(), "Video.mp4")
-                    shutil.copy(video, destination_path)
-                    result_convert_video = {}
-                    result_convert_video = subprocess.run("echo Video copied", capture_output=True, text=True, shell=True)
-                else:
-                    print("File does not have the '.mp4' extension. Converting video.")
-                    command = f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4'
-                    result_convert_video = subprocess.run(command, capture_output=True, text=True, shell=True)
-
-            if result_convert_video.returncode in [1, 2]:
-                print("Error can't convert the video")
-                return
-
-            for i in range (120):
-                time.sleep(1)
-                print('Process video...')
-                if os.path.exists(OutputFile):
-                    time.sleep(1)
-                    command = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
-                    result_convert_audio = subprocess.run(command, capture_output=True, text=True, shell=True)
-                    time.sleep(1)
-                    break
-                if i == 119:
-                  # if not os.path.exists(OutputFile):
-                  print('Error processing video')
-                  return
-
-            if result_convert_audio.returncode in [1, 2]:
-                print(f"Error can't create the audio file: {result_convert_audio.stderr}")
-                return
-
-            for i in range (120):
-                time.sleep(1)
-                print('process audio...')
-                if os.path.exists(audio_wav):
-                    break
-                if i == 119:
-                  print("Error can't create the audio file")
-                  return
-
-        else:
-            video = video.strip()
-            if preview:
-                print('Creating a preview from the link, 10 seconds to disable this option, go to advanced settings and turn off preview.')
-                #https://github.com/yt-dlp/yt-dlp/issues/2220
-                mp4_ = f'yt-dlp -f "mp4" --downloader ffmpeg --downloader-args "ffmpeg_i: -ss 00:00:20 -t 00:00:10" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
-                wav_ = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
-                result_convert_video = subprocess.run(mp4_, capture_output=True, text=True, shell=True)
-                result_convert_audio = subprocess.run(wav_, capture_output=True, text=True, shell=True)
-                if result_convert_audio.returncode in [1, 2]:
-                    print("Error can't download a preview")
-                    return
-            else:
-                mp4_ = f'yt-dlp -f "mp4" --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --restrict-filenames -o {OutputFile} {video}'
-                wav_ = f'python -m yt_dlp --output {audio_wav} --force-overwrites --max-downloads 1 --no-warnings --no-abort-on-error --ignore-no-formats-error --extract-audio --audio-format wav {video}'
-
-                result_convert_audio = subprocess.run(wav_, capture_output=True, text=True, shell=True)
-
-                if result_convert_audio.returncode in [1, 2]:
-                    print("Error can't download the audio")
-                    return
-
-                for i in range (120):
-                    time.sleep(1)
-                    print('process audio...')
-                    if os.path.exists(audio_wav) and not os.path.exists('audio.webm'):
-                        time.sleep(1)
-                        result_convert_video = subprocess.run(mp4_, capture_output=True, text=True, shell=True)
-                        break
-                    if i == 119:
-                        print('Error downloading the audio')
-                        return
-
-                if result_convert_video.returncode in [1, 2]:
-                    print("Error can't download the video")
-                    return
-
+        audio_video_preprocessor(preview, video, OutputFile, audio_wav)
         print("Set file complete.")
+
         progress(0.30, desc="Transcribing...")
-
         SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
-
-        # 1. Transcribe with original whisper (batched)
-        with capture.capture_output() as cap:
-          model = whisperx.load_model(
-              WHISPER_MODEL_SIZE,
-              device,
-              compute_type=compute_type,
-              language= SOURCE_LANGUAGE,
-              )
-          del cap
-        audio = whisperx.load_audio(audio_wav)
-        result = model.transcribe(audio, batch_size=batch_size)
-        gc.collect(); torch.cuda.empty_cache(); del model
+        audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
         print("Transcript complete")
 
-
-
-        # 2. Align whisper output
         progress(0.45, desc="Aligning...")
-        DAMHF.update(DAMT) #lang align
-        EXTRA_ALIGN = {
-            "hi": "theainerd/Wav2Vec2-large-xlsr-hindi"
-        } # add new align models here
-        #print(result['language'], DAM.keys(), EXTRA_ALIGN.keys())
-        if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
-            audio = result = None
-            print("Automatic detection: Source language not compatible")
-            print(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
-            return
-
         align_language = result["language"]
-        model_a, metadata = whisperx.load_align_model(
-            language_code=result["language"],
-            device=device,
-            model_name = None if result["language"] in DAMHF.keys() else EXTRA_ALIGN[result["language"]]
-            )
-        result = whisperx.align(
-            result["segments"],
-            model_a,
-            metadata,
-            audio,
-            device,
-            return_char_alignments=True,
-            )
-        gc.collect(); torch.cuda.empty_cache(); del model_a
+        result = align_speech(audio, result)
         print("Align complete")
-
         if result['segments'] == []:
             print('No active speech found in audio')
             return
 
-        # 3. Assign speaker labels
         progress(0.60, desc="Diarizing...")
-        with capture.capture_output() as cap:
-          diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
-          del cap
-        diarize_segments = diarize_model(
-            audio_wav,
-            min_speakers=min_speakers,
-            max_speakers=max_speakers)
-
-        result_diarize = whisperx.assign_word_speakers(diarize_segments, result)
-        gc.collect(); torch.cuda.empty_cache(); del diarize_model
+        result_diarize = diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN)
         print("Diarize complete")
-
         deep_copied_result = copy.deepcopy(result_diarize)
 
         progress(0.75, desc="Translating...")
@@ -548,7 +255,6 @@ def translate_from_video(
             TRANSLATE_AUDIO_TO = "zh-CN"
         if TRANSLATE_AUDIO_TO == "he":
             TRANSLATE_AUDIO_TO = "iw"
-
         result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO)
         print("Translation complete")
 
@@ -572,70 +278,10 @@ def translate_from_video(
 
 
     progress(0.85, desc="Text_to_speech...")
-    audio_files = []
-    speakers_list = []
-
-    # Mapping speakers to voice variables
-    speaker_to_voice = {
-        'SPEAKER_00': tts_voice00,
-        'SPEAKER_01': tts_voice01,
-        'SPEAKER_02': tts_voice02,
-        'SPEAKER_03': tts_voice03,
-        'SPEAKER_04': tts_voice04,
-        'SPEAKER_05': tts_voice05
-    }
-
-    for segment in tqdm(result_diarize['segments']):
-
-        text = segment['text']
-        start = segment['start']
-        end = segment['end']
-
-        try:
-            speaker = segment['speaker']
-        except KeyError:
-            segment['speaker'] = "SPEAKER_99"
-            speaker = segment['speaker']
-            print(f"NO SPEAKER DETECT IN SEGMENT: TTS auxiliary will be used in the segment time {segment['start'], segment['text']}")
-
-        # make the tts audio
-        filename = f"audio/{start}.ogg"
-
-        if speaker in speaker_to_voice and speaker_to_voice[speaker] != 'None':
-            make_voice_gradio(text, speaker_to_voice[speaker], filename, TRANSLATE_AUDIO_TO)
-        elif speaker == "SPEAKER_99":
-            try:
-                tts = gTTS(text, lang=TRANSLATE_AUDIO_TO)
-                tts.save(filename)
-                print('Using GTTS')
-            except:
-                tts = gTTS('a', lang=TRANSLATE_AUDIO_TO)
-                tts.save(filename)
-                print('Error: Audio will be replaced.')
-
-        # duration
-        duration_true = end - start
-        duration_tts = librosa.get_duration(filename=filename)
-
-        # porcentaje
-        porcentaje = duration_tts / duration_true
-
-        if porcentaje > max_accelerate_audio:
-            porcentaje = max_accelerate_audio
-        elif porcentaje <= 1.2 and porcentaje >= 0.8:
-            porcentaje = 1.0
-        elif porcentaje <= 0.79:
-            porcentaje = 0.8
-
-        # Smoth and round
-        porcentaje = round(porcentaje+0.0, 1)
-
-        # apply aceleration or opposite to the audio file in audio2 folder
-        os.system(f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={porcentaje} audio2/{filename}")
-
-        duration_create = librosa.get_duration(filename=f"audio2/{filename}")
-        audio_files.append(filename)
-        speakers_list.append(speaker)
+    audio_files, speakers_list = audio_segmentation_to_voice(
+        result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, 
+        tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
+    )
 
     # custom voice
     if os.getenv('VOICES_MODELS') == 'ENABLE':
@@ -763,12 +409,24 @@ with gr.Blocks(theme=theme) as demo:
     gr.Markdown(title)
     gr.Markdown(description)
 
+
+
+
 #### video
     with gr.Tab("Audio Translation for a Video"):
         with gr.Row():
             with gr.Column():
                 #video_input = gr.UploadButton("Click to Upload a video", file_types=["video"], file_count="single") #gr.Video() # height=300,width=300
+                input_data_type = gr.inputs.Dropdown(["url", "video"], default="video", label="Choose Video Source")
+                def swap_visibility(data_type):
+                    if data_type == "url":
+                        return gr.update(visible=False, value=None), gr.update(visible=True, value='')
+                    elif data_type == "video":
+                        return gr.update(visible=True, value=None), gr.update(visible=False, value='')
                 video_input = gr.File(label="VIDEO")
+                blink_input = gr.Textbox(label="Media link.", info="Example: www.youtube.com/watch?v=g_9rPvbENUw", placeholder="URL goes here...")
+                input_data_type.change(fn=swap_visibility, inputs=input_data_type, outputs=[video_input, blink_input])
+
                 #link = gr.HTML()
                 #video_input.change(submit_file_func, video_input, [video_input, link], show_progress='full')
 
@@ -866,7 +524,7 @@ with gr.Blocks(theme=theme) as demo:
                     ],
                     fn=translate_from_video,
                     inputs=[
-                    video_input,
+                    video_input if video_input.value != None else blink_input,
                     HFKEY,
                     PREVIEW,
                     WHISPER_MODEL_SIZE,
@@ -892,137 +550,6 @@ with gr.Blocks(theme=theme) as demo:
                     outputs=[video_output],
                     cache_examples=False,
                 )
-
-### link
-
-    with gr.Tab("Audio Translation via Video Link"):
-        with gr.Row():
-            with gr.Column():
-
-                blink_input = gr.Textbox(label="Media link.", info="Example: www.youtube.com/watch?v=g_9rPvbENUw", placeholder="URL goes here...")
-
-                bSOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
-                bTRANSLATE_AUDIO_TO = gr.Dropdown(['Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='English (en)',label = 'Translate audio to', info="Select the target language, and make sure to select the language corresponding to the speakers of the target language to avoid errors in the process.")
-
-                bline_ = gr.HTML("<hr></h2>")
-                gr.Markdown("Select how many people are speaking in the video.")
-                bmin_speakers = gr.Slider(1, MAX_TTS, default=1, label="min_speakers", step=1, visible=False)
-                bmax_speakers = gr.Slider(1, MAX_TTS, value=2, step=1, label="Max speakers", interative=True)
-                gr.Markdown("Select the voice you want for each speaker.")
-                def bsubmit(value):
-                    visibility_dict = {
-                        f'btts_voice{i:02d}': gr.update(visible=i < value) for i in range(6)
-                    }
-                    return [value for value in visibility_dict.values()]
-                btts_voice00 = gr.Dropdown(list_tts, value='en-AU-WilliamNeural-Male', label = 'TTS Speaker 1', visible=True, interactive= True)
-                btts_voice01 = gr.Dropdown(list_tts, value='en-CA-ClaraNeural-Female', label = 'TTS Speaker 2', visible=True, interactive= True)
-                btts_voice02 = gr.Dropdown(list_tts, value='en-GB-ThomasNeural-Male', label = 'TTS Speaker 3', visible=False, interactive= True)
-                btts_voice03 = gr.Dropdown(list_tts, value='en-GB-SoniaNeural-Female', label = 'TTS Speaker 4', visible=False, interactive= True)
-                btts_voice04 = gr.Dropdown(list_tts, value='en-NZ-MitchellNeural-Male', label = 'TTS Speaker 5', visible=False, interactive= True)
-                btts_voice05 = gr.Dropdown(list_tts, value='en-GB-MaisieNeural-Female', label = 'TTS Speaker 6', visible=False, interactive= True)
-                bmax_speakers.change(bsubmit, bmax_speakers, [btts_voice00, btts_voice01, btts_voice02, btts_voice03, btts_voice04, btts_voice05])
-
-
-                with gr.Column():
-                      with gr.Accordion("Advanced Settings", open=False):
-                          baudio_accelerate = gr.Slider(label = 'Max Audio acceleration', value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info="Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration")
-
-                          bAUDIO_MIX = gr.Dropdown(['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio'], value='Adjusting volumes and mixing audio', label = 'Audio Mixing Method', info="Mix original and translated audio files to create a customized, balanced output with two available mixing modes.")
-                          bvolume_original_mix = gr.Slider(label = 'Volume original audio', info='for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
-                          bvolume_translated_mix = gr.Slider(label = 'Volume translated audio', info='for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
-
-                          gr.HTML("<hr></h2>")
-                          bsub_type_output = gr.inputs.Dropdown(["srt", "vtt", "txt", "tsv", "json", "aud"], default="srt", label="Subtitle type")
-
-                          gr.HTML("<hr></h2>")
-                          gr.Markdown("Default configuration of Whisper.")
-                          bWHISPER_MODEL_SIZE = gr.inputs.Dropdown(['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2'], default=whisper_model_default, label="Whisper model")
-                          bbatch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
-                          bcompute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
-
-                          gr.HTML("<hr></h2>")
-                          bVIDEO_OUTPUT_NAME = gr.Textbox(label="Translated file name" ,value="video_output.mp4", info="The name of the output file")
-                          bPREVIEW = gr.Checkbox(label="Preview", info="Preview cuts the video to only 10 seconds for testing purposes. Please deactivate it to retrieve the full video duration.")
-
-            with gr.Column(variant='compact'):
-
-                bedit_sub_check = gr.Checkbox(label="Edit generated subtitles", info="Edit generated subtitles: Allows you to run the translation in 2 steps. First with the 'GET SUBTITLES AND EDIT' button, you get the subtitles to edit them, and then with the 'TRANSLATE' button, you can generate the video")
-                # dummy_false_check = gr.Checkbox(False, visible= False,)
-                # def visible_component_subs(input_bool):
-                #     if input_bool:
-                #         return gr.update(visible=True), gr.update(visible=True)
-                #     else:
-                #         return gr.update(visible=False), gr.update(visible=False)
-                bsubs_button = gr.Button("GET SUBTITLES AND EDIT", visible= False,)
-                bsubs_edit_space = gr.Textbox(visible= False, lines=10, label="Generated subtitles", info="Feel free to edit the text in the generated subtitles here. You can make changes to the interface options before clicking the 'TRANSLATE' button, except for 'Source language', 'Translate audio to', and 'Max speakers', to avoid errors. Once you're finished, click the 'TRANSLATE' button.", placeholder="First press 'GET SUBTITLES AND EDIT' to get the subtitles")
-                bedit_sub_check.change(visible_component_subs, [bedit_sub_check], [bsubs_button, bsubs_edit_space])
-
-                with gr.Row():
-                    text_button = gr.Button("TRANSLATE")
-                with gr.Row():
-                    blink_output = gr.outputs.File(label="DOWNLOAD TRANSLATED VIDEO") # gr.Video()
-                with gr.Row():
-                    bsub_ori_output = gr.outputs.File(label="Subtitles")
-                    bsub_tra_output = gr.outputs.File(label="Translated subtitles")
-
-                bline_ = gr.HTML("<hr></h2>")
-                if os.getenv("YOUR_HF_TOKEN") == None or os.getenv("YOUR_HF_TOKEN") == "":
-                  bHFKEY = gr.Textbox(visible= True, label="HF Token", info="One important step is to accept the license agreement for using Pyannote. You need to have an account on Hugging Face and accept the license to use the models: https://huggingface.co/pyannote/speaker-diarization and https://huggingface.co/pyannote/segmentation. Get your KEY TOKEN here: https://hf.co/settings/tokens", placeholder="Token goes here...")
-                else:
-                  bHFKEY = gr.Textbox(visible= False, label="HF Token", info="One important step is to accept the license agreement for using Pyannote. You need to have an account on Hugging Face and accept the license to use the models: https://huggingface.co/pyannote/speaker-diarization and https://huggingface.co/pyannote/segmentation. Get your KEY TOKEN here: https://hf.co/settings/tokens", placeholder="Token goes here...")
-
-                gr.Examples(
-                    examples=[
-                        [
-                            "https://www.youtube.com/watch?v=5ZeHtRKHl7Y",
-                            "",
-                            False,
-                            "large-v2",
-                            16,
-                            "float16",
-                            "Japanese (ja)",
-                            "English (en)",
-                            1,
-                            2,
-                            'en-CA-ClaraNeural-Female',
-                            'en-AU-WilliamNeural-Male',
-                            'en-GB-ThomasNeural-Male',
-                            'en-GB-SoniaNeural-Female',
-                            'en-NZ-MitchellNeural-Male',
-                            'en-GB-MaisieNeural-Female',
-                            "video_output.mp4",
-                            'Adjusting volumes and mixing audio',
-                        ],
-                    ],
-                    fn=translate_from_video,
-                    inputs=[
-                    blink_input,
-                    bHFKEY,
-                    bPREVIEW,
-                    bWHISPER_MODEL_SIZE,
-                    bbatch_size,
-                    bcompute_type,
-                    bSOURCE_LANGUAGE,
-                    bTRANSLATE_AUDIO_TO,
-                    bmin_speakers,
-                    bmax_speakers,
-                    btts_voice00,
-                    btts_voice01,
-                    btts_voice02,
-                    btts_voice03,
-                    btts_voice04,
-                    btts_voice05,
-                    bVIDEO_OUTPUT_NAME,
-                    bAUDIO_MIX,
-                    baudio_accelerate,
-                    bvolume_original_mix,
-                    bvolume_translated_mix,
-                    bsub_type_output,
-                    ],
-                    outputs=[blink_output],
-                    cache_examples=False,
-                )
-
 
     with gr.Tab("Custom voice R.V.C. (Optional)"):
         with gr.Column():
@@ -1160,7 +687,7 @@ with gr.Blocks(theme=theme) as demo:
 
     # run translate text
     subs_button.click(translate_from_video, inputs=[
-        video_input,
+        video_input if video_input.value != None else blink_input,
         HFKEY,
         PREVIEW,
         WHISPER_MODEL_SIZE,
@@ -1186,37 +713,10 @@ with gr.Blocks(theme=theme) as demo:
         dummy_false_check, # dummy false
         subs_edit_space,
         ], outputs=subs_edit_space)
-    bsubs_button.click(translate_from_video, inputs=[
-        blink_input,
-        bHFKEY,
-        bPREVIEW,
-        bWHISPER_MODEL_SIZE,
-        bbatch_size,
-        bcompute_type,
-        bSOURCE_LANGUAGE,
-        bTRANSLATE_AUDIO_TO,
-        bmin_speakers,
-        bmax_speakers,
-        btts_voice00,
-        btts_voice01,
-        btts_voice02,
-        btts_voice03,
-        btts_voice04,
-        btts_voice05,
-        bVIDEO_OUTPUT_NAME,
-        bAUDIO_MIX,
-        baudio_accelerate,
-        bvolume_original_mix,
-        bvolume_translated_mix,
-        bsub_type_output,
-        bedit_sub_check, # TRUE BY DEFAULT
-        dummy_false_check, # dummy false
-        bsubs_edit_space,
-        ], outputs=bsubs_edit_space)
 
     # run translate
     video_button.click(translate_from_video, inputs=[
-        video_input,
+        video_input if video_input.value != None else blink_input,
         HFKEY,
         PREVIEW,
         WHISPER_MODEL_SIZE,
@@ -1242,33 +742,6 @@ with gr.Blocks(theme=theme) as demo:
         edit_sub_check,
         subs_edit_space,
         ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
-    text_button.click(translate_from_video, inputs=[
-        blink_input,
-        bHFKEY,
-        bPREVIEW,
-        bWHISPER_MODEL_SIZE,
-        bbatch_size,
-        bcompute_type,
-        bSOURCE_LANGUAGE,
-        bTRANSLATE_AUDIO_TO,
-        bmin_speakers,
-        bmax_speakers,
-        btts_voice00,
-        btts_voice01,
-        btts_voice02,
-        btts_voice03,
-        btts_voice04,
-        btts_voice05,
-        bVIDEO_OUTPUT_NAME,
-        bAUDIO_MIX,
-        baudio_accelerate,
-        bvolume_original_mix,
-        bvolume_translated_mix,
-        bsub_type_output,
-        dummy_false_check,
-        bedit_sub_check,
-        bsubs_edit_space,
-        ], outputs=blink_output).then(get_subs_path, [bsub_type_output], [bsub_ori_output, bsub_tra_output])
 
 #demo.launch(debug=True, enable_queue=True)
 demo.launch(share=True, enable_queue=True, quiet=True, debug=False)
