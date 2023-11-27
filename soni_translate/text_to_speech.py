@@ -1,27 +1,19 @@
 from gtts import gTTS
-import edge_tts
-import asyncio
-import nest_asyncio
+import edge_tts, asyncio, nest_asyncio
+from tqdm import tqdm
+import librosa, os
 
-def make_voice(tts_text, tts_voice, filename,language):
-    #print(tts_text, filename)
-    try:
-      nest_asyncio.apply()
-      asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
-    except:
-      try:
-          tts = gTTS(tts_text, lang=language)
-          tts.save(filename)
-          print(f'No audio was received. Please change the tts voice for {tts_voice}. TTS auxiliary will be used in the segment')
-      except:
-        tts = gTTS('a', lang=language)
-        tts.save(filename)
-        print('Error: Audio will be replaced.')
+def edge_tts_voices_list():
+    nest_asyncio.apply()
+    tts_voice_list = asyncio.new_event_loop().run_until_complete(edge_tts.list_voices())
+    return [f"{v['ShortName']}-{v['Gender']}" for v in tts_voice_list]
 
-def make_voice_gradio(tts_text, tts_voice, filename, language):
+
+def speech_segment_text_to_tts(tts_text, tts_voice, filename, language, is_gui=False):
     print(tts_text, filename)
     try:
-      asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
+        nest_asyncio.apply() if is_gui else None
+        asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
     except:
       try:
         tts = gTTS(tts_text, lang=language)
@@ -33,14 +25,11 @@ def make_voice_gradio(tts_text, tts_voice, filename, language):
         print('Error: Audio will be replaced.')
 
 
-
-
-
 def audio_segmentation_to_voice(
-    result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, 
+    result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, is_gui,
     tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
     ):
-    
+
     audio_files = []
     speakers_list = []
 
@@ -71,7 +60,7 @@ def audio_segmentation_to_voice(
         filename = f"audio/{start}.ogg"
 
         if speaker in speaker_to_voice and speaker_to_voice[speaker] != 'None':
-            make_voice_gradio(text, speaker_to_voice[speaker], filename, TRANSLATE_AUDIO_TO)
+            speech_segment_text_to_tts(text, speaker_to_voice[speaker], filename, TRANSLATE_AUDIO_TO, is_gui)
         elif speaker == "SPEAKER_99":
             try:
                 tts = gTTS(text, lang=TRANSLATE_AUDIO_TO)

@@ -16,7 +16,7 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 import os
 from soni_translate.audio_segments import create_translated_audio
-from soni_translate.text_to_speech import make_voice_gradio, audio_segmentation_to_voice
+from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list
 from soni_translate.translate_segments import translate_text
 from soni_translate.preprocessor import audio_video_preprocessor
 from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list
@@ -26,6 +26,7 @@ import copy, logging, rarfile, zipfile, shutil, time, json, subprocess
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("markdown_it").setLevel(logging.WARNING)
+
 
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
@@ -100,7 +101,7 @@ else:
     whisper_model_default = 'medium'
 print('Working in: ', device)
 
-list_tts = ['af-ZA-AdriNeural-Female', 'af-ZA-WillemNeural-Male', 'am-ET-AmehaNeural-Male', 'am-ET-MekdesNeural-Female', 'ar-AE-FatimaNeural-Female', 'ar-AE-HamdanNeural-Male', 'ar-BH-AliNeural-Male', 'ar-BH-LailaNeural-Female', 'ar-DZ-AminaNeural-Female', 'ar-DZ-IsmaelNeural-Male', 'ar-EG-SalmaNeural-Female', 'ar-EG-ShakirNeural-Male', 'ar-IQ-BasselNeural-Male', 'ar-IQ-RanaNeural-Female', 'ar-JO-SanaNeural-Female', 'ar-JO-TaimNeural-Male', 'ar-KW-FahedNeural-Male', 'ar-KW-NouraNeural-Female', 'ar-LB-LaylaNeural-Female', 'ar-LB-RamiNeural-Male', 'ar-LY-ImanNeural-Female', 'ar-LY-OmarNeural-Male', 'ar-MA-JamalNeural-Male', 'ar-MA-MounaNeural-Female', 'ar-OM-AbdullahNeural-Male', 'ar-OM-AyshaNeural-Female', 'ar-QA-AmalNeural-Female', 'ar-QA-MoazNeural-Male', 'ar-SA-HamedNeural-Male', 'ar-SA-ZariyahNeural-Female', 'ar-SY-AmanyNeural-Female', 'ar-SY-LaithNeural-Male', 'ar-TN-HediNeural-Male', 'ar-TN-ReemNeural-Female', 'ar-YE-MaryamNeural-Female', 'ar-YE-SalehNeural-Male', 'az-AZ-BabekNeural-Male', 'az-AZ-BanuNeural-Female', 'bg-BG-BorislavNeural-Male', 'bg-BG-KalinaNeural-Female', 'bn-BD-NabanitaNeural-Female', 'bn-BD-PradeepNeural-Male', 'bn-IN-BashkarNeural-Male', 'bn-IN-TanishaaNeural-Female', 'bs-BA-GoranNeural-Male', 'bs-BA-VesnaNeural-Female', 'ca-ES-EnricNeural-Male', 'ca-ES-JoanaNeural-Female', 'cs-CZ-AntoninNeural-Male', 'cs-CZ-VlastaNeural-Female', 'cy-GB-AledNeural-Male', 'cy-GB-NiaNeural-Female', 'da-DK-ChristelNeural-Female', 'da-DK-JeppeNeural-Male', 'de-AT-IngridNeural-Female', 'de-AT-JonasNeural-Male', 'de-CH-JanNeural-Male', 'de-CH-LeniNeural-Female', 'de-DE-AmalaNeural-Female', 'de-DE-ConradNeural-Male', 'de-DE-KatjaNeural-Female', 'de-DE-KillianNeural-Male', 'el-GR-AthinaNeural-Female', 'el-GR-NestorasNeural-Male', 'en-AU-NatashaNeural-Female', 'en-AU-WilliamNeural-Male', 'en-CA-ClaraNeural-Female', 'en-CA-LiamNeural-Male', 'en-GB-LibbyNeural-Female', 'en-GB-MaisieNeural-Female', 'en-GB-RyanNeural-Male', 'en-GB-SoniaNeural-Female', 'en-GB-ThomasNeural-Male', 'en-HK-SamNeural-Male', 'en-HK-YanNeural-Female', 'en-IE-ConnorNeural-Male', 'en-IE-EmilyNeural-Female', 'en-IN-NeerjaExpressiveNeural-Female', 'en-IN-NeerjaNeural-Female', 'en-IN-PrabhatNeural-Male', 'en-KE-AsiliaNeural-Female', 'en-KE-ChilembaNeural-Male', 'en-NG-AbeoNeural-Male', 'en-NG-EzinneNeural-Female', 'en-NZ-MitchellNeural-Male', 'en-NZ-MollyNeural-Female', 'en-PH-JamesNeural-Male', 'en-PH-RosaNeural-Female', 'en-SG-LunaNeural-Female', 'en-SG-WayneNeural-Male', 'en-TZ-ElimuNeural-Male', 'en-TZ-ImaniNeural-Female', 'en-US-AnaNeural-Female', 'en-US-AriaNeural-Female', 'en-US-ChristopherNeural-Male', 'en-US-EricNeural-Male', 'en-US-GuyNeural-Male', 'en-US-JennyNeural-Female', 'en-US-MichelleNeural-Female', 'en-US-RogerNeural-Male', 'en-US-SteffanNeural-Male', 'en-ZA-LeahNeural-Female', 'en-ZA-LukeNeural-Male', 'es-AR-ElenaNeural-Female', 'es-AR-TomasNeural-Male', 'es-BO-MarceloNeural-Male', 'es-BO-SofiaNeural-Female', 'es-CL-CatalinaNeural-Female', 'es-CL-LorenzoNeural-Male', 'es-CO-GonzaloNeural-Male', 'es-CO-SalomeNeural-Female', 'es-CR-JuanNeural-Male', 'es-CR-MariaNeural-Female', 'es-CU-BelkysNeural-Female', 'es-CU-ManuelNeural-Male', 'es-DO-EmilioNeural-Male', 'es-DO-RamonaNeural-Female', 'es-EC-AndreaNeural-Female', 'es-EC-LuisNeural-Male', 'es-ES-AlvaroNeural-Male', 'es-ES-ElviraNeural-Female', 'es-GQ-JavierNeural-Male', 'es-GQ-TeresaNeural-Female', 'es-GT-AndresNeural-Male', 'es-GT-MartaNeural-Female', 'es-HN-CarlosNeural-Male', 'es-HN-KarlaNeural-Female', 'es-MX-DaliaNeural-Female', 'es-MX-JorgeNeural-Male', 'es-NI-FedericoNeural-Male', 'es-NI-YolandaNeural-Female', 'es-PA-MargaritaNeural-Female', 'es-PA-RobertoNeural-Male', 'es-PE-AlexNeural-Male', 'es-PE-CamilaNeural-Female', 'es-PR-KarinaNeural-Female', 'es-PR-VictorNeural-Male', 'es-PY-MarioNeural-Male', 'es-PY-TaniaNeural-Female', 'es-SV-LorenaNeural-Female', 'es-SV-RodrigoNeural-Male', 'es-US-AlonsoNeural-Male', 'es-US-PalomaNeural-Female', 'es-UY-MateoNeural-Male', 'es-UY-ValentinaNeural-Female', 'es-VE-PaolaNeural-Female', 'es-VE-SebastianNeural-Male', 'et-EE-AnuNeural-Female', 'et-EE-KertNeural-Male', 'fa-IR-DilaraNeural-Female', 'fa-IR-FaridNeural-Male', 'fi-FI-HarriNeural-Male', 'fi-FI-NooraNeural-Female', 'fil-PH-AngeloNeural-Male', 'fil-PH-BlessicaNeural-Female', 'fr-BE-CharlineNeural-Female', 'fr-BE-GerardNeural-Male', 'fr-CA-AntoineNeural-Male', 'fr-CA-JeanNeural-Male', 'fr-CA-SylvieNeural-Female', 'fr-CH-ArianeNeural-Female', 'fr-CH-FabriceNeural-Male', 'fr-FR-DeniseNeural-Female', 'fr-FR-EloiseNeural-Female', 'fr-FR-HenriNeural-Male', 'ga-IE-ColmNeural-Male', 'ga-IE-OrlaNeural-Female', 'gl-ES-RoiNeural-Male', 'gl-ES-SabelaNeural-Female', 'gu-IN-DhwaniNeural-Female', 'gu-IN-NiranjanNeural-Male', 'he-IL-AvriNeural-Male', 'he-IL-HilaNeural-Female', 'hi-IN-MadhurNeural-Male', 'hi-IN-SwaraNeural-Female', 'hr-HR-GabrijelaNeural-Female', 'hr-HR-SreckoNeural-Male', 'hu-HU-NoemiNeural-Female', 'hu-HU-TamasNeural-Male', 'id-ID-ArdiNeural-Male', 'id-ID-GadisNeural-Female', 'is-IS-GudrunNeural-Female', 'is-IS-GunnarNeural-Male', 'it-IT-DiegoNeural-Male', 'it-IT-ElsaNeural-Female', 'it-IT-IsabellaNeural-Female', 'ja-JP-KeitaNeural-Male', 'ja-JP-NanamiNeural-Female', 'jv-ID-DimasNeural-Male', 'jv-ID-SitiNeural-Female', 'ka-GE-EkaNeural-Female', 'ka-GE-GiorgiNeural-Male', 'kk-KZ-AigulNeural-Female', 'kk-KZ-DauletNeural-Male', 'km-KH-PisethNeural-Male', 'km-KH-SreymomNeural-Female', 'kn-IN-GaganNeural-Male', 'kn-IN-SapnaNeural-Female', 'ko-KR-InJoonNeural-Male', 'ko-KR-SunHiNeural-Female', 'lo-LA-ChanthavongNeural-Male', 'lo-LA-KeomanyNeural-Female', 'lt-LT-LeonasNeural-Male', 'lt-LT-OnaNeural-Female', 'lv-LV-EveritaNeural-Female', 'lv-LV-NilsNeural-Male', 'mk-MK-AleksandarNeural-Male', 'mk-MK-MarijaNeural-Female', 'ml-IN-MidhunNeural-Male', 'ml-IN-SobhanaNeural-Female', 'mn-MN-BataaNeural-Male', 'mn-MN-YesuiNeural-Female', 'mr-IN-AarohiNeural-Female', 'mr-IN-ManoharNeural-Male', 'ms-MY-OsmanNeural-Male', 'ms-MY-YasminNeural-Female', 'mt-MT-GraceNeural-Female', 'mt-MT-JosephNeural-Male', 'my-MM-NilarNeural-Female', 'my-MM-ThihaNeural-Male', 'nb-NO-FinnNeural-Male', 'nb-NO-PernilleNeural-Female', 'ne-NP-HemkalaNeural-Female', 'ne-NP-SagarNeural-Male', 'nl-BE-ArnaudNeural-Male', 'nl-BE-DenaNeural-Female', 'nl-NL-ColetteNeural-Female', 'nl-NL-FennaNeural-Female', 'nl-NL-MaartenNeural-Male', 'pl-PL-MarekNeural-Male', 'pl-PL-ZofiaNeural-Female', 'ps-AF-GulNawazNeural-Male', 'ps-AF-LatifaNeural-Female', 'pt-BR-AntonioNeural-Male', 'pt-BR-FranciscaNeural-Female', 'pt-PT-DuarteNeural-Male', 'pt-PT-RaquelNeural-Female', 'ro-RO-AlinaNeural-Female', 'ro-RO-EmilNeural-Male', 'ru-RU-DmitryNeural-Male', 'ru-RU-SvetlanaNeural-Female', 'si-LK-SameeraNeural-Male', 'si-LK-ThiliniNeural-Female', 'sk-SK-LukasNeural-Male', 'sk-SK-ViktoriaNeural-Female', 'sl-SI-PetraNeural-Female', 'sl-SI-RokNeural-Male', 'so-SO-MuuseNeural-Male', 'so-SO-UbaxNeural-Female', 'sq-AL-AnilaNeural-Female', 'sq-AL-IlirNeural-Male', 'sr-RS-NicholasNeural-Male', 'sr-RS-SophieNeural-Female', 'su-ID-JajangNeural-Male', 'su-ID-TutiNeural-Female', 'sv-SE-MattiasNeural-Male', 'sv-SE-SofieNeural-Female', 'sw-KE-RafikiNeural-Male', 'sw-KE-ZuriNeural-Female', 'sw-TZ-DaudiNeural-Male', 'sw-TZ-RehemaNeural-Female', 'ta-IN-PallaviNeural-Female', 'ta-IN-ValluvarNeural-Male', 'ta-LK-KumarNeural-Male', 'ta-LK-SaranyaNeural-Female', 'ta-MY-KaniNeural-Female', 'ta-MY-SuryaNeural-Male', 'ta-SG-AnbuNeural-Male', 'ta-SG-VenbaNeural-Female', 'te-IN-MohanNeural-Male', 'te-IN-ShrutiNeural-Female', 'th-TH-NiwatNeural-Male', 'th-TH-PremwadeeNeural-Female', 'tr-TR-AhmetNeural-Male', 'tr-TR-EmelNeural-Female', 'uk-UA-OstapNeural-Male', 'uk-UA-PolinaNeural-Female', 'ur-IN-GulNeural-Female', 'ur-IN-SalmanNeural-Male', 'ur-PK-AsadNeural-Male', 'ur-PK-UzmaNeural-Female', 'uz-UZ-MadinaNeural-Female', 'uz-UZ-SardorNeural-Male', 'vi-VN-HoaiMyNeural-Female', 'vi-VN-NamMinhNeural-Male', 'zh-CN-XiaoxiaoNeural-Female', 'zh-CN-XiaoyiNeural-Female', 'zh-CN-YunjianNeural-Male', 'zh-CN-YunxiNeural-Male', 'zh-CN-YunxiaNeural-Male', 'zh-CN-YunyangNeural-Male', 'zh-CN-liaoning-XiaobeiNeural-Female', 'zh-CN-shaanxi-XiaoniNeural-Female']
+list_tts = edge_tts_voices_list()
 
 ### voices
 
@@ -122,13 +123,41 @@ f0_methods_voice = ["pm", "harvest", "crepe", "rmvpe"]
 
 
 from voice_main import ClassVoices
-voices = ClassVoices()
+voices_conversion = ClassVoices()
 
-
-
+LANGUAGES = {
+    'Automatic detection': 'Automatic detection',
+    'Arabic (ar)': 'ar',
+    'Chinese (zh)': 'zh',
+    'Czech (cs)': 'cs',
+    'Danish (da)': 'da',
+    'Dutch (nl)': 'nl',
+    'English (en)': 'en',
+    'Finnish (fi)': 'fi',
+    'French (fr)': 'fr',
+    'German (de)': 'de',
+    'Greek (el)': 'el',
+    'Hebrew (he)': 'he',
+    'Hungarian (hu)': 'hu',
+    'Italian (it)': 'it',
+    'Japanese (ja)': 'ja',
+    'Korean (ko)': 'ko',
+    'Persian (fa)': 'fa',
+    'Polish (pl)': 'pl',
+    'Portuguese (pt)': 'pt',
+    'Russian (ru)': 'ru',
+    'Spanish (es)': 'es',
+    'Turkish (tr)': 'tr',
+    'Ukrainian (uk)': 'uk',
+    'Urdu (ur)': 'ur',
+    'Vietnamese (vi)': 'vi',
+    'Hindi (hi)': 'hi',
+}
 
 def translate_from_video(
     video,
+    link_video,
+    directory_input,
     YOUR_HF_TOKEN,
     preview=False,
     WHISPER_MODEL_SIZE="large-v1",
@@ -164,6 +193,11 @@ def translate_from_video(
       else:
         os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
 
+    if video is None:
+        if os.path.exists(directory_input):
+            video = directory_input
+        else:
+            video = link_video
     video = video if isinstance(video, str) else video.name
     print(video)
 
@@ -174,35 +208,6 @@ def translate_from_video(
       print("DEMO; set Adjusting volumes and mixing audio")
       WHISPER_MODEL_SIZE="medium"
       print("DEMO; set whisper model to medium")
-
-    LANGUAGES = {
-        'Automatic detection': 'Automatic detection',
-        'Arabic (ar)': 'ar',
-        'Chinese (zh)': 'zh',
-        'Czech (cs)': 'cs',
-        'Danish (da)': 'da',
-        'Dutch (nl)': 'nl',
-        'English (en)': 'en',
-        'Finnish (fi)': 'fi',
-        'French (fr)': 'fr',
-        'German (de)': 'de',
-        'Greek (el)': 'el',
-        'Hebrew (he)': 'he',
-        'Hungarian (hu)': 'hu',
-        'Italian (it)': 'it',
-        'Japanese (ja)': 'ja',
-        'Korean (ko)': 'ko',
-        'Persian (fa)': 'fa',
-        'Polish (pl)': 'pl',
-        'Portuguese (pt)': 'pt',
-        'Russian (ru)': 'ru',
-        'Spanish (es)': 'es',
-        'Turkish (tr)': 'tr',
-        'Ukrainian (uk)': 'uk',
-        'Urdu (ur)': 'ur',
-        'Vietnamese (vi)': 'vi',
-        'Hindi (hi)': 'hi',
-    }
 
     TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
     SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
@@ -278,15 +283,16 @@ def translate_from_video(
 
 
     progress(0.85, desc="Text_to_speech...")
+    is_gui = True
     audio_files, speakers_list = audio_segmentation_to_voice(
-        result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, 
+        result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, is_gui,
         tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
     )
 
     # custom voice
     if os.getenv('VOICES_MODELS') == 'ENABLE':
         progress(0.90, desc="Applying customized voices...")
-        voices(speakers_list, audio_files)
+        voices_conversion(speakers_list, audio_files)
 
     # replace files with the accelerates
     os.system("mv -f audio2/audio/*.ogg audio/")
@@ -411,23 +417,25 @@ with gr.Blocks(theme=theme) as demo:
 
 
 
-
 #### video
-    with gr.Tab("Audio Translation for a Video"):
+    with gr.Tab("TTS Translation"):
         with gr.Row():
             with gr.Column():
                 #video_input = gr.UploadButton("Click to Upload a video", file_types=["video"], file_count="single") #gr.Video() # height=300,width=300
-                input_data_type = gr.inputs.Dropdown(["url", "video"], default="video", label="Choose Video Source")
+                input_data_type = gr.inputs.Dropdown(["SUBMIT VIDEO", "URL", "Find Video Path"], default="SUBMIT VIDEO", label="Choose Video Source")
                 def swap_visibility(data_type):
-                    if data_type == "url":
-                        return gr.update(visible=False, value=None), gr.update(visible=True, value='')
-                    elif data_type == "video":
-                        return gr.update(visible=True, value=None), gr.update(visible=False, value='')
+                    if data_type == "URL":
+                        return gr.update(visible=False, value=None), gr.update(visible=True, value=''), gr.update(visible=False, value='')
+                    elif data_type == "SUBMIT VIDEO":
+                        return gr.update(visible=True, value=None), gr.update(visible=False, value=''), gr.update(visible=False, value='')
+                    elif data_type == "Find Video Path":
+                        return gr.update(visible=False, value=None), gr.update(visible=False, value=''), gr.update(visible=True, value='')
                 video_input = gr.File(label="VIDEO")
-                blink_input = gr.Textbox(label="Media link.", info="Example: www.youtube.com/watch?v=g_9rPvbENUw", placeholder="URL goes here...")
-                input_data_type.change(fn=swap_visibility, inputs=input_data_type, outputs=[video_input, blink_input])
+                blink_input = gr.Textbox(visible=False, label="Media link.", info="Example: www.youtube.com/watch?v=g_9rPvbENUw", placeholder="URL goes here...")
+                directory_input = gr.Textbox(visible=False, label="Video Path.", info="Example: /usr/home/my_video.mp4", placeholder="Path goes here...")
+                input_data_type.change(fn=swap_visibility, inputs=input_data_type, outputs=[video_input, blink_input, directory_input])
 
-                #link = gr.HTML()
+                link = gr.HTML()
                 #video_input.change(submit_file_func, video_input, [video_input, link], show_progress='full')
 
                 SOURCE_LANGUAGE = gr.Dropdown(['Automatic detection', 'Arabic (ar)', 'Chinese (zh)', 'Czech (cs)', 'Danish (da)', 'Dutch (nl)', 'English (en)', 'Finnish (fi)', 'French (fr)', 'German (de)', 'Greek (el)', 'Hebrew (he)', 'Hindi (hi)', 'Hungarian (hu)', 'Italian (it)', 'Japanese (ja)', 'Korean (ko)', 'Persian (fa)', 'Polish (pl)', 'Portuguese (pt)', 'Russian (ru)', 'Spanish (es)', 'Turkish (tr)', 'Ukrainian (uk)', 'Urdu (ur)', 'Vietnamese (vi)'], value='Automatic detection',label = 'Source language', info="This is the original language of the video")
@@ -504,6 +512,8 @@ with gr.Blocks(theme=theme) as demo:
                         [
                             "./assets/Video_main.mp4",
                             "",
+                            "",
+                            "",
                             False,
                             "large-v2",
                             16,
@@ -524,7 +534,9 @@ with gr.Blocks(theme=theme) as demo:
                     ],
                     fn=translate_from_video,
                     inputs=[
-                    video_input if video_input.value != None else blink_input,
+                    video_input,
+                    blink_input,
+                    directory_input,
                     HFKEY,
                     PREVIEW,
                     WHISPER_MODEL_SIZE,
@@ -630,7 +642,7 @@ with gr.Blocks(theme=theme) as demo:
 
               confirm_conf = gr.HTML()
 
-            button_config.click(voices.apply_conf, inputs=[
+            button_config.click(voices_conversion.apply_conf, inputs=[
                 f0_method_global,
                 model_voice_path00, name_transpose00, file_index2_00,
                 model_voice_path01, name_transpose01, file_index2_01,
@@ -661,7 +673,7 @@ with gr.Blocks(theme=theme) as demo:
                       original_ttsvoice = gr.Audio()
                       ttsvoice = gr.Audio()
 
-                    button_test.click(voices.make_test, inputs=[
+                    button_test.click(voices_conversion.make_test, inputs=[
                         text_test,
                         tts_test,
                         model_voice_path07,
@@ -687,7 +699,9 @@ with gr.Blocks(theme=theme) as demo:
 
     # run translate text
     subs_button.click(translate_from_video, inputs=[
-        video_input if video_input.value != None else blink_input,
+        video_input,
+        blink_input,
+        directory_input,
         HFKEY,
         PREVIEW,
         WHISPER_MODEL_SIZE,
@@ -716,7 +730,9 @@ with gr.Blocks(theme=theme) as demo:
 
     # run translate
     video_button.click(translate_from_video, inputs=[
-        video_input if video_input.value != None else blink_input,
+        video_input,
+        blink_input,
+        directory_input,
         HFKEY,
         PREVIEW,
         WHISPER_MODEL_SIZE,
@@ -743,5 +759,5 @@ with gr.Blocks(theme=theme) as demo:
         subs_edit_space,
         ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
 
-#demo.launch(debug=True, enable_queue=True)
-demo.launch(share=True, enable_queue=True, quiet=True, debug=False)
+demo.launch(debug=True, enable_queue=True)
+#demo.launch(share=True, enable_queue=True, quiet=True, debug=False)
