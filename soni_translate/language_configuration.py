@@ -1,0 +1,31 @@
+LANGUAGES = {
+    'Automatic detection': 'Automatic detection',
+    'Arabic (ar)': 'ar',
+    'Chinese (zh)': 'zh',
+    'Czech (cs)': 'cs',
+    'Danish (da)': 'da',
+    'Dutch (nl)': 'nl',
+    'English (en)': 'en',
+    'Finnish (fi)': 'fi',
+    'French (fr)': 'fr',
+    'German (de)': 'de',
+    'Greek (el)': 'el',
+    'Hebrew (he)': 'he',
+    'Hungarian (hu)': 'hu',
+    'Italian (it)': 'it',
+    'Japanese (ja)': 'ja',
+    'Korean (ko)': 'ko',
+    'Persian (fa)': 'fa',
+    'Polish (pl)': 'pl',
+    'Portuguese (pt)': 'pt',
+    'Russian (ru)': 'ru',
+    'Spanish (es)': 'es',
+    'Turkish (tr)': 'tr',
+    'Ukrainian (uk)': 'uk',
+    'Urdu (ur)': 'ur',
+    'Vietnamese (vi)': 'vi',
+    'Hindi (hi)': 'hi',
+}
+LANGUAGES_LIST = list(LANGUAGES.keys())
+
+
