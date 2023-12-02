@@ -1,4 +1,3 @@
-
 from whisperx.alignment import DEFAULT_ALIGN_MODELS_TORCH as DAMT, DEFAULT_ALIGN_MODELS_HF as DAMHF
 import whisperx, torch, gc
 from IPython.utils import capture
@@ -7,7 +6,6 @@ from IPython.utils import capture
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 def transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE):
-    # 1. Transcribe with original whisper (batched)
     with capture.capture_output() as cap:
         model = whisperx.load_model(
             WHISPER_MODEL_SIZE,
@@ -27,7 +25,7 @@ def align_speech(audio, result):
 
     DAMHF.update(DAMT) #lang align
     EXTRA_ALIGN = {
-        "hi": "theainerd/Wav2Vec2-large-xlsr-hindi"
+        "id": "indonesian-nlp/wav2vec2-large-xlsr-indonesian",
     } # add new align models here
     #print(result['language'], DAM.keys(), EXTRA_ALIGN.keys())
     if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
@@ -52,11 +50,15 @@ def align_speech(audio, result):
     gc.collect(); torch.cuda.empty_cache(); del model_a
     return result
 
-        
-def diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, ):
+diarization_models = {
+    "pyannote_3.1" : "pyannote/speaker-diarization-3.1",
+    "pyannote_2.1" : "pyannote/speaker-diarization@2.1"
+}
+
+def diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, model_name="pyannote/speaker-diarization@2.1"):
     # 3. Assign speaker labels
     with capture.capture_output() as cap:
-        diarize_model = whisperx.DiarizationPipeline(use_auth_token=YOUR_HF_TOKEN, device=device)
+        diarize_model = whisperx.DiarizationPipeline(model_name=model_name, use_auth_token=YOUR_HF_TOKEN, device=device)
         del cap
     diarize_segments = diarize_model(
         audio_wav,
