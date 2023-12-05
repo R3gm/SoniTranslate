@@ -1,13 +1,31 @@
 from gtts import gTTS
 import edge_tts, asyncio, nest_asyncio
 from tqdm import tqdm
-import librosa, os
+import librosa, os, subprocess
 
 def edge_tts_voices_list():
-    nest_asyncio.apply()
-    tts_voice_list = asyncio.new_event_loop().run_until_complete(edge_tts.list_voices())
-    return [f"{v['ShortName']}-{v['Gender']}" for v in tts_voice_list]
+    completed_process = subprocess.run(
+        ["edge-tts", "--list-voices"], capture_output=True, text=True
+    )
+    lines = completed_process.stdout.strip().split("\n")
 
+    voices = []
+    for line in lines:
+        if line.startswith("Name: "):
+            voice_entry = {}
+            voice_entry["Name"] = line.split(": ")[1]
+        elif line.startswith("Gender: "):
+            voice_entry["Gender"] = line.split(": ")[1]
+            voices.append(voice_entry)
+
+    formatted_voices = [f"{entry['Name']}-{entry['Gender']}" for entry in voices]
+
+    if not formatted_voices:
+        print("The list of Edge TTS voices could not be obtained, switching to an alternative method")
+        tts_voice_list = asyncio.new_event_loop().run_until_complete(edge_tts.list_voices())
+        formatted_voices = sorted([f"{v['ShortName']}-{v['Gender']}" for v in tts_voice_list])
+
+    return formatted_voices
 
 def speech_segment_text_to_tts(tts_text, tts_voice, filename, language, is_gui=False):
     print(tts_text, filename)
