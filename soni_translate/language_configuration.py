@@ -47,6 +47,11 @@ EXTRA_ALIGN = {
     "th" : "sakares/wav2vec2-large-xlsr-thai-demo"
 }
 
+def fix_code_language(translate_to):
+    replace_code_lang__google_translator_gtts = {"zh": "zh-CN", "he": "iw"}
+    target_lang = replace_code_lang__google_translator_gtts.get(translate_to, translate_to)
+    return target_lang
+
 LANGUAGE_CODE_IN_THREE_LETTERS = {
     'Automatic detection': 'aut',
     'ar': 'ara',

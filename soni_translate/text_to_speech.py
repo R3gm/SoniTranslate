@@ -2,6 +2,7 @@ from gtts import gTTS
 import edge_tts, asyncio, nest_asyncio
 from tqdm import tqdm
 import librosa, os, subprocess
+from .language_configuration import fix_code_language
 
 def edge_tts_voices_list():
     completed_process = subprocess.run(
@@ -34,11 +35,11 @@ def speech_segment_text_to_tts(tts_text, tts_voice, filename, language, is_gui=F
         asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
     except:
       try:
-        tts = gTTS(tts_text, lang=language)
+        tts = gTTS(tts_text, lang=fix_code_language(language))
         tts.save(filename)
         print(f'No audio was received. Please change the tts voice for {tts_voice}. TTS auxiliary will be used in the segment')
       except:
-        tts = gTTS('a', lang=language)
+        tts = gTTS('a', lang=fix_code_language(language))
         tts.save(filename)
         print('Error: Audio will be replaced.')
 
@@ -81,11 +82,11 @@ def audio_segmentation_to_voice(
             speech_segment_text_to_tts(text, speaker_to_voice[speaker], filename, TRANSLATE_AUDIO_TO, is_gui)
         elif speaker == "SPEAKER_99":
             try:
-                tts = gTTS(text, lang=TRANSLATE_AUDIO_TO)
+                tts = gTTS(text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
                 tts.save(filename)
                 print('Using GTTS')
             except:
-                tts = gTTS('a', lang=TRANSLATE_AUDIO_TO)
+                tts = gTTS('a', lang=fix_code_language(TRANSLATE_AUDIO_TO))
                 tts.save(filename)
                 print('Error: Audio will be replaced.')
 

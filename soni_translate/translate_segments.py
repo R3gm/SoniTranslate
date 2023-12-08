@@ -2,6 +2,7 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 from itertools import chain
 import copy
+from .language_configuration import fix_code_language
 
 def translate_iterative(segments, TRANSLATE_AUDIO_TO):
     """
@@ -85,22 +86,25 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=4500):
     # un chunk
     split_list = [sentence.split("|||||") for sentence in translated_lines]
     translated_lines = list(chain.from_iterable(split_list))
+    print(split_list)
+    print(translated_lines)
 
     # verify integrity ok
     if len(segments) == len(translated_lines):
         for line in range(len(segments_copy)):
+            #print(segments_copy[line]['text'], translated_lines[line].strip())
             segments_copy[line]['text'] = translated_lines[line].strip()
         return segments_copy
     else:
-        print("The translation in chunks failed, switching to iterative.")
+        print(f"The translation in chunks failed, switching to iterative.{len(segments), len(translated_lines)}")
         return translate_iterative(segments, TRANSLATE_AUDIO_TO)
 
 def translate_text(segments, TRANSLATE_AUDIO_TO, translation_process="google_translator_batch", chunk_size=4500):
     """Translates text segments using a specified process."""
     match translation_process:
         case "google_translator_batch":
-            return translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size)
+            return translate_batch(segments, fix_code_language(TRANSLATE_AUDIO_TO), chunk_size)
         case "google_translator_iterative":
-            return translate_iterative(segments, TRANSLATE_AUDIO_TO)
+            return translate_iterative(segments, fix_code_language(TRANSLATE_AUDIO_TO))
         case _:
             raise ValueError("No valid translation process")

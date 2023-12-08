@@ -144,10 +144,9 @@ def translate_from_video(
         deep_copied_result = copy.deepcopy(result_diarize)
 
         progress(0.75, desc="Translating...")
-        replace_code_lang__translation_gtts = {"zh": "zh-CN", "he": "iw"}
-        TRANSLATE_AUDIO_TO = replace_code_lang__translation_gtts.get(TRANSLATE_AUDIO_TO, TRANSLATE_AUDIO_TO)
-        result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process)
+        result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=1800)
         print("Translation complete")
+        print(result_diarize)
 
     if get_translated_text:
         json_data = []
@@ -211,7 +210,7 @@ def translate_from_video(
     name_ori = "sub_ori."
     name_tra = "sub_tra."
     deep_copied_result["language"] = align_language
-    result_diarize["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh-CN"] else align_language
+    result_diarize["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh"] else align_language
 
     writer = get_writer(output_format_subtitle, output_dir=".")
     word_options = {
@@ -256,7 +255,6 @@ def translate_from_video(
     )
 
     return video_output
-
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 news = """ ## 📖 News
@@ -686,7 +684,7 @@ import argparse
 def create_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--theme", type=str, default="Taithrah/Minimal", help="Specify the theme; find themes in https://huggingface.co/spaces/gradio/theme-gallery; Example: --theme aliabid94/new-theme")
-    parser.add_argument("--share", action="store_true", default=False, help="Enable public url")
+    parser.add_argument("--public_url", action="store_true", default=False, help="Enable public link")
     parser.add_argument("--logs_in_gui", action="store_true", default=False, help="Displays the operations performed in Logs")
     return parser
 
@@ -698,12 +696,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     # Simulating command-line arguments
-    #args_list = "--theme aliabid94/new-theme --share".split()
+    #args_list = "--theme aliabid94/new-theme --public_url".split()
     #args = parser.parse_args(args_list)
 
     app = create_gui(args.theme, logs_in_gui=args.logs_in_gui)
     app.launch(
-        share=args.share,
+        share=args.public_url,
         show_error=True,
         enable_queue=True,
         quiet=False,
