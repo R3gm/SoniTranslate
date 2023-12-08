@@ -34,14 +34,14 @@ def translate_iterative(segments, TRANSLATE_AUDIO_TO):
 
     return segments_
 
-def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=4500):
+def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
     """
     Translate a batch of text segments into the specified language in chunks respecting the character limit.
 
     Parameters:
     - segments (list): A list of dictionaries, each containing 'text' as a key with the segment text to be translated.
     - TRANSLATE_AUDIO_TO (str): The language code to which the text should be translated.
-    - chunk_size (int, optional): The maximum character limit for each translation chunk (default is 4500); max 5000.
+    - chunk_size (int, optional): The maximum character limit for each translation chunk (default is 2000); max 5000.
 
     Returns:
     - list: A list of dictionaries with translated text segments in the specified language.
@@ -81,13 +81,16 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=4500):
 
     # translate chunks
     translator = GoogleTranslator(source='auto', target=TRANSLATE_AUDIO_TO)
-    translated_lines = translator.translate_batch(text_merge)
-
+    try:
+        translated_lines = translator.translate_batch(text_merge)
+    except Exception as error:
+        print(str(error))
+        print(f"The translation in chunks failed, switching to iterative. Related> too many request") # use proxy or less chunk size
+        return translate_iterative(segments, TRANSLATE_AUDIO_TO)
+        
     # un chunk
     split_list = [sentence.split("|||||") for sentence in translated_lines]
     translated_lines = list(chain.from_iterable(split_list))
-    print(split_list)
-    print(translated_lines)
 
     # verify integrity ok
     if len(segments) == len(translated_lines):
@@ -96,7 +99,7 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=4500):
             segments_copy[line]['text'] = translated_lines[line].strip()
         return segments_copy
     else:
-        print(f"The translation in chunks failed, switching to iterative.{len(segments), len(translated_lines)}")
+        print(f"The translation in chunks failed, switching to iterative. {len(segments), len(translated_lines)}")
         return translate_iterative(segments, TRANSLATE_AUDIO_TO)
 
 def translate_text(segments, TRANSLATE_AUDIO_TO, translation_process="google_translator_batch", chunk_size=4500):
