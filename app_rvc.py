@@ -691,6 +691,7 @@ def create_parser():
 if __name__ == '__main__':
     list_tts = edge_tts_voices_list()
     models, index_paths = upload_model_list()
+    os.environ["VOICES_MODELS"] = 'DISABLE'
 
     parser = create_parser()
 
