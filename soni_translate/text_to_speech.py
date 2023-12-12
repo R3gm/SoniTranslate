@@ -1,7 +1,7 @@
 from gtts import gTTS
 import edge_tts, asyncio, nest_asyncio
 from tqdm import tqdm
-import librosa, os, re, subprocess, torch, gc
+import librosa, os, subprocess, re, torch, gc
 from language_configuration import fix_code_language
 import numpy as np
 #from scipy.io.wavfile import write as write_wav
@@ -264,6 +264,109 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
         gc.collect(); torch.cuda.empty_cache()
     del processor; del model; gc.collect(); torch.cuda.empty_cache()
 
+
+vits_voices_list = {
+    'ar-facebook-mms VITS': 'facebook/mms-tts-ara',
+    #'zh-facebook-mms VITS': 'facebook/mms-tts-cmn',
+    'zh_Hakka-facebook-mms VITS': 'facebook/mms-tts-hak',
+    'zh_MinNan-facebook-mms VITS': 'facebook/mms-tts-nan',
+    #'cs-facebook-mms VITS': 'facebook/mms-tts-ces',
+    #'da-facebook-mms VITS': 'facebook/mms-tts-dan',
+    'nl-facebook-mms VITS': 'facebook/mms-tts-nld',
+    'en-facebook-mms VITS': 'facebook/mms-tts-eng',
+    'fi-facebook-mms VITS': 'facebook/mms-tts-fin',
+    'fr-facebook-mms VITS': 'facebook/mms-tts-fra',
+    'de-facebook-mms VITS': 'facebook/mms-tts-deu',
+    'el-facebook-mms VITS': 'facebook/mms-tts-ell',
+    'el_Ancient-facebook-mms VITS': 'facebook/mms-tts-grc',
+    'he-facebook-mms VITS': 'facebook/mms-tts-heb',
+    'hu-facebook-mms VITS': 'facebook/mms-tts-hun',
+    #'it-facebook-mms VITS': 'facebook/mms-tts-ita',
+    #'ja-facebook-mms VITS': 'facebook/mms-tts-jpn',
+    'ko-facebook-mms VITS': 'facebook/mms-tts-kor',
+    'fa-facebook-mms VITS': 'facebook/mms-tts-fas',
+    'pl-facebook-mms VITS': 'facebook/mms-tts-pol',
+    'pt-facebook-mms VITS': 'facebook/mms-tts-por',
+    'ru-facebook-mms VITS': 'facebook/mms-tts-rus',
+    'es-facebook-mms VITS': 'facebook/mms-tts-spa',
+    'tr-facebook-mms VITS': 'facebook/mms-tts-tur',
+    'uk-facebook-mms VITS': 'facebook/mms-tts-ukr',
+    'ur_arabic-facebook-mms VITS': 'facebook/mms-tts-urd-script_arabic',
+    'ur_devanagari-facebook-mms VITS': 'facebook/mms-tts-urd-script_devanagari',
+    'ur_latin-facebook-mms VITS': 'facebook/mms-tts-urd-script_latin',
+    'vi-facebook-mms VITS': 'facebook/mms-tts-vie',
+    'hi-facebook-mms VITS': 'facebook/mms-tts-hin',
+    'hi_Fiji-facebook-mms VITS': 'facebook/mms-tts-hif',
+    'id-facebook-mms VITS': 'facebook/mms-tts-ind',
+    'bn-facebook-mms VITS': 'facebook/mms-tts-ben',
+    'te-facebook-mms VITS': 'facebook/mms-tts-tel',
+    'mr-facebook-mms VITS': 'facebook/mms-tts-mar',
+    'ta-facebook-mms VITS': 'facebook/mms-tts-tam',
+    'jw-facebook-mms VITS': 'facebook/mms-tts-jav',
+    'jw_Suriname-facebook-mms VITS': 'facebook/mms-tts-jvn',
+    'ca-facebook-mms VITS': 'facebook/mms-tts-cat',
+    'ne-facebook-mms VITS': 'facebook/mms-tts-nep',
+    'th-facebook-mms VITS': 'facebook/mms-tts-tha',
+    'th_Northern-facebook-mms VITS': 'facebook/mms-tts-nod'
+}
+
+def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
+    from transformers import VitsModel, AutoTokenizer
+
+    filtered_segments = filtered_vits_segments['segments']
+    # Sorting the segments by 'tts_name'
+    sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
+    print(sorted_segments)
+
+    model_name_key = None
+    for segment in tqdm(sorted_segments):
+
+        speaker = segment['speaker']
+        text = segment['text']
+        start = segment['start']
+        tts_name = segment['tts_name']
+
+        if tts_name != model_name_key:
+            model_name_key = tts_name
+            model = VitsModel.from_pretrained(vits_voices_list[tts_name])
+            tokenizer = AutoTokenizer.from_pretrained(vits_voices_list[tts_name])
+            sampling_rate = model.config.sampling_rate
+
+        inputs = tokenizer(text, return_tensors="pt")
+
+        # make the tts audio
+        filename = f"audio/{start}.ogg"
+        print(text, filename)
+        try:
+            # Infer
+            with torch.no_grad():
+              speech_output = model(**inputs).waveform
+            # Save file
+            sf.write(
+                file=filename,
+                samplerate=sampling_rate,
+                data=speech_output.cpu().numpy().squeeze().astype(np.float32),
+                format='ogg', subtype='vorbis'
+            )
+        except Exception as error:
+            print(f"Error: {str(error)}")
+            try:
+              tts = gTTS(tts_text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
+              tts.save(filename)
+              print(f'For {tts_name} the TTS auxiliary will be used')
+            except:
+              sample_rate_aux = 22050
+              duration = float(segment['end']) - float(segment['start'])
+              data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
+              sf.write(filename, data, sample_rate_aux, format='ogg', subtype='vorbis')
+              print('Error: Audio will be replaced -> [silent audio].')
+        gc.collect(); torch.cuda.empty_cache()
+    try:
+        del tokenizer; del model; gc.collect(); torch.cuda.empty_cache()
+    except:
+        pass
+
+
 def audio_segmentation_to_voice(
     result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, is_gui,
     tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05,
@@ -291,27 +394,33 @@ def audio_segmentation_to_voice(
     # Find TTS method
     pattern_edge = re.compile(r'.*-(Male|Female)$')
     pattern_bark = re.compile(r'.* BARK$')
+    pattern_vits = re.compile(r'.* VITS$')
 
     speakers_edge = [speaker for speaker, voice in speaker_to_voice.items() if pattern_edge.match(voice)]
     speakers_bark = [speaker for speaker, voice in speaker_to_voice.items() if pattern_bark.match(voice)]
+    speakers_vits = [speaker for speaker, voice in speaker_to_voice.items() if pattern_vits.match(voice)]
 
     # Filter method in segments
     filtered_edge = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_edge]}
     filtered_bark = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_bark]}
+    filtered_vits = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_vits]}
 
     # Infer
     if filtered_edge["segments"]:
         print(f"EDGE TTS: {speakers_edge}")
-        segments_egde_tts(filtered_edge, TRANSLATE_AUDIO_TO, is_gui) # ogg
+        segments_egde_tts(filtered_edge, TRANSLATE_AUDIO_TO, is_gui) # mp3
     if filtered_bark["segments"]:
         print(f"BARK TTS: {speakers_bark}")
         segments_bark_tts(filtered_bark, TRANSLATE_AUDIO_TO, model_id_bark) # wav
+    if filtered_vits["segments"]:
+        print(f"VITS TTS: {speakers_vits}")
+        segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO) # wav
 
-    [result.pop('tts_name', None) for result in result_diarize['segments']] # see if retain the tts_name in debug
-    return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark)
+    [result.pop('tts_name', None) for result in result_diarize['segments']]
+    return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits)
 
 
-def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark):
+def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits):
 
     print("Apply acceleration")
     audio_files = []
@@ -326,7 +435,7 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         # find name audio
         if speaker in speakers_edge:
             filename = f"audio/{start}.ogg"
-        elif speaker in speakers_bark:
+        elif speaker in speakers_bark + speakers_vits:
             filename = f"audio/{start}.ogg" # wav
 
         # duration
@@ -364,7 +473,7 @@ if __name__ == '__main__':
         TRANSLATE_AUDIO_TO="en",
         max_accelerate_audio=2.1,
         is_gui= True,
-        tts_voice00='es_speaker_8-Female BARK',
+        tts_voice00='en-facebook-mms VITS',
         tts_voice01="en-CA-ClaraNeural-Female",
         tts_voice02="en-GB-ThomasNeural-Male",
         tts_voice03="en-GB-SoniaNeural-Female",
