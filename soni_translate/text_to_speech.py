@@ -310,6 +310,28 @@ vits_voices_list = {
     'th_Northern-facebook-mms VITS': 'facebook/mms-tts-nod'
 }
 
+def uromanize(input_string):
+    """Convert non-Roman strings to Roman using the `uroman` perl package."""
+    #script_path = os.path.join(uroman_path, "bin", "uroman.pl")
+
+    if not os.path.exists("./uroman"):
+        print("Clonning repository uroman https://github.com/isi-nlp/uroman.git for romanize the text")
+        process = subprocess.Popen(["git", "clone", "https://github.com/isi-nlp/uroman.git"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+    script_path = os.path.join("./uroman", "bin", "uroman.pl")
+
+    command = ["perl", script_path]
+
+    process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # Execute the perl command
+    stdout, stderr = process.communicate(input=input_string.encode())
+
+    if process.returncode != 0:
+        raise ValueError(f"Error {process.returncode}: {stderr.decode()}")
+
+    # Return the output as a string and skip the new-line character at the end
+    return stdout.decode()[:-1]
+    
 def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
     from transformers import VitsModel, AutoTokenizer
 
@@ -332,7 +354,12 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
             tokenizer = AutoTokenizer.from_pretrained(vits_voices_list[tts_name])
             sampling_rate = model.config.sampling_rate
 
-        inputs = tokenizer(text, return_tensors="pt")
+        if tokenizer.is_uroman:
+            romanize_text = uromanize(text)
+            print(f"Romanize text: {romanize_text}")
+            inputs = tokenizer(romanize_text, return_tensors="pt")
+        else:
+            inputs = tokenizer(text, return_tensors="pt")
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
@@ -351,10 +378,11 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
         except Exception as error:
             print(f"Error: {str(error)}")
             try:
-              tts = gTTS(tts_text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
+              tts = gTTS(text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
               tts.save(filename)
               print(f'For {tts_name} the TTS auxiliary will be used')
-            except:
+            except Exception as error:
+              print(f"Error: {str(error)}")
               sample_rate_aux = 22050
               duration = float(segment['end']) - float(segment['start'])
               data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
