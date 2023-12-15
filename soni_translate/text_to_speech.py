@@ -1,8 +1,8 @@
 from gtts import gTTS
 import edge_tts, asyncio, nest_asyncio
 from tqdm import tqdm
-import librosa, os, subprocess, re, torch, gc
-from language_configuration import fix_code_language
+import librosa, os, re, torch, gc, subprocess
+from .language_configuration import fix_code_language, bark_voices_list, vits_voices_list
 import numpy as np
 #from scipy.io.wavfile import write as write_wav
 import soundfile as sf
@@ -73,139 +73,6 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
         edge_request_tts(text, tts_name, filename, TRANSLATE_AUDIO_TO, is_gui)
 
 
-bark_voices_list = {
-    'de_speaker_0-Male BARK': 'v2/de_speaker_0',
-    'de_speaker_1-Male BARK': 'v2/de_speaker_1',
-    'de_speaker_2-Male BARK': 'v2/de_speaker_2',
-    'de_speaker_3-Female BARK': 'v2/de_speaker_3',
-    'de_speaker_4-Male BARK': 'v2/de_speaker_4',
-    'de_speaker_5-Male BARK': 'v2/de_speaker_5',
-    'de_speaker_6-Male BARK': 'v2/de_speaker_6',
-    'de_speaker_7-Male BARK': 'v2/de_speaker_7',
-    'de_speaker_8-Female BARK': 'v2/de_speaker_8',
-    'de_speaker_9-Male BARK': 'v2/de_speaker_9',
-    'en_speaker_0-Male BARK': 'v2/en_speaker_0',
-    'en_speaker_1-Male BARK': 'v2/en_speaker_1',
-    'en_speaker_2-Male BARK': 'v2/en_speaker_2',
-    'en_speaker_3-Male BARK': 'v2/en_speaker_3',
-    'en_speaker_4-Male BARK': 'v2/en_speaker_4',
-    'en_speaker_5-Male BARK': 'v2/en_speaker_5',
-    'en_speaker_6-Male BARK': 'v2/en_speaker_6',
-    'en_speaker_7-Male BARK': 'v2/en_speaker_7',
-    'en_speaker_8-Male BARK': 'v2/en_speaker_8',
-    'en_speaker_9-Female BARK': 'v2/en_speaker_9',
-    'es_speaker_0-Male BARK': 'v2/es_speaker_0',
-    'es_speaker_1-Male BARK': 'v2/es_speaker_1',
-    'es_speaker_2-Male BARK': 'v2/es_speaker_2',
-    'es_speaker_3-Male BARK': 'v2/es_speaker_3',
-    'es_speaker_4-Male BARK': 'v2/es_speaker_4',
-    'es_speaker_5-Male BARK': 'v2/es_speaker_5',
-    'es_speaker_6-Male BARK': 'v2/es_speaker_6',
-    'es_speaker_7-Male BARK': 'v2/es_speaker_7',
-    'es_speaker_8-Female BARK': 'v2/es_speaker_8',
-    'es_speaker_9-Female BARK': 'v2/es_speaker_9',
-    'fr_speaker_0-Male BARK': 'v2/fr_speaker_0',
-    'fr_speaker_1-Female BARK': 'v2/fr_speaker_1',
-    'fr_speaker_2-Female BARK': 'v2/fr_speaker_2',
-    'fr_speaker_3-Male BARK': 'v2/fr_speaker_3',
-    'fr_speaker_4-Male BARK': 'v2/fr_speaker_4',
-    'fr_speaker_5-Female BARK': 'v2/fr_speaker_5',
-    'fr_speaker_6-Male BARK': 'v2/fr_speaker_6',
-    'fr_speaker_7-Male BARK': 'v2/fr_speaker_7',
-    'fr_speaker_8-Male BARK': 'v2/fr_speaker_8',
-    'fr_speaker_9-Male BARK': 'v2/fr_speaker_9',
-    'hi_speaker_0-Female BARK': 'v2/hi_speaker_0',
-    'hi_speaker_1-Female BARK': 'v2/hi_speaker_1',
-    'hi_speaker_2-Male BARK': 'v2/hi_speaker_2',
-    'hi_speaker_3-Female BARK': 'v2/hi_speaker_3',
-    'hi_speaker_4-Female BARK': 'v2/hi_speaker_4',
-    'hi_speaker_5-Male BARK': 'v2/hi_speaker_5',
-    'hi_speaker_6-Male BARK': 'v2/hi_speaker_6',
-    'hi_speaker_7-Male BARK': 'v2/hi_speaker_7',
-    'hi_speaker_8-Male BARK': 'v2/hi_speaker_8',
-    'hi_speaker_9-Female BARK': 'v2/hi_speaker_9',
-    'it_speaker_0-Male BARK': 'v2/it_speaker_0',
-    'it_speaker_1-Male BARK': 'v2/it_speaker_1',
-    'it_speaker_2-Female BARK': 'v2/it_speaker_2',
-    'it_speaker_3-Male BARK': 'v2/it_speaker_3',
-    'it_speaker_4-Male BARK': 'v2/it_speaker_4',
-    'it_speaker_5-Male BARK': 'v2/it_speaker_5',
-    'it_speaker_6-Male BARK': 'v2/it_speaker_6',
-    'it_speaker_7-Female BARK': 'v2/it_speaker_7',
-    'it_speaker_8-Male BARK': 'v2/it_speaker_8',
-    'it_speaker_9-Female BARK': 'v2/it_speaker_9',
-    'ja_speaker_0-Female BARK': 'v2/ja_speaker_0',
-    'ja_speaker_1-Female BARK': 'v2/ja_speaker_1',
-    'ja_speaker_2-Male BARK': 'v2/ja_speaker_2',
-    'ja_speaker_3-Female BARK': 'v2/ja_speaker_3',
-    'ja_speaker_4-Female BARK': 'v2/ja_speaker_4',
-    'ja_speaker_5-Female BARK': 'v2/ja_speaker_5',
-    'ja_speaker_6-Male BARK': 'v2/ja_speaker_6',
-    'ja_speaker_7-Female BARK': 'v2/ja_speaker_7',
-    'ja_speaker_8-Female BARK': 'v2/ja_speaker_8',
-    'ja_speaker_9-Female BARK': 'v2/ja_speaker_9',
-    'ko_speaker_0-Female BARK': 'v2/ko_speaker_0',
-    'ko_speaker_1-Male BARK': 'v2/ko_speaker_1',
-    'ko_speaker_2-Male BARK': 'v2/ko_speaker_2',
-    'ko_speaker_3-Male BARK': 'v2/ko_speaker_3',
-    'ko_speaker_4-Male BARK': 'v2/ko_speaker_4',
-    'ko_speaker_5-Male BARK': 'v2/ko_speaker_5',
-    'ko_speaker_6-Male BARK': 'v2/ko_speaker_6',
-    'ko_speaker_7-Male BARK': 'v2/ko_speaker_7',
-    'ko_speaker_8-Male BARK': 'v2/ko_speaker_8',
-    'ko_speaker_9-Male BARK': 'v2/ko_speaker_9',
-    'pl_speaker_0-Male BARK': 'v2/pl_speaker_0',
-    'pl_speaker_1-Male BARK': 'v2/pl_speaker_1',
-    'pl_speaker_2-Male BARK': 'v2/pl_speaker_2',
-    'pl_speaker_3-Male BARK': 'v2/pl_speaker_3',
-    'pl_speaker_4-Female BARK': 'v2/pl_speaker_4',
-    'pl_speaker_5-Male BARK': 'v2/pl_speaker_5',
-    'pl_speaker_6-Female BARK': 'v2/pl_speaker_6',
-    'pl_speaker_7-Male BARK': 'v2/pl_speaker_7',
-    'pl_speaker_8-Male BARK': 'v2/pl_speaker_8',
-    'pl_speaker_9-Female BARK': 'v2/pl_speaker_9',
-    'pt_speaker_0-Male BARK': 'v2/pt_speaker_0',
-    'pt_speaker_1-Male BARK': 'v2/pt_speaker_1',
-    'pt_speaker_2-Male BARK': 'v2/pt_speaker_2',
-    'pt_speaker_3-Male BARK': 'v2/pt_speaker_3',
-    'pt_speaker_4-Male BARK': 'v2/pt_speaker_4',
-    'pt_speaker_5-Male BARK': 'v2/pt_speaker_5',
-    'pt_speaker_6-Male BARK': 'v2/pt_speaker_6',
-    'pt_speaker_7-Male BARK': 'v2/pt_speaker_7',
-    'pt_speaker_8-Male BARK': 'v2/pt_speaker_8',
-    'pt_speaker_9-Male BARK': 'v2/pt_speaker_9',
-    'ru_speaker_0-Male BARK': 'v2/ru_speaker_0',
-    'ru_speaker_1-Male BARK': 'v2/ru_speaker_1',
-    'ru_speaker_2-Male BARK': 'v2/ru_speaker_2',
-    'ru_speaker_3-Male BARK': 'v2/ru_speaker_3',
-    'ru_speaker_4-Male BARK': 'v2/ru_speaker_4',
-    'ru_speaker_5-Female BARK': 'v2/ru_speaker_5',
-    'ru_speaker_6-Female BARK': 'v2/ru_speaker_6',
-    'ru_speaker_7-Male BARK': 'v2/ru_speaker_7',
-    'ru_speaker_8-Male BARK': 'v2/ru_speaker_8',
-    'ru_speaker_9-Female BARK': 'v2/ru_speaker_9',
-    'tr_speaker_0-Male BARK': 'v2/tr_speaker_0',
-    'tr_speaker_1-Male BARK': 'v2/tr_speaker_1',
-    'tr_speaker_2-Male BARK': 'v2/tr_speaker_2',
-    'tr_speaker_3-Male BARK': 'v2/tr_speaker_3',
-    'tr_speaker_4-Female BARK': 'v2/tr_speaker_4',
-    'tr_speaker_5-Female BARK': 'v2/tr_speaker_5',
-    'tr_speaker_6-Male BARK': 'v2/tr_speaker_6',
-    'tr_speaker_7-Male BARK': 'v2/tr_speaker_7',
-    'tr_speaker_8-Male BARK': 'v2/tr_speaker_8',
-    'tr_speaker_9-Male BARK': 'v2/tr_speaker_9',
-    'zh_speaker_0-Male BARK': 'v2/zh_speaker_0',
-    'zh_speaker_1-Male BARK': 'v2/zh_speaker_1',
-    'zh_speaker_2-Male BARK': 'v2/zh_speaker_2',
-    'zh_speaker_3-Male BARK': 'v2/zh_speaker_3',
-    'zh_speaker_4-Female BARK': 'v2/zh_speaker_4',
-    'zh_speaker_5-Male BARK': 'v2/zh_speaker_5',
-    'zh_speaker_6-Female BARK': 'v2/zh_speaker_6',
-    'zh_speaker_7-Female BARK': 'v2/zh_speaker_7',
-    'zh_speaker_8-Male BARK': 'v2/zh_speaker_8',
-    'zh_speaker_9-Female BARK': 'v2/zh_speaker_9'
-}
-
 def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark="suno/bark-small"):
     from transformers import AutoProcessor, AutoModel, BarkModel
     from optimum.bettertransformer import BetterTransformer
@@ -252,10 +119,11 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
         except Exception as error:
             print(f"Error: {str(error)}")
             try:
-              tts = gTTS(tts_text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
+              tts = gTTS(text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
               tts.save(filename)
               print(f'For {tts_name} the TTS auxiliary will be used')
-            except:
+            except Exception as error:
+              print(f"Error: {str(error)}")
               sample_rate_aux = 22050
               duration = float(segment['end']) - float(segment['start'])
               data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
@@ -264,51 +132,6 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
         gc.collect(); torch.cuda.empty_cache()
     del processor; del model; gc.collect(); torch.cuda.empty_cache()
 
-
-vits_voices_list = {
-    'ar-facebook-mms VITS': 'facebook/mms-tts-ara',
-    #'zh-facebook-mms VITS': 'facebook/mms-tts-cmn',
-    'zh_Hakka-facebook-mms VITS': 'facebook/mms-tts-hak',
-    'zh_MinNan-facebook-mms VITS': 'facebook/mms-tts-nan',
-    #'cs-facebook-mms VITS': 'facebook/mms-tts-ces',
-    #'da-facebook-mms VITS': 'facebook/mms-tts-dan',
-    'nl-facebook-mms VITS': 'facebook/mms-tts-nld',
-    'en-facebook-mms VITS': 'facebook/mms-tts-eng',
-    'fi-facebook-mms VITS': 'facebook/mms-tts-fin',
-    'fr-facebook-mms VITS': 'facebook/mms-tts-fra',
-    'de-facebook-mms VITS': 'facebook/mms-tts-deu',
-    'el-facebook-mms VITS': 'facebook/mms-tts-ell',
-    'el_Ancient-facebook-mms VITS': 'facebook/mms-tts-grc',
-    'he-facebook-mms VITS': 'facebook/mms-tts-heb',
-    'hu-facebook-mms VITS': 'facebook/mms-tts-hun',
-    #'it-facebook-mms VITS': 'facebook/mms-tts-ita',
-    #'ja-facebook-mms VITS': 'facebook/mms-tts-jpn',
-    'ko-facebook-mms VITS': 'facebook/mms-tts-kor',
-    'fa-facebook-mms VITS': 'facebook/mms-tts-fas',
-    'pl-facebook-mms VITS': 'facebook/mms-tts-pol',
-    'pt-facebook-mms VITS': 'facebook/mms-tts-por',
-    'ru-facebook-mms VITS': 'facebook/mms-tts-rus',
-    'es-facebook-mms VITS': 'facebook/mms-tts-spa',
-    'tr-facebook-mms VITS': 'facebook/mms-tts-tur',
-    'uk-facebook-mms VITS': 'facebook/mms-tts-ukr',
-    'ur_arabic-facebook-mms VITS': 'facebook/mms-tts-urd-script_arabic',
-    'ur_devanagari-facebook-mms VITS': 'facebook/mms-tts-urd-script_devanagari',
-    'ur_latin-facebook-mms VITS': 'facebook/mms-tts-urd-script_latin',
-    'vi-facebook-mms VITS': 'facebook/mms-tts-vie',
-    'hi-facebook-mms VITS': 'facebook/mms-tts-hin',
-    'hi_Fiji-facebook-mms VITS': 'facebook/mms-tts-hif',
-    'id-facebook-mms VITS': 'facebook/mms-tts-ind',
-    'bn-facebook-mms VITS': 'facebook/mms-tts-ben',
-    'te-facebook-mms VITS': 'facebook/mms-tts-tel',
-    'mr-facebook-mms VITS': 'facebook/mms-tts-mar',
-    'ta-facebook-mms VITS': 'facebook/mms-tts-tam',
-    'jw-facebook-mms VITS': 'facebook/mms-tts-jav',
-    'jw_Suriname-facebook-mms VITS': 'facebook/mms-tts-jvn',
-    'ca-facebook-mms VITS': 'facebook/mms-tts-cat',
-    'ne-facebook-mms VITS': 'facebook/mms-tts-nep',
-    'th-facebook-mms VITS': 'facebook/mms-tts-tha',
-    'th_Northern-facebook-mms VITS': 'facebook/mms-tts-nod'
-}
 
 def uromanize(input_string):
     """Convert non-Roman strings to Roman using the `uroman` perl package."""
@@ -331,7 +154,7 @@ def uromanize(input_string):
 
     # Return the output as a string and skip the new-line character at the end
     return stdout.decode()[:-1]
-    
+
 def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
     from transformers import VitsModel, AutoTokenizer
 
@@ -442,7 +265,7 @@ def audio_segmentation_to_voice(
         segments_bark_tts(filtered_bark, TRANSLATE_AUDIO_TO, model_id_bark) # wav
     if filtered_vits["segments"]:
         print(f"VITS TTS: {speakers_vits}")
-        segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO) # wav
+        segments_vits_tts(filtered_vits, TRANSLATE_AUDIO_TO) # wav
 
     [result.pop('tts_name', None) for result in result_diarize['segments']]
     return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits)
@@ -461,10 +284,10 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         speaker = segment['speaker']
 
         # find name audio
-        if speaker in speakers_edge:
-            filename = f"audio/{start}.ogg"
-        elif speaker in speakers_bark + speakers_vits:
-            filename = f"audio/{start}.ogg" # wav
+        #if speaker in speakers_edge:
+        filename = f"audio/{start}.ogg"
+        #elif speaker in speakers_bark + speakers_vits:
+        #    filename = f"audio/{start}.wav" # wav
 
         # duration
         duration_true = end - start

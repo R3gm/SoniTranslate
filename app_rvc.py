@@ -19,7 +19,7 @@ from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list
 from soni_translate.translate_segments import translate_text
 from soni_translate.preprocessor import audio_video_preprocessor
-from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST
+from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST, bark_voices_list, vits_voices_list
 from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list
 from urllib.parse import unquote
 from soni_translate.speech_segmentation import transcribe_speech, align_speech, diarize_speech, diarization_models
@@ -689,7 +689,10 @@ def create_parser():
     return parser
 
 if __name__ == '__main__':
-    list_tts = edge_tts_voices_list()
+    list_edge = edge_tts_voices_list()
+    list_bark = list(bark_voices_list.keys())
+    list_vits = list(vits_voices_list.keys())
+    list_tts = sorted(list_edge + list_bark + list_vits)
     models, index_paths = upload_model_list()
     os.environ["VOICES_MODELS"] = 'DISABLE'
 

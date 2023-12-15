@@ -18,6 +18,10 @@ git+https://github.com/facebookresearch/fairseq.git@refs/pull/5359/merge
 gdown
 rarfile
 IPython
+transformers
+accelerate
+optimum
+sentencepiece
 
 # after this
 # pip install git+https://github.com/omry/omegaconf.git@refs/pull/1137/merge
