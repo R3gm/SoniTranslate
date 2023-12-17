@@ -15,6 +15,27 @@ class TTS_OperationError(Exception):
         self.message = message
         super().__init__(self.message)
 
+def verify_saved_file_and_size(filename):
+    if not os.path.exists(filename):
+        raise TTS_OperationError(f"File '{filename}' was not saved.")
+    if os.path.getsize(filename) == 0:
+        raise TTS_OperationError(f"File '{filename}' has a zero size. Related to incorrect TTS for the target language")
+
+def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
+    print(f"Error: {str(error)}")
+    try:
+        tts = gTTS(segment["text"], lang=fix_code_language(TRANSLATE_AUDIO_TO))
+        tts.save(filename)
+        print(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')
+        verify_saved_file_and_size(filename)
+    except Exception as error:
+        print(f"Error: {str(error)}")
+        sample_rate_aux = 22050
+        duration = float(segment['end']) - float(segment['start'])
+        data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
+        sf.write(filename, data, sample_rate_aux, format='ogg', subtype='vorbis')
+        print('Error: Audio will be replaced -> [silent audio].')
+        verify_saved_file_and_size(filename)
 
 def edge_tts_voices_list():
     completed_process = subprocess.run(
@@ -43,22 +64,6 @@ def edge_tts_voices_list():
 
     return formatted_voices
 
-def edge_request_tts(tts_text, tts_voice, filename, language, is_gui=False):
-    print(tts_text, filename)
-    try:
-        #nest_asyncio.apply() if not is_gui else None
-        asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
-    except Exception as error:
-      print(str(error))
-      try:
-        tts = gTTS(tts_text, lang=fix_code_language(language))
-        tts.save(filename)
-        print(f'No audio was received. Please change the tts voice for {tts_voice}. TTS auxiliary will be used in the segment')
-      except:
-        tts = gTTS('a', lang=fix_code_language(language))
-        tts.save(filename)
-        print('Error: Audio will be replaced.')
-
 def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
 
     for segment in tqdm(filtered_edge_segments['segments']):
@@ -70,8 +75,14 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        edge_request_tts(text, tts_name, filename, TRANSLATE_AUDIO_TO, is_gui)
 
+        print(text, filename)
+        try:
+            #nest_asyncio.apply() if not is_gui else None
+            asyncio.run(edge_tts.Communicate(text, "-".join(tts_name.split('-')[:-1])).save(filename))
+            verify_saved_file_and_size(filename)
+        except Exception as error:
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
 
 def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark="suno/bark-small"):
     from transformers import AutoProcessor, AutoModel, BarkModel
@@ -116,19 +127,9 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
                 data=speech_output.cpu().numpy().squeeze().astype(np.float32),
                 format='ogg', subtype='vorbis'
             )
+            verify_saved_file_and_size(filename)
         except Exception as error:
-            print(f"Error: {str(error)}")
-            try:
-              tts = gTTS(text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
-              tts.save(filename)
-              print(f'For {tts_name} the TTS auxiliary will be used')
-            except Exception as error:
-              print(f"Error: {str(error)}")
-              sample_rate_aux = 22050
-              duration = float(segment['end']) - float(segment['start'])
-              data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
-              sf.write(filename, data, sample_rate_aux, format='ogg', subtype='vorbis')
-              print('Error: Audio will be replaced -> [silent audio].')
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
         gc.collect(); torch.cuda.empty_cache()
     del processor; del model; gc.collect(); torch.cuda.empty_cache()
 
@@ -198,19 +199,9 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
                 data=speech_output.cpu().numpy().squeeze().astype(np.float32),
                 format='ogg', subtype='vorbis'
             )
+            verify_saved_file_and_size(filename)
         except Exception as error:
-            print(f"Error: {str(error)}")
-            try:
-              tts = gTTS(text, lang=fix_code_language(TRANSLATE_AUDIO_TO))
-              tts.save(filename)
-              print(f'For {tts_name} the TTS auxiliary will be used')
-            except Exception as error:
-              print(f"Error: {str(error)}")
-              sample_rate_aux = 22050
-              duration = float(segment['end']) - float(segment['start'])
-              data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
-              sf.write(filename, data, sample_rate_aux, format='ogg', subtype='vorbis')
-              print('Error: Audio will be replaced -> [silent audio].')
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
         gc.collect(); torch.cuda.empty_cache()
     try:
         del tokenizer; del model; gc.collect(); torch.cuda.empty_cache()
