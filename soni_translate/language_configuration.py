@@ -47,10 +47,19 @@ EXTRA_ALIGN = {
     "th" : "sakares/wav2vec2-large-xlsr-thai-demo"
 }
 
-def fix_code_language(translate_to):
-    replace_code_lang__google_translator_gtts = {"zh": "zh-CN", "he": "iw"}
-    target_lang = replace_code_lang__google_translator_gtts.get(translate_to, translate_to)
-    return target_lang
+def fix_code_language(translate_to, syntax="google"):
+
+    if syntax == "google":
+        # google-translator, gTTS
+        replace_lang_code = {"zh": "zh-CN", "he": "iw", "zh-cn": "zh-CN"}
+    elif syntax == "coqui":
+        # coqui-xtts
+        replace_lang_code = {"zh": "zh-cn", "zh-CN": "zh-cn"}
+
+    new_code_lang = replace_lang_code.get(translate_to, translate_to)
+    print(f"{translate_to} -> {new_code_lang}")
+    return new_code_lang
+
 
 bark_voices_list = {
     'de_speaker_0-Male BARK': 'v2/de_speaker_0',
