@@ -131,7 +131,10 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
         except Exception as error:
             error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
         gc.collect(); torch.cuda.empty_cache()
-    del processor; del model; gc.collect(); torch.cuda.empty_cache()
+    try:
+        del processor; del model; gc.collect(); torch.cuda.empty_cache()
+    except:
+        pass
 
 
 def uromanize(input_string):
@@ -209,10 +212,68 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
         pass
 
 
+def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2", emotion=None):
+    """ XTTS
+    Install:
+    pip install -q TTS==0.21.1
+    pip install -q numpy==1.23.5
+
+    Notes:
+    - tts_name is the wav|mp3|ogg|m4a file for VC
+    """
+    from TTS.api import TTS
+
+    TRANSLATE_AUDIO_TO = fix_code_language(TRANSLATE_AUDIO_TO, syntax="coqui")
+    supported_lang_coqui = ['zh-cn', 'en', 'fr', 'de', 'it', 'pt', 'pl', 'tr', 'ru', 'nl', 'cs', 'ar', 'es', 'hu', 'ko', 'ja']
+    if TRANSLATE_AUDIO_TO not in supported_lang_coqui:
+        raise TTS_OperationError(f"'{TRANSLATE_AUDIO_TO}' is not a supported language for Coqui XTTS")
+    #Emotion and speed can only be used with Coqui Studio models. Which is discontinued
+    #emotions = ["Neutral", "Happy", "Sad", "Angry", "Dull"]
+
+    # Init TTS
+    model = TTS(model_id_coqui).to(device)
+    sampling_rate = 24000
+
+    #filtered_segments = filtered_coqui_segments['segments']
+    # Sorting the segments by 'tts_name'
+    #sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
+    #print(sorted_segments)
+
+    for segment in tqdm(filtered_coqui_segments['segments']):
+
+        speaker = segment['speaker']
+        text = segment['text']
+        start = segment['start']
+        tts_name = segment['tts_name']
+
+        # make the tts audio
+        filename = f"audio/{start}.ogg"
+        print(text, filename)
+        try:
+            # Infer
+            wav = model.tts(text=text, speaker_wav=tts_name, language=TRANSLATE_AUDIO_TO)
+            # Save file
+            sf.write(
+                file=filename,
+                samplerate=sampling_rate,
+                data=wav,
+                format='ogg', subtype='vorbis'
+            )
+            verify_saved_file_and_size(filename)
+        except Exception as error:
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
+        gc.collect(); torch.cuda.empty_cache()
+    try:
+        del model; gc.collect(); torch.cuda.empty_cache()
+    except:
+        pass
+
+
 def audio_segmentation_to_voice(
     result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, is_gui,
     tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05,
-    model_id_bark="suno/bark-small"
+    model_id_bark="suno/bark-small",
+    model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2"
     ):
 
     # Mapping speakers to voice variables
@@ -237,15 +298,18 @@ def audio_segmentation_to_voice(
     pattern_edge = re.compile(r'.*-(Male|Female)$')
     pattern_bark = re.compile(r'.* BARK$')
     pattern_vits = re.compile(r'.* VITS$')
+    pattern_coqui = re.compile(r'.+\.(wav|mp3|ogg|m4a)$')
 
     speakers_edge = [speaker for speaker, voice in speaker_to_voice.items() if pattern_edge.match(voice)]
     speakers_bark = [speaker for speaker, voice in speaker_to_voice.items() if pattern_bark.match(voice)]
     speakers_vits = [speaker for speaker, voice in speaker_to_voice.items() if pattern_vits.match(voice)]
+    speakers_coqui = [speaker for speaker, voice in speaker_to_voice.items() if pattern_coqui.match(voice)]
 
     # Filter method in segments
     filtered_edge = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_edge]}
     filtered_bark = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_bark]}
     filtered_vits = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_vits]}
+    filtered_coqui = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_coqui]}
 
     # Infer
     if filtered_edge["segments"]:
@@ -257,12 +321,15 @@ def audio_segmentation_to_voice(
     if filtered_vits["segments"]:
         print(f"VITS TTS: {speakers_vits}")
         segments_vits_tts(filtered_vits, TRANSLATE_AUDIO_TO) # wav
+    if filtered_coqui["segments"]:
+        print(f"Coqui TTS: {speakers_coqui}")
+        segments_coqui_tts(filtered_vits, TRANSLATE_AUDIO_TO, model_id_coqui) # wav
 
     [result.pop('tts_name', None) for result in result_diarize['segments']]
-    return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits)
+    return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui)
 
 
-def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits):
+def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui):
 
     print("Apply acceleration")
     audio_files = []
@@ -277,7 +344,7 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         # find name audio
         #if speaker in speakers_edge:
         filename = f"audio/{start}.ogg"
-        #elif speaker in speakers_bark + speakers_vits:
+        #elif speaker in speakers_bark + speakers_vits + speakers_coqui:
         #    filename = f"audio/{start}.wav" # wav
 
         # duration
