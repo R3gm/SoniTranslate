@@ -4,6 +4,8 @@ from tqdm import tqdm
 import librosa, os, re, torch, gc, subprocess
 from .language_configuration import fix_code_language, bark_voices_list, vits_voices_list
 import numpy as np
+from typing import Any, Dict
+from pathlib import Path
 #from scipy.io.wavfile import write as write_wav
 import soundfile as sf
 
@@ -257,6 +259,118 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
                 file=filename,
                 samplerate=sampling_rate,
                 data=wav,
+                format='ogg', subtype='vorbis'
+            )
+            verify_saved_file_and_size(filename)
+        except Exception as error:
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
+        gc.collect(); torch.cuda.empty_cache()
+    try:
+        del model; gc.collect(); torch.cuda.empty_cache()
+    except:
+        pass
+
+
+def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_voices: bool = False):
+    from piper import PiperVoice
+    from piper.download import ensure_voice_exists, find_voice, get_voices
+
+    try:
+        import onnxruntime as rt
+        if rt.get_device() == 'GPU':
+            print("onnxruntime device > GPU")
+            cuda = True
+        else:
+            print("onnxruntime device > CPU") # try pip install onnxruntime-gpu
+            cuda = False
+    except Exception as error:
+        raise TTS_OperationError(f"onnxruntime error: {str(error)}")
+
+    if not download_dir:
+        # Download to first data directory by default
+        download_dir = data_dir[0]
+
+    # Download voice if file doesn't exist
+    model_path = Path(model)
+    if not model_path.exists():
+        # Load voice info
+        voices_info = get_voices(download_dir, update_voices=update_voices)
+
+        # Resolve aliases for backwards compatibility with old voice names
+        aliases_info: Dict[str, Any] = {}
+        for voice_info in voices_info.values():
+            for voice_alias in voice_info.get("aliases", []):
+                aliases_info[voice_alias] = {"_is_alias": True, **voice_info}
+
+        voices_info.update(aliases_info)
+        ensure_voice_exists(model, data_dir, download_dir, voices_info)
+        model, config = find_voice(model, data_dir)
+
+    # Load voice
+    voice = PiperVoice.load(model, config_path=config, use_cuda=cuda)
+
+    return voice
+
+def synthesize_text_to_audio_np_array(voice, text, synthesize_args):
+    audio_stream = voice.synthesize_stream_raw(text, **synthesize_args)
+
+    # Collect the audio bytes into a single NumPy array
+    audio_data = b''
+    for audio_bytes in audio_stream:
+        audio_data += audio_bytes
+
+    # Ensure correct data type and convert audio bytes to NumPy array
+    audio_np = np.frombuffer(audio_data, dtype=np.int16)
+    return audio_np
+
+def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
+    """
+    Install:
+    pip install -q piper-tts==1.2.0 onnxruntime-gpu
+    """
+    
+    data_dir = [str(Path.cwd())] # "Data directory to check for downloaded models (default: current directory)"
+    download_dir = "piper_vits_onnx_models"
+    #model_name = "en_US-lessac-medium" tts_name in a dict like VITS
+    update_voices = True # "Download latest voices.json during startup",
+
+    synthesize_args = {
+        "speaker_id": None,
+        "length_scale": 1.0,
+        "noise_scale": 0.667,
+        "noise_w": 0.8,
+        "sentence_silence": 0.0,
+    }
+
+    filtered_segments = filtered_onnx_vits_segments['segments']
+    # Sorting the segments by 'tts_name'
+    sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
+    print(sorted_segments)
+
+    model_name_key = None
+    for segment in tqdm(sorted_segments):
+
+        speaker = segment['speaker']
+        text = segment['text']
+        start = segment['start']
+        tts_name = segment['tts_name']
+
+        if tts_name != model_name_key:
+            model_name_key = tts_name
+            model = load_piper_model(tts_name, data_dir, download_dir, update_voices)
+            sampling_rate = model.config.sample_rate
+
+        # make the tts audio
+        filename = f"audio/{start}.ogg"
+        print(text, filename)
+        try:
+            # Infer
+            speech_output = synthesize_text_to_audio_np_array(model, text, synthesize_args)
+            # Save file
+            sf.write(
+                file=filename,
+                samplerate=sampling_rate,
+                data=speech_output, #.cpu().numpy().squeeze().astype(np.float32),
                 format='ogg', subtype='vorbis'
             )
             verify_saved_file_and_size(filename)
