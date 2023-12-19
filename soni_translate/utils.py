@@ -133,8 +133,81 @@ def select_zip_and_rar_files(directory_path="downloads/"):
 
     return 'Download complete'
 
+# =====================================
+# Download Manager
+# =====================================
+from urllib.parse import urlparse
+
+
+def load_file_from_url(
+    url: str,
+    model_dir: str,
+    file_name: str | None = None,
+    overwrite: bool = False,
+    progress: bool = True,
+) -> str:
+    """Download a file from `url` into `model_dir`, using the file present if possible.
+
+    Returns the path to the downloaded file.
+    """
+    os.makedirs(model_dir, exist_ok=True)
+    if not file_name:
+        parts = urlparse(url)
+        file_name = os.path.basename(parts.path)
+    cached_file = os.path.abspath(os.path.join(model_dir, file_name))
+
+    # Overwrite
+    if os.path.exists(cached_file):
+        if overwrite or os.path.getsize(cached_file) == 0:
+            remove_files(cached_file)
+            
+    # Download  
+    if not os.path.exists(cached_file):
+        print(f'Downloading: "{url}" to {cached_file}\n')
+        from torch.hub import download_url_to_file
+        download_url_to_file(url, cached_file, progress=progress)
+    else:
+        print(cached_file)
+
+    return cached_file
+
+def friendly_name(file: str):
+    if file.startswith("http"):
+        file = urlparse(file).path
+
+    file = os.path.basename(file)
+    model_name, extension = os.path.splitext(file)
+    return model_name, extension
+
+
+def download_manager(url: str, path: str, extension: str = "", overwrite: bool = False, progress: bool = True):
+    url = url.strip()
+
+    name, ext = friendly_name(url)
+    name += ext if not extension else f".{extension}"
+
+    if url.startswith("http"):
+        filename = load_file_from_url(
+            url=url,
+            model_dir=path,
+            file_name=name,
+            overwrite=overwrite,
+            progress=progress,
+        )
+    else:
+        filename = path
+
+    return filename
+
+
+
+# =====================================
+# File management
+# =====================================
 
 def remove_files(file_list):
+    if isinstance(file_list, str):
+        file_list = [file_list]
     for file in file_list:
         if os.path.exists(file):
             os.remove(file)
