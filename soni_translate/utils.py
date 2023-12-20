@@ -24,29 +24,29 @@ def print_tree_directory(root_dir, indent=''):
                 new_indent = indent + ('    ' if is_last_item else '│   ')
                 print_tree_directory(item_path, new_indent)
 
-
 def upload_model_list():
     weight_root = "weights"
     models = []
     for name in os.listdir(weight_root):
         if name.endswith(".pth"):
             models.append(name)
+    if models:
+        print(models)
 
     index_root = "logs"
     index_paths = []
     for name in os.listdir(index_root):
         if name.endswith(".index"):
             index_paths.append("logs/"+name)
+    if index_paths:
+        print(index_paths)
 
-    print(models, index_paths)
     return models, index_paths
 
 def manual_download(url, dst):
-    token = os.getenv("YOUR_HF_TOKEN")
-    user_header = f"\"Authorization: Bearer {token}\""
 
     if 'drive.google' in url:
-        print("Drive link")
+        print("Drive url")
         if 'folders' in url:
             print("folder")
             os.system(f'gdown --folder "{url}" -O {dst} --fuzzy -c')
@@ -54,30 +54,29 @@ def manual_download(url, dst):
             print("single")
             os.system(f'gdown "{url}" -O {dst} --fuzzy -c')
     elif 'huggingface' in url:
-        print("HuggingFace link")
+        print("HuggingFace url")
         if '/blob/' in url or '/resolve/' in url:
           if '/blob/' in url:
               url = url.replace('/blob/', '/resolve/')
-          #parsed_link = '\n{}\n\tout={}'.format(url, unquote(url.split('/')[-1]))
-          #os.system(f'echo -e "{parsed_link}" | aria2c --header={user_header} --console-log-level=error --summary-interval=10 -i- -j5 -x16 -s16 -k1M -c -d "{dst}"')
-          os.system(f"wget -P {dst} {url}")
+          download_manager(url=url, path=dst, overwrite=True, progress=True)
         else:
           os.system(f"git clone {url} {dst+'repo/'}")
-    elif 'http' in url or 'magnet' in url:
-        parsed_link = '"{}"'.format(url)
-        os.system(f'aria2c --optimize-concurrent-downloads --console-log-level=error --summary-interval=10 -j5 -x16 -s16 -k1M -c -d {dst} -Z {parsed_link}')
-
+    elif 'http' in url:
+        print("URL")
+        download_manager(url=url, path=dst, overwrite=True, progress=True)
+    elif os.path.exists(url):
+        print("Path")
+        copy_files(url, dst)
+    else:
+        print(f"No valid URL: {url}")
 
 def download_list(text_downloads):
     try:
       urls = [elem.strip() for elem in text_downloads.split(',')]
-    except:
-      return 'No valid link'
+    except Exception as error:
+      raise ValueError(f"No valid URL. {str(error)}")
 
-    directories = ['downloads', 'logs', 'weights']
-    for directory in directories:
-        if not os.path.exists(directory):
-            os.mkdir(directory)
+    create_directories(['downloads', 'logs', 'weights'])
 
     path_download = "downloads/"
     for url in urls:
@@ -92,10 +91,11 @@ def download_list(text_downloads):
     select_zip_and_rar_files("downloads/")
 
     models, _ = upload_model_list()
-    os.system("rm -rf downloads/repo")
+
+    # hf space models files delete
+    remove_directory_contents("downloads/repo")
 
     return f"Downloaded = {models}"
-
 
 def select_zip_and_rar_files(directory_path="downloads/"):
     #filter
@@ -138,7 +138,6 @@ def select_zip_and_rar_files(directory_path="downloads/"):
 # =====================================
 from urllib.parse import urlparse
 
-
 def load_file_from_url(
     url: str,
     model_dir: str,
@@ -160,8 +159,8 @@ def load_file_from_url(
     if os.path.exists(cached_file):
         if overwrite or os.path.getsize(cached_file) == 0:
             remove_files(cached_file)
-            
-    # Download  
+
+    # Download
     if not os.path.exists(cached_file):
         print(f'Downloading: "{url}" to {cached_file}\n')
         from torch.hub import download_url_to_file
@@ -205,9 +204,100 @@ def download_manager(url: str, path: str, extension: str = "", overwrite: bool =
 # File management
 # =====================================
 
+# only remove files
 def remove_files(file_list):
     if isinstance(file_list, str):
         file_list = [file_list]
+
     for file in file_list:
         if os.path.exists(file):
             os.remove(file)
+
+def remove_directory_contents(directory_path):
+    """
+    Removes all files and subdirectories within a directory.
+
+    Parameters:
+    directory_path (str): Path to the directory whose contents need to be removed.
+    """
+    if os.path.exists(directory_path):
+        for filename in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Content in '{directory_path}' removed.")
+    else:
+        print(f"Directory '{directory_path}' does not exist.")
+
+# Create directory if not exists
+def create_directories(directory_path):
+    if isinstance(directory_path, str):
+        directory_path = [directory_path]
+    for one_dir_path in directory_path:
+        if not os.path.exists(one_dir_path):
+            os.makedirs(one_dir_path)
+            print(f"Directory '{one_dir_path}' created.")
+
+def move_files(source_path, destination_path):
+    """
+    Moves file(s) from the source path to the destination path.
+
+    Parameters:
+    source_path (str or list): Path or list of paths to the source file(s) or directory.
+    destination_path (str): Path to the destination directory.
+    """
+    create_directories(destination_path)
+
+    if isinstance(source_path, str):
+        source_path = [source_path]
+
+    if os.path.isdir(source_path[0]):
+        # Copy all files from the source directory to the destination directory
+        base_path = source_path[0]
+        source_path = os.listdir(source_path[0])
+        source_path = [os.path.join(base_path, file_name) for file_name in source_path]
+
+    for one_source_path in source_path:
+        if os.path.exists(one_source_path):
+            shutil.move(one_source_path, destination_path)
+            #print(f"File '{one_source_path}' moved to '{destination_path}'.")
+        else:
+            print(f"File '{one_source_path}' does not exist.")
+
+def copy_files(source_path, destination_path):
+    """
+    Copies a file or multiple files from a source path to a destination path.
+
+    Parameters:
+    source_path (str or list): Path or list of paths to the source file(s) or directory.
+    destination_path (str): Path to the destination directory.
+    """
+    create_directories(destination_path)
+
+    if isinstance(source_path, str):
+        source_path = [source_path]
+
+    if os.path.isdir(source_path[0]):
+        # Copy all files from the source directory to the destination directory
+        base_path = source_path[0]
+        source_path = os.listdir(source_path[0])
+        source_path = [os.path.join(base_path, file_name) for file_name in source_path]
+
+    for one_source_path in source_path:
+        if os.path.exists(one_source_path):
+            shutil.copy2(one_source_path, destination_path)
+            #print(f"File '{one_source_path}' copied to '{destination_path}'.")
+        else:
+            print(f"File '{one_source_path}' does not exist.")
+
+def rename_file(current_name, new_name):
+    if os.path.exists(current_name):
+        os.rename(current_name, new_name)
+        print(f"File '{current_name}' renamed to '{new_name}'.")
+    else:
+        print(f"File '{current_name}' does not exist.")
