@@ -301,6 +301,8 @@ def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_
     if not download_dir:
         # Download to first data directory by default
         download_dir = data_dir[0]
+    else:
+        data_dir = [os.path.join(data_dir[0], download_dir)]
 
     # Download voice if file doesn't exist
     model_path = Path(model)
@@ -342,7 +344,7 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
     """
 
     data_dir = [str(Path.cwd())] # "Data directory to check for downloaded models (default: current directory)"
-    download_dir = "piper_vits_onnx_models"
+    download_dir = "PIPER_MODELS"
     #model_name = "en_US-lessac-medium" tts_name in a dict like VITS
     update_voices = True # "Download latest voices.json during startup",
 
@@ -461,7 +463,7 @@ def audio_segmentation_to_voice(
     return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui, speakers_vits_onnx)
 
 
-def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui):
+def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui, speakers_vits_onnx):
 
     print("Apply acceleration")
     audio_files = []
