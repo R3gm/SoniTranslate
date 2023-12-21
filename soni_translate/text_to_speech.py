@@ -1,8 +1,9 @@
 from gtts import gTTS
-import edge_tts, asyncio, nest_asyncio
+import edge_tts, asyncio, nest_asyncio, json
 from tqdm import tqdm
 import librosa, os, re, torch, gc, subprocess
 from .language_configuration import fix_code_language, bark_voices_list, vits_voices_list
+from .utils import download_manager
 import numpy as np
 from typing import Any, Dict
 from pathlib import Path
@@ -270,6 +271,17 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
     except:
         pass
 
+def piper_tts_voices_list():
+    file_path = download_manager(
+        url= "https://huggingface.co/rhasspy/piper-voices/resolve/main/voices.json",
+        path= "./PIPER_MODELS",
+    )
+
+    with open(file_path, 'r', encoding='utf8') as file:
+        data = json.load(file)
+    piper_id_models = [key + " VITS-onnx" for key in data.keys()]
+
+    return piper_id_models
 
 def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_voices: bool = False):
     from piper import PiperVoice
@@ -326,9 +338,9 @@ def synthesize_text_to_audio_np_array(voice, text, synthesize_args):
 def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
     """
     Install:
-    pip install -q piper-tts==1.2.0 onnxruntime-gpu
+    pip install -q piper-tts==1.2.0 onnxruntime-gpu # for cuda118
     """
-    
+
     data_dir = [str(Path.cwd())] # "Data directory to check for downloaded models (default: current directory)"
     download_dir = "piper_vits_onnx_models"
     #model_name = "en_US-lessac-medium" tts_name in a dict like VITS
@@ -353,7 +365,7 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
         speaker = segment['speaker']
         text = segment['text']
         start = segment['start']
-        tts_name = segment['tts_name']
+        tts_name = segment['tts_name'].replace(" VITS-onnx", "")
 
         if tts_name != model_name_key:
             model_name_key = tts_name
@@ -413,17 +425,20 @@ def audio_segmentation_to_voice(
     pattern_bark = re.compile(r'.* BARK$')
     pattern_vits = re.compile(r'.* VITS$')
     pattern_coqui = re.compile(r'.+\.(wav|mp3|ogg|m4a)$')
+    pattern_vits_onnx = re.compile(r'.* VITS-onnx$')
 
     speakers_edge = [speaker for speaker, voice in speaker_to_voice.items() if pattern_edge.match(voice)]
     speakers_bark = [speaker for speaker, voice in speaker_to_voice.items() if pattern_bark.match(voice)]
     speakers_vits = [speaker for speaker, voice in speaker_to_voice.items() if pattern_vits.match(voice)]
     speakers_coqui = [speaker for speaker, voice in speaker_to_voice.items() if pattern_coqui.match(voice)]
+    speakers_vits_onnx = [speaker for speaker, voice in speaker_to_voice.items() if pattern_vits_onnx.match(voice)]
 
     # Filter method in segments
     filtered_edge = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_edge]}
     filtered_bark = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_bark]}
     filtered_vits = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_vits]}
     filtered_coqui = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_coqui]}
+    filtered_vits_onnx = {"segments": [segment for segment in result_diarize['segments'] if segment['speaker'] in speakers_vits_onnx]}
 
     # Infer
     if filtered_edge["segments"]:
@@ -437,10 +452,13 @@ def audio_segmentation_to_voice(
         segments_vits_tts(filtered_vits, TRANSLATE_AUDIO_TO) # wav
     if filtered_coqui["segments"]:
         print(f"Coqui TTS: {speakers_coqui}")
-        segments_coqui_tts(filtered_vits, TRANSLATE_AUDIO_TO, model_id_coqui) # wav
+        segments_coqui_tts(filtered_coqui, TRANSLATE_AUDIO_TO, model_id_coqui) # wav
+    if filtered_vits_onnx["segments"]:
+        print(f"PIPER TTS: {speakers_vits_onnx}")
+        segments_vits_onnx_tts(filtered_vits_onnx, TRANSLATE_AUDIO_TO) # wav
 
     [result.pop('tts_name', None) for result in result_diarize['segments']]
-    return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui)
+    return accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui, speakers_vits_onnx)
 
 
 def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui):
@@ -458,7 +476,7 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         # find name audio
         #if speaker in speakers_edge:
         filename = f"audio/{start}.ogg"
-        #elif speaker in speakers_bark + speakers_vits + speakers_coqui:
+        #elif speaker in speakers_bark + speakers_vits + speakers_coqui + speakers_vits_onnx:
         #    filename = f"audio/{start}.wav" # wav
 
         # duration
