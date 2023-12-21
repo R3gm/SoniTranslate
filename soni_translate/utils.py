@@ -296,8 +296,13 @@ def copy_files(source_path, destination_path):
             print(f"File '{one_source_path}' does not exist.")
 
 def rename_file(current_name, new_name):
+    file_directory = os.path.dirname(current_name)
+
     if os.path.exists(current_name):
-        os.rename(current_name, new_name)
+        dir_new_name_file = os.path.join(file_directory, new_name)
+        os.rename(current_name, dir_new_name_file)
         print(f"File '{current_name}' renamed to '{new_name}'.")
+        return dir_new_name_file
     else:
         print(f"File '{current_name}' does not exist.")
+        return None
