@@ -340,7 +340,7 @@ def create_gui(theme, logs_in_gui=False):
                               compute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
                               pyannote_models_list = list(diarization_models.keys())
                               diarization_process_dropdown = gr.inputs.Dropdown(pyannote_models_list, default=pyannote_models_list[1], label="Diarization model")
-                              valid_translate_process = ["google_translator_batch", "google_translator_iterative"]
+                              valid_translate_process = ["google_translator_batch", "google_translator_iterative", "disable_translation"]
                               translate_process_dropdown = gr.inputs.Dropdown(valid_translate_process, default=valid_translate_process[0], label="Translation process")
 
                               gr.HTML("<hr></h2>")

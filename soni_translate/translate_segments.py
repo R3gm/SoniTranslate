@@ -87,7 +87,7 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
         print(str(error))
         print(f"The translation in chunks failed, switching to iterative. Related> too many request") # use proxy or less chunk size
         return translate_iterative(segments, TRANSLATE_AUDIO_TO)
-        
+
     # un chunk
     split_list = [sentence.split("|||||") for sentence in translated_lines]
     translated_lines = list(chain.from_iterable(split_list))
@@ -109,5 +109,7 @@ def translate_text(segments, TRANSLATE_AUDIO_TO, translation_process="google_tra
             return translate_batch(segments, fix_code_language(TRANSLATE_AUDIO_TO), chunk_size)
         case "google_translator_iterative":
             return translate_iterative(segments, fix_code_language(TRANSLATE_AUDIO_TO))
+        case "disable_translation":
+            return segments
         case _:
             raise ValueError("No valid translation process")
