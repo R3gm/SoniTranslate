@@ -16,11 +16,12 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 import os
 from soni_translate.audio_segments import create_translated_audio
-from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list, piper_tts_voices_list
+from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list, coqui_xtts_voices_list, piper_tts_voices_list
 from soni_translate.translate_segments import translate_text
 from soni_translate.preprocessor import audio_video_preprocessor
 from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST, bark_voices_list, vits_voices_list
-from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list
+from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list, download_manager
+from soni_translate.mdx_net import UVR_MODELS, MDX_DOWNLOAD_LINK, mdxnet_models_dir
 from urllib.parse import unquote
 from soni_translate.speech_segmentation import transcribe_speech, align_speech, diarize_speech, diarization_models
 import copy, logging, rarfile, zipfile, shutil, time, json, subprocess
@@ -30,6 +31,21 @@ try:
     print("PIPER TTS enabled")
 except:
     piper_enabled = False
+    print("PIPER TTS disabled")
+try:
+    from TTS.api import TTS
+    xtts_enabled = True
+    print("Coqui XTTS enabled")
+    print(
+        "In this app, by using Coqui TTS (text-to-speech), you acknowledge and agree to the license.\n"
+        "You confirm that you have read, understood, and agreed to the Terms and Conditions specified at the following link:\n"
+        "https://coqui.ai/cpml.txt."
+    )
+    os.environ['COQUI_TOS_AGREED'] = "1"
+except:
+    xtts_enabled = False
+    print("Coqui XTTS disabled")
+
 
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -46,7 +62,7 @@ whisper_model_default = 'large-v3' if torch.cuda.is_available() else 'medium'
 print('Working in:', device)
 
 # Custom voice
-directories = ['downloads', 'logs', 'weights']
+directories = ['downloads', 'logs', 'weights', 'clean_song_output']
 [os.mkdir(directory) for directory in directories if not os.path.exists(directory)]
 
 def custom_model_voice_enable(enable_custom_voice):
@@ -696,12 +712,16 @@ def create_parser():
     return parser
 
 if __name__ == '__main__':
+    for id_model in UVR_MODELS:
+        download_manager(os.path.join(MDX_DOWNLOAD_LINK, id_model), mdxnet_models_dir)
+
     list_edge = edge_tts_voices_list()
     list_bark = list(bark_voices_list.keys())
     list_vits = list(vits_voices_list.keys())
-    piper_tts = piper_tts_voices_list() if piper_enabled else []
-    list_tts = sorted(list_edge + list_bark + list_vits + piper_tts)
-    
+    list_vits_onnx = piper_tts_voices_list() if piper_enabled else []
+    list_coqui_xtts = coqui_xtts_voices_list() if xtts_enabled else [] #["_XTTS_/AUTOMATIC.wav"]
+    list_tts = sorted(list_edge + list_bark + list_vits + list_vits_onnx + list_coqui_xtts)
+
     models, index_paths = upload_model_list()
     os.environ["VOICES_MODELS"] = 'DISABLE'
 

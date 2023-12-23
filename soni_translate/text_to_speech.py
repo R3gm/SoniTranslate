@@ -1,9 +1,9 @@
 from gtts import gTTS
 import edge_tts, asyncio, nest_asyncio, json
 from tqdm import tqdm
-import librosa, os, re, torch, gc, subprocess
+import librosa, os, re, torch, gc, subprocess, random
 from .language_configuration import fix_code_language, bark_voices_list, vits_voices_list
-from .utils import download_manager
+from .utils import download_manager, create_directories, copy_files, rename_file, remove_directory_contents, remove_files
 import numpy as np
 from typing import Any, Dict
 from pathlib import Path
@@ -39,6 +39,10 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         sf.write(filename, data, sample_rate_aux, format='ogg', subtype='vorbis')
         print('Error: Audio will be replaced -> [silent audio].')
         verify_saved_file_and_size(filename)
+
+# =====================================
+# EDGE TTS
+# =====================================
 
 def edge_tts_voices_list():
     completed_process = subprocess.run(
@@ -86,6 +90,10 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
             verify_saved_file_and_size(filename)
         except Exception as error:
             error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
+
+# =====================================
+# BARK TTS
+# =====================================
 
 def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark="suno/bark-small"):
     from transformers import AutoProcessor, AutoModel, BarkModel
@@ -139,6 +147,9 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
     except:
         pass
 
+# =====================================
+# VITS TTS
+# =====================================
 
 def uromanize(input_string):
     """Convert non-Roman strings to Roman using the `uroman` perl package."""
@@ -214,8 +225,171 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
     except:
         pass
 
+# =====================================
+# Coqui XTTS
+# =====================================
 
-def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2", emotion=None):
+def coqui_xtts_voices_list():
+    main_folder = "_XTTS_"
+    pattern_coqui = re.compile(r'.+\.(wav|mp3|ogg|m4a)$')
+    pattern_automatic_speaker = re.compile(r'AUTOMATIC_SPEAKER_\d+\.wav$')
+
+    # List only files in the directory matching the pattern but not matching AUTOMATIC_SPEAKER_00.wav, AUTOMATIC_SPEAKER_01.wav, etc.
+    wav_voices = [f for f in os.listdir(main_folder) if os.path.isfile(os.path.join(main_folder, f)) and pattern_coqui.match(f) and not pattern_automatic_speaker.match(f)]
+
+    return ["_XTTS_/AUTOMATIC.wav"] + wav_voices
+
+import os, subprocess, shlex, sys
+
+def run_command(command):
+    print(command)
+    if isinstance(command, str):
+        command = shlex.split(command)
+
+    sub_params = {
+        "stdout" : subprocess.PIPE,
+        "stderr" : subprocess.PIPE,
+        "creationflags" : subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+    }
+    process_wav = subprocess.Popen(command, **sub_params)
+    output, errors = process_wav.communicate()
+    if process_wav.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
+        print(errors.decode())
+        raise Exception("Error command")
+
+def seconds_to_hhmmss_ms(seconds):
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    milliseconds = int((seconds - int(seconds)) * 1000)
+    return "%02d:%02d:%02d.%03d" % (hours, minutes, int(seconds), milliseconds)
+
+def audio_trimming(audio_path, destination, start, end):
+
+    if isinstance(start, (int, float)):
+        start = seconds_to_hhmmss_ms(start)
+    if isinstance(end, (int, float)):
+        end = seconds_to_hhmmss_ms(end)
+
+    if destination:
+        file_directory = destination
+    else:
+        file_directory = os.path.dirname(audio_path)
+
+    file_name = os.path.splitext(os.path.basename(audio_path))[0]
+    file_ = f'{file_name}_trim.wav'
+    #file_ = f'{os.path.splitext(audio_path)[0]}_trim.wav'
+    output_path = os.path.join(file_directory, file_)
+
+    command = f'ffmpeg -y -loglevel error -i "{audio_path}" -ss {start} -t {end} -acodec pcm_s16le -f wav "{output_path}"'
+    run_command(command)
+
+    return output_path
+
+def convert_to_xtts_good_sample(audio_path: str = "", destination: str = ""):
+    if destination:
+        file_directory = destination
+    else:
+        file_directory = os.path.dirname(audio_path)
+
+    file_name = os.path.splitext(os.path.basename(audio_path))[0]
+    file_ = f'{file_name}_good_sample.wav'
+    #file_ = f'{os.path.splitext(audio_path)[0]}_good_sample.wav'
+    mono_path = os.path.join(file_directory, file_) # get root
+
+    command = f'ffmpeg -y -loglevel error -i "{audio_path}" -ac 1 -ar 22050 -sample_fmt s16 -f wav "{mono_path}"'
+    run_command(command)
+
+    return mono_path
+
+def create_wav_file_vc(
+    sample_name = "", # name final file
+    audio_wav = "", # path
+    start = None, # trim start
+    end = None # trim end
+    ):
+
+    sample_name = sample_name if sample_name else "default_name"
+    audio_wav = audio_wav if isinstance(audio_wav, str) else audio_wav.name
+
+    #MDX_DOWNLOAD_LINK = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
+    #UVR_MODELS = ["UVR-MDX-NET-Voc_FT.onnx", "UVR_MDXNET_KARA_2.onnx", "Reverb_HQ_By_FoxJoy.onnx"]
+    BASE_DIR = "." #os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    #mdxnet_models_dir = os.path.join(BASE_DIR, 'mdxnet_models')
+
+    output_dir = os.path.join(BASE_DIR, 'clean_song_output') # remove content
+    #remove_directory_contents(output_dir)
+    base_xtts_wav = "_XTTS_"
+
+    if start or end:
+        # Cut file
+        audio_segment = audio_trimming(audio_wav, output_dir, start, end)
+    else:
+        # Complete file
+        audio_segment = audio_wav
+
+    from .mdx_net import process_uvr_task
+    _, _, _, _, vocals_dereverb_path = process_uvr_task(
+        orig_song_path = audio_segment,
+        main_vocals = False,
+        dereverb = True,
+        )
+
+    sample = convert_to_xtts_good_sample(vocals_dereverb_path)
+
+    sample_name = f"{sample_name}.wav"
+    sample_rename = rename_file(sample, sample_name)
+
+    copy_files(sample_rename, base_xtts_wav)
+
+    final_sample = os.path.join(base_xtts_wav, sample_name)
+    if os.path.exists(final_sample):
+        print(final_sample)
+        #return final_sample
+    else:
+        raise Exception(f"Error wav: {final_sample}")
+
+def create_new_files_for_vc(speakers_coqui, segments_base):
+  # before function delete automatic previous path_wav speaker maded
+  output_dir = os.path.join(".", 'clean_song_output') # remove content
+  remove_directory_contents(output_dir)
+
+  for speaker in speakers_coqui:
+    filtered_speaker = [segment for segment in segments_base if segment['speaker'] == speaker]
+    if len(filtered_speaker) > 5:
+      filtered_speaker = filtered_speaker[1:]
+    if filtered_speaker[0]["tts_name"] == "_XTTS_/AUTOMATIC.wav":
+        name_automatic_wav = f"AUTOMATIC_{speaker}"
+        if os.path.exists(f"_XTTS_/{name_automatic_wav}.wav"):
+            print(f"WAV automatic {speaker} exists")
+            #path_wav = path_automatic_wav
+            pass
+        else:
+            # create wav
+            wav_ok = False
+            for seg in filtered_speaker:
+                duration = float(seg['end']) - float(seg['start'])
+                if duration > 7.0 and duration < 12.0:
+                    print(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                    create_wav_file_vc(
+                        sample_name = name_automatic_wav,
+                        audio_wav = "audio.wav",
+                        start = (float(seg['start']) + 1.0),
+                        end = (float(seg['end']) - 1.0),
+                    )
+                    wav_ok = True
+                    break
+
+            if not wav_ok:
+                print(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                create_wav_file_vc(
+                    sample_name = name_automatic_wav,
+                    audio_wav = "audio.wav",
+                    start = (float(seg['start']) + 1.0),
+                    end = (float(seg['end']) - 1.0),
+                )
+
+def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2", speakers_coqui=None, delete_previous_automatic=True, emotion=None):
     """ XTTS
     Install:
     pip install -q TTS==0.21.1
@@ -233,6 +407,14 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
     #Emotion and speed can only be used with Coqui Studio models. Which is discontinued
     #emotions = ["Neutral", "Happy", "Sad", "Angry", "Dull"]
 
+    directory_audios_vc = "_XTTS_"
+    create_directories(directory_audios_vc)
+    create_new_files_for_vc(speakers_coqui, filtered_coqui_segments['segments'])
+
+    if delete_previous_automatic:
+        for spk in speakers_coqui:
+            remove_files(f"_XTTS_/AUTOMATIC_{spk}.wav")
+
     # Init TTS
     model = TTS(model_id_coqui).to(device)
     sampling_rate = 24000
@@ -248,6 +430,8 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
         text = segment['text']
         start = segment['start']
         tts_name = segment['tts_name']
+        if tts_name == "_XTTS_/AUTOMATIC.wav":
+          tts_name = f"_XTTS_/AUTOMATIC_{speaker}.wav"
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
@@ -270,6 +454,10 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
         del model; gc.collect(); torch.cuda.empty_cache()
     except:
         pass
+
+# =====================================
+# PIPER TTS
+# =====================================
 
 def piper_tts_voices_list():
     file_path = download_manager(
@@ -396,12 +584,16 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
     except:
         pass
 
+# =====================================
+# Select task TTS
+# =====================================
 
 def audio_segmentation_to_voice(
     result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, is_gui,
     tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05,
     model_id_bark="suno/bark-small",
-    model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2"
+    model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2",
+    delete_previous_automatic = True
     ):
 
     # Mapping speakers to voice variables
@@ -454,7 +646,7 @@ def audio_segmentation_to_voice(
         segments_vits_tts(filtered_vits, TRANSLATE_AUDIO_TO) # wav
     if filtered_coqui["segments"]:
         print(f"Coqui TTS: {speakers_coqui}")
-        segments_coqui_tts(filtered_coqui, TRANSLATE_AUDIO_TO, model_id_coqui) # wav
+        segments_coqui_tts(filtered_coqui, TRANSLATE_AUDIO_TO, model_id_coqui, speakers_coqui, delete_previous_automatic) # wav
     if filtered_vits_onnx["segments"]:
         print(f"PIPER TTS: {speakers_vits_onnx}")
         segments_vits_onnx_tts(filtered_vits_onnx, TRANSLATE_AUDIO_TO) # wav
