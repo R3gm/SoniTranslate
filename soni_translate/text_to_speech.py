@@ -678,9 +678,18 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         # Smoth and round
         acc_percentage = round(acc_percentage+0.0, 1)
 
-        # apply aceleration or opposite to the audio file in audio2 folder
-        os.system(f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} audio2/{filename}")
-
+        # Format read if need
+        if speaker in speakers_edge:  
+            info_enc = sf.info(filename).format
+        else:
+            info_enc = "OGG"
+            
+        # Apply aceleration or opposite to the audio file in audio2 folder
+        if acc_percentage == 1.0 and info_enc == "OGG":
+            copy_files(filename, f"audio2{os.sep}audio")
+        else:
+            os.system(f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} audio2/{filename}")
+     
         duration_create = librosa.get_duration(filename=f"audio2/{filename}")
         print(acc_percentage, duration_tts, duration_create)
         audio_files.append(filename)
