@@ -16,7 +16,7 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 import os
 from soni_translate.audio_segments import create_translated_audio
-from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list, coqui_xtts_voices_list, piper_tts_voices_list
+from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list, coqui_xtts_voices_list, piper_tts_voices_list, create_wav_file_vc
 from soni_translate.translate_segments import translate_text
 from soni_translate.preprocessor import audio_video_preprocessor
 from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST, bark_voices_list, vits_voices_list
@@ -46,6 +46,20 @@ except:
     xtts_enabled = False
     print("Coqui XTTS disabled")
 
+class TTS_Info:
+    def __init__(self, piper_enabled, xtts_enabled):
+
+        self.list_edge = edge_tts_voices_list()
+        self.list_bark = list(bark_voices_list.keys())
+        self.list_vits = list(vits_voices_list.keys())
+        self.piper_enabled = piper_enabled
+        self.list_vits_onnx = piper_tts_voices_list() if self.piper_enabled else []
+        self.xtts_enabled = xtts_enabled
+
+    def tts_list(self):
+        self.list_coqui_xtts = coqui_xtts_voices_list() if self.xtts_enabled else [] #["_XTTS_/AUTOMATIC.wav"]
+        list_tts = sorted(self.list_edge + self.list_bark + self.list_vits + self.list_vits_onnx + self.list_coqui_xtts)
+        return list_tts
 
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -62,7 +76,7 @@ whisper_model_default = 'large-v3' if torch.cuda.is_available() else 'medium'
 print('Working in:', device)
 
 # Custom voice
-directories = ['downloads', 'logs', 'weights', 'clean_song_output']
+directories = ['downloads', 'logs', 'weights', 'clean_song_output', '_XTTS_']
 [os.mkdir(directory) for directory in directories if not os.path.exists(directory)]
 
 def custom_model_voice_enable(enable_custom_voice):
@@ -331,12 +345,12 @@ def create_gui(theme, logs_in_gui=False):
                             f'tts_voice{i:02d}': gr.update(visible=i < value) for i in range(6)
                         }
                         return [value for value in visibility_dict.values()]
-                    tts_voice00 = gr.Dropdown(list_tts, value='en-AU-WilliamNeural-Male', label=lg_conf["sk1"], visible=True, interactive= True)
-                    tts_voice01 = gr.Dropdown(list_tts, value='en-CA-ClaraNeural-Female', label=lg_conf["sk2"], visible=True, interactive= True)
-                    tts_voice02 = gr.Dropdown(list_tts, value='en-GB-ThomasNeural-Male', label=lg_conf["sk3"], visible=False, interactive= True)
-                    tts_voice03 = gr.Dropdown(list_tts, value='en-GB-SoniaNeural-Female', label=lg_conf["sk4"], visible=False, interactive= True)
-                    tts_voice04 = gr.Dropdown(list_tts, value='en-NZ-MitchellNeural-Male', label=lg_conf["sk4"], visible=False, interactive= True)
-                    tts_voice05 = gr.Dropdown(list_tts, value='en-GB-MaisieNeural-Female', label=lg_conf["sk6"], visible=False, interactive= True)
+                    tts_voice00 = gr.Dropdown(tts_info.tts_list(), value='en-AU-WilliamNeural-Male', label=lg_conf["sk1"], visible=True, interactive= True)
+                    tts_voice01 = gr.Dropdown(tts_info.tts_list(), value='en-CA-ClaraNeural-Female', label=lg_conf["sk2"], visible=True, interactive= True)
+                    tts_voice02 = gr.Dropdown(tts_info.tts_list(), value='en-GB-ThomasNeural-Male', label=lg_conf["sk3"], visible=False, interactive= True)
+                    tts_voice03 = gr.Dropdown(tts_info.tts_list(), value='en-GB-SoniaNeural-Female', label=lg_conf["sk4"], visible=False, interactive= True)
+                    tts_voice04 = gr.Dropdown(tts_info.tts_list(), value='en-NZ-MitchellNeural-Male', label=lg_conf["sk4"], visible=False, interactive= True)
+                    tts_voice05 = gr.Dropdown(tts_info.tts_list(), value='en-GB-MaisieNeural-Female', label=lg_conf["sk6"], visible=False, interactive= True)
                     max_speakers.change(submit, max_speakers, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05])
 
                     with gr.Column():
@@ -475,6 +489,21 @@ def create_gui(theme, logs_in_gui=False):
                         cache_examples=False,
                     )
 
+        with gr.Tab("File tts"):
+            with gr.Column():
+              with gr.Accordion("Create a wav speaker for XTTS", open=True):
+                wav_speaker_file = gr.File(label="Submit a sort audio for VC")
+                wav_speaker_name = gr.Textbox(label="Name for the TTS", value="",info="use romanize words only", placeholder="default_name", lines=1)
+                wav_speaker_output = gr.HTML()
+                create_xtts_wav = gr.Button("process audio and add to the TTS selector")
+
+
+            with gr.Column():
+              with gr.Accordion("B", open=False):
+                with gr.Column(variant='compact'):
+                  with gr.Column():
+                    pass
+
         with gr.Tab("Custom voice R.V.C. (Optional)"):
             with gr.Column():
               with gr.Accordion("Get the R.V.C. Models", open=True):
@@ -573,7 +602,7 @@ def create_gui(theme, logs_in_gui=False):
                       with gr.Row(variant='compact'):
                         text_test = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5)
                         with gr.Column():
-                          tts_test = gr.Dropdown(list_tts, value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
+                          tts_test = gr.Dropdown(tts_info.tts_list(), value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
                           model_voice_path07 = gr.Dropdown(models, label = 'Model', visible=True, interactive= True) #value=''
                           file_index2_07 = gr.Dropdown(index_paths, label = 'Index', visible=True, interactive= True) #value=''
                           transpose_test = gr.Number(label = 'Transpose', value=0, visible=True, interactive= True, info="integer, number of semitones, raise by an octave: 12, lower by an octave: -12")
@@ -633,6 +662,20 @@ def create_gui(theme, logs_in_gui=False):
             with gr.Accordion("Logs", open = False):
                 logs = gr.Textbox(label=">>>")
                 app.load(read_logs, None, logs, every=1)
+
+        # Update tts list
+        def update_tts_list():
+            update_dict = {
+                f'tts_voice{i:02d}': gr.update(choices=tts_info.tts_list()) for i in range(6)
+            }
+            update_dict["tts_test"] = gr.update(choices=tts_info.tts_list())
+            print(update_dict.keys())
+            return [value for value in update_dict.values()]
+        create_xtts_wav.click(create_wav_file_vc, inputs=[
+            wav_speaker_name,
+            wav_speaker_file,
+            ], outputs=[wav_speaker_output]).then(
+                update_tts_list, None, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05, tts_test])
 
         # run translate text
         subs_button.click(translate_from_video, inputs=[
@@ -715,12 +758,8 @@ if __name__ == '__main__':
     for id_model in UVR_MODELS:
         download_manager(os.path.join(MDX_DOWNLOAD_LINK, id_model), mdxnet_models_dir)
 
-    list_edge = edge_tts_voices_list()
-    list_bark = list(bark_voices_list.keys())
-    list_vits = list(vits_voices_list.keys())
-    list_vits_onnx = piper_tts_voices_list() if piper_enabled else []
-    list_coqui_xtts = coqui_xtts_voices_list() if xtts_enabled else [] #["_XTTS_/AUTOMATIC.wav"]
-    list_tts = sorted(list_edge + list_bark + list_vits + list_vits_onnx + list_coqui_xtts)
+    tts_info = TTS_Info(piper_enabled, xtts_enabled)
+    #list_tts = tts_info.tts_list()
 
     models, index_paths = upload_model_list()
     os.environ["VOICES_MODELS"] = 'DISABLE'

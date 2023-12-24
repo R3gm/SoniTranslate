@@ -235,7 +235,7 @@ def coqui_xtts_voices_list():
     pattern_automatic_speaker = re.compile(r'AUTOMATIC_SPEAKER_\d+\.wav$')
 
     # List only files in the directory matching the pattern but not matching AUTOMATIC_SPEAKER_00.wav, AUTOMATIC_SPEAKER_01.wav, etc.
-    wav_voices = [f for f in os.listdir(main_folder) if os.path.isfile(os.path.join(main_folder, f)) and pattern_coqui.match(f) and not pattern_automatic_speaker.match(f)]
+    wav_voices = ["_XTTS_/"+f for f in os.listdir(main_folder) if os.path.isfile(os.path.join(main_folder, f)) and pattern_coqui.match(f) and not pattern_automatic_speaker.match(f)]
 
     return ["_XTTS_/AUTOMATIC.wav"] + wav_voices
 
@@ -302,6 +302,14 @@ def convert_to_xtts_good_sample(audio_path: str = "", destination: str = ""):
 
     return mono_path
 
+def sanitize_file_name(file_name):
+    import unicodedata
+    # Normalize the string to NFKD form to separate combined characters into base characters and diacritics
+    normalized_name = unicodedata.normalize('NFKD', file_name)
+    # Replace any non-ASCII characters or special symbols with an underscore
+    sanitized_name = re.sub(r'[^\w\s.-]', '_', normalized_name)
+    return sanitized_name
+
 def create_wav_file_vc(
     sample_name = "", # name final file
     audio_wav = "", # path
@@ -310,12 +318,10 @@ def create_wav_file_vc(
     ):
 
     sample_name = sample_name if sample_name else "default_name"
+    sample_name = sanitize_file_name(sample_name)
     audio_wav = audio_wav if isinstance(audio_wav, str) else audio_wav.name
 
-    #MDX_DOWNLOAD_LINK = 'https://github.com/TRvlvr/model_repo/releases/download/all_public_uvr_models/'
-    #UVR_MODELS = ["UVR-MDX-NET-Voc_FT.onnx", "UVR_MDXNET_KARA_2.onnx", "Reverb_HQ_By_FoxJoy.onnx"]
     BASE_DIR = "." #os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    #mdxnet_models_dir = os.path.join(BASE_DIR, 'mdxnet_models')
 
     output_dir = os.path.join(BASE_DIR, 'clean_song_output') # remove content
     #remove_directory_contents(output_dir)
@@ -345,12 +351,12 @@ def create_wav_file_vc(
     final_sample = os.path.join(base_xtts_wav, sample_name)
     if os.path.exists(final_sample):
         print(final_sample)
-        #return final_sample
+        return final_sample
     else:
         raise Exception(f"Error wav: {final_sample}")
 
 def create_new_files_for_vc(speakers_coqui, segments_base):
-  # before function delete automatic previous path_wav speaker maded
+  # before function delete automatic delete_previous_automatic
   output_dir = os.path.join(".", 'clean_song_output') # remove content
   remove_directory_contents(output_dir)
 
