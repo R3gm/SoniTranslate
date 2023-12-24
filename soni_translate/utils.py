@@ -243,31 +243,23 @@ def create_directories(directory_path):
             os.makedirs(one_dir_path)
             print(f"Directory '{one_dir_path}' created.")
 
-def move_files(source_path, destination_path):
+def move_files(source_dir, destination_dir, extension=""):
     """
     Moves file(s) from the source path to the destination path.
 
     Parameters:
-    source_path (str or list): Path or list of paths to the source file(s) or directory.
-    destination_path (str): Path to the destination directory.
+    source_dir (str): Path to the source directory.
+    destination_dir (str): Path to the destination directory.
+    extension (str): Only move files with this extension.
     """
-    create_directories(destination_path)
+    create_directories(destination_dir)
 
-    if isinstance(source_path, str):
-        source_path = [source_path]
-
-    if os.path.isdir(source_path[0]):
-        # Copy all files from the source directory to the destination directory
-        base_path = source_path[0]
-        source_path = os.listdir(source_path[0])
-        source_path = [os.path.join(base_path, file_name) for file_name in source_path]
-
-    for one_source_path in source_path:
-        if os.path.exists(one_source_path):
-            shutil.move(one_source_path, destination_path)
-            #print(f"File '{one_source_path}' moved to '{destination_path}'.")
-        else:
-            print(f"File '{one_source_path}' does not exist.")
+    for filename in os.listdir(source_dir):
+        source_path = os.path.join(source_dir, filename)
+        destination_path = os.path.join(destination_dir, filename)
+        if extension and not filename.endswith(extension):
+            continue
+        os.replace(source_path, destination_path)
 
 def copy_files(source_path, destination_path):
     """
