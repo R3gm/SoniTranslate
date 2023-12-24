@@ -1,4 +1,20 @@
-import os, zipfile, rarfile, shutil
+import os, zipfile, rarfile, shutil, subprocess, shlex, sys
+
+def run_command(command):
+    print(command)
+    if isinstance(command, str):
+        command = shlex.split(command)
+
+    sub_params = {
+        "stdout" : subprocess.PIPE,
+        "stderr" : subprocess.PIPE,
+        "creationflags" : subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+    }
+    process_wav = subprocess.Popen(command, **sub_params)
+    output, errors = process_wav.communicate()
+    if process_wav.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
+        print(errors.decode())
+        raise Exception("Error command")
 
 def print_tree_directory(root_dir, indent=''):
     if not os.path.exists(root_dir):

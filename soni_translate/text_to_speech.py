@@ -3,7 +3,7 @@ import edge_tts, asyncio, nest_asyncio, json
 from tqdm import tqdm
 import librosa, os, re, torch, gc, subprocess, random
 from .language_configuration import fix_code_language, bark_voices_list, vits_voices_list
-from .utils import download_manager, create_directories, copy_files, rename_file, remove_directory_contents, remove_files
+from .utils import download_manager, create_directories, copy_files, rename_file, remove_directory_contents, remove_files, run_command
 import numpy as np
 from typing import Any, Dict
 from pathlib import Path
@@ -238,24 +238,6 @@ def coqui_xtts_voices_list():
     wav_voices = ["_XTTS_/"+f for f in os.listdir(main_folder) if os.path.isfile(os.path.join(main_folder, f)) and pattern_coqui.match(f) and not pattern_automatic_speaker.match(f)]
 
     return ["_XTTS_/AUTOMATIC.wav"] + wav_voices
-
-import os, subprocess, shlex, sys
-
-def run_command(command):
-    print(command)
-    if isinstance(command, str):
-        command = shlex.split(command)
-
-    sub_params = {
-        "stdout" : subprocess.PIPE,
-        "stderr" : subprocess.PIPE,
-        "creationflags" : subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-    }
-    process_wav = subprocess.Popen(command, **sub_params)
-    output, errors = process_wav.communicate()
-    if process_wav.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
-        print(errors.decode())
-        raise Exception("Error command")
 
 def seconds_to_hhmmss_ms(seconds):
     hours = seconds // 3600
