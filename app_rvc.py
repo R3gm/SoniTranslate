@@ -20,7 +20,7 @@ from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_
 from soni_translate.translate_segments import translate_text
 from soni_translate.preprocessor import audio_video_preprocessor
 from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST, bark_voices_list, vits_voices_list
-from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list, download_manager
+from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list, download_manager, move_files, run_command
 from soni_translate.mdx_net import UVR_MODELS, MDX_DOWNLOAD_LINK, mdxnet_models_dir
 from urllib.parse import unquote
 from soni_translate.speech_segmentation import transcribe_speech, align_speech, diarize_speech, diarization_models
@@ -76,8 +76,9 @@ whisper_model_default = 'large-v3' if torch.cuda.is_available() else 'medium'
 print('Working in:', device)
 
 # Custom voice
-directories = ['downloads', 'logs', 'weights', 'clean_song_output', '_XTTS_']
-[os.mkdir(directory) for directory in directories if not os.path.exists(directory)]
+directories = ['downloads', 'logs', 'weights', 'clean_song_output', '_XTTS_', f'audio2{os.sep}audio', 'audio']
+[os.makedirs(directory) for directory in directories if not os.path.exists(directory)]
+#makedirs mkdir
 
 def custom_model_voice_enable(enable_custom_voice):
     os.environ["VOICES_MODELS"] = 'ENABLE' if enable_custom_voice else 'DISABLE'
@@ -293,6 +294,216 @@ def translate_from_video(
 
     return video_output
 
+### documents ###
+import re
+
+def prog_disp(msg, percent, is_gui, progress=None):
+    print(msg)
+    if is_gui:
+        progress(percent, desc=msg)
+
+def pdf_to_txt(pdf_file):
+    import PyPDF2
+    with open(pdf_file, 'rb') as file:
+        reader = PyPDF2.PdfReader(file)
+        text = ''
+        for page in reader.pages:
+            text += page.extract_text()
+    return text
+
+def docx_to_txt(docx_file):
+    from docx import Document
+    doc = Document(docx_file)
+    text = ''
+    for paragraph in doc.paragraphs:
+        text += paragraph.text + '\n'
+    return text
+
+def document_preprocessor(file_path, is_string):
+
+    if not is_string:
+        file_ext = os.path.splitext(file_path)[1].lower()
+
+    if is_string:
+        text = file_path
+    elif file_ext == '.pdf':
+        text = pdf_to_txt(file_path)
+    elif file_ext == '.docx':
+        text = docx_to_txt(file_path)
+    elif file_ext == '.txt':
+        with open(file_path, 'r') as file:
+            text = file.read()
+    else:
+        raise Exception("Unsupported file format")
+
+    # Save text to a .txt file
+    #file_name = os.path.splitext(os.path.basename(file_path))[0]
+    txt_file_path = "./text_preprocessor.txt"
+
+    with open(txt_file_path, 'w') as txt_file:
+        txt_file.write(text)
+
+    return txt_file_path, text
+
+def split_text_into_chunks(text, chunk_size):
+    words = re.findall(r'\b\w+\b', text)
+    chunks = []
+    current_chunk = ''
+    for word in words:
+        if len(current_chunk) + len(word) + 1 <= chunk_size:  # Adding 1 for the space between words
+            if current_chunk:
+                current_chunk += ' '
+            current_chunk += word
+        else:
+            chunks.append(current_chunk)
+            current_chunk = word
+    if current_chunk:
+        chunks.append(current_chunk)
+    return chunks
+
+def determine_chunk_size(file_name):
+
+    patterns = {
+        re.compile(r'.*-(Male|Female)$'): 600, # by character
+        re.compile(r'.* BARK$'): 100, # t 64 256
+        re.compile(r'.* VITS$'): 500,
+        re.compile(r'.+\.(wav|mp3|ogg|m4a)$'): 150, # t 250 400 api automatic split
+        re.compile(r'.* VITS-onnx$'): 250 # automatic sentence split
+    }
+
+    for pattern, chunk_size in patterns.items():
+        if pattern.match(file_name):
+            return chunk_size
+
+    return 100  # Default chunk size if the file doesn't match any pattern; max 1800
+
+def plain_text_to_segments(result_text=None, chunk_size=None):
+
+    if not chunk_size:
+        chunk_size = 100
+    text_chunks = split_text_into_chunks(result_text, chunk_size)
+
+    segments_chunks = []
+    for num, chunk in enumerate(text_chunks):
+      chunk_dict = {
+          "text" : chunk,
+          "start" : (1.0 + num),
+          "end" : (2.0 + num),
+          "speaker" : "SPEAKER_00"
+      }
+      segments_chunks.append(chunk_dict)
+
+    result_diarize = {"segments" : segments_chunks}
+
+    return result_diarize
+
+def segments_to_plain_text(result_diarize):
+    complete_text = ""
+    for seg in result_diarize['segments']:
+        complete_text += seg["text"] + " " # issue
+
+    # Save text to a .txt file
+    #file_name = os.path.splitext(os.path.basename(file_path))[0]
+    txt_file_path = f"./text_translation.txt"
+
+    with open(txt_file_path, 'w') as txt_file:
+        txt_file.write(complete_text)
+
+    return txt_file_path, complete_text
+
+def document_process(
+    string_text, # string
+    document=None, # doc path gui
+    directory_input="", # doc path
+    SOURCE_LANGUAGE= "English (en)",
+    TRANSLATE_AUDIO_TO="English (en)",
+    tts_voice00="en-AU-WilliamNeural-Male",
+    name_final_file = "sample",
+    translate_process =  "google_translator_iterative",
+    output_type="audio",
+    chunk_size = None,
+    is_gui = False,
+    progress=gr.Progress(),
+    ):
+
+    SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+    if translate_process != "disable translation":
+        TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
+    else:
+        TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
+        print("no translation")
+    if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
+        print("WARNING: Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
+
+    is_string = False
+    if document is None:
+        if os.path.exists(directory_input):
+            document = directory_input
+        else:
+            document = string_text
+            is_string = True
+    document = document if isinstance(document, str) else document.name
+    if not document:
+      raise Exception("No data found")
+
+    # Check GPU
+    #device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    #audio_wav = "audio.wav"
+    final_wav_file = "audio_book.wav" if not name_final_file else f"{name_final_file}.wav"
+
+    prog_disp("Processing text...", 0.15, is_gui, progress=progress)
+    result_file_path, result_text = document_preprocessor(document, is_string)
+
+    if output_type == "text" and translate_process == "disable translation":
+        return result_file_path
+
+    if "SET_LIMIT" == os.getenv("DEMO"):
+        result_text = result_text[:50]
+        print(
+            "DEMO; Generation is limited to 50 characters to prevent CPU errors. No limitations with GPU.\n"
+        )
+
+    if translate_process != "disable translation":
+        # chunks text for translation
+        result_diarize = plain_text_to_segments(result_text, 1700)
+        prog_disp("Translating...", 0.30, is_gui, progress=progress)
+        # not or iterative with 1700 chars
+        result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=0)
+
+        txt_file_path, result_text = segments_to_plain_text(result_diarize)
+
+        if output_type == "text":
+            return txt_file_path
+
+    # (TTS limits) plain text to result_diarize
+    chunk_size = chunk_size if chunk_size else determine_chunk_size(tts_voice00)
+    result_diarize = plain_text_to_segments(
+        result_text,
+        chunk_size
+    )
+    print(result_diarize)
+
+    prog_disp("Text to speech...", 0.45, is_gui, progress=progress)
+    audio_files, speakers_list = audio_segmentation_to_voice(
+        result_diarize, TRANSLATE_AUDIO_TO, 1.0, is_gui,
+        tts_voice00, "", "", "", "", "",
+    )
+
+    # custom voice
+    if os.getenv('VOICES_MODELS') == 'ENABLE':
+        prog_disp("Applying customized voices...", 0.80, is_gui, progress=progress)
+        voices_conversion(speakers_list, audio_files)
+
+    # replace files with the accelerates and custom voice
+    move_files("audio2/audio/", "audio/")
+
+    prog_disp("Creating final audio file...", 0.90, is_gui, progress=progress)
+    remove_files(final_wav_file)
+    create_translated_audio(result_diarize, audio_files, final_wav_file, True)
+
+    return final_wav_file
+
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 news = """ ## 📖 News
         🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
@@ -499,10 +710,47 @@ def create_gui(theme, logs_in_gui=False):
 
 
             with gr.Column():
-              with gr.Accordion("B", open=False):
+              with gr.Accordion("Document to audio", open=False):
                 with gr.Column(variant='compact'):
                   with gr.Column():
-                    pass
+
+                    input_doc_type = gr.inputs.Dropdown(["WRITE TEXT", "SUBMIT DOCUMENT", "Find Document Path"], default="SUBMIT VIDEO", label=lg_conf["video_source"])
+                    def swap_visibility(data_type):
+                        if data_type == "WRITE TEXT":
+                            return gr.update(visible=True, value=""), gr.update(visible=False, value=None), gr.update(visible=False, value='')
+                        elif data_type == "SUBMIT DOCUMENT":
+                            return gr.update(visible=False, value=""), gr.update(visible=True, value=None), gr.update(visible=False, value='')
+                        elif data_type == "Find Document Path":
+                            return gr.update(visible=False, value=""), gr.update(visible=False, value=None), gr.update(visible=True, value='')
+                    text_docs = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5, visible=False)
+                    input_docs = gr.File(label="VIDEO", visible=True)
+                    directory_input_docs = gr.Textbox(visible=False, label="Video Path.", info=lg_conf["dir_info"], placeholder=lg_conf["dir_ph"])
+                    input_doc_type.change(fn=swap_visibility, inputs=input_doc_type, outputs=[text_docs, input_docs, directory_input_docs])
+
+                    link = gr.HTML()
+
+                    tts_documents = gr.Dropdown(tts_info.tts_list(), value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
+
+                    link = gr.HTML()
+
+                    docs_SOURCE_LANGUAGE = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["sl_label"], info=lg_conf["sl_info"])
+                    docs_TRANSLATE_TO = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["tat_label"], info=lg_conf["tat_info"])
+                    docs_valid_translate_process = ["google_translator_iterative", "disable_translation"]
+                    docs_translate_process_dropdown = gr.inputs.Dropdown(docs_valid_translate_process, default=docs_valid_translate_process[0], label="Translation process")
+
+                    line_ = gr.HTML("<hr></h2>")
+
+                    docs_output_type_opt = ["audio", "text"]
+                    docs_output_type = gr.inputs.Dropdown(docs_output_type_opt, default=docs_output_type_opt[0], label="Output type")
+                    docs_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="final_sample", info=lg_conf["out_name_info"])
+                    docs_chunk_size = gr.Number(label = 'Max characters in a segment', value=0, visible=True, interactive= True, info="A value of 0 assign a dynamic and compatible value for the tts")
+                    docs_dummy_check = gr.Checkbox(True, visible= False)
+
+                    with gr.Row():
+                        docs_button = gr.Button("Start process")
+                    with gr.Row():
+                        docs_output = gr.outputs.File(label="Result")
+
 
         with gr.Tab("Custom voice R.V.C. (Optional)"):
             with gr.Column():
@@ -602,7 +850,7 @@ def create_gui(theme, logs_in_gui=False):
                       with gr.Row(variant='compact'):
                         text_test = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5)
                         with gr.Column():
-                          tts_test = gr.Dropdown(tts_info.tts_list(), value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
+                          tts_test = gr.Dropdown(sorted(tts_info.list_edge), value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
                           model_voice_path07 = gr.Dropdown(models, label = 'Model', visible=True, interactive= True) #value=''
                           file_index2_07 = gr.Dropdown(index_paths, label = 'Index', visible=True, interactive= True) #value=''
                           transpose_test = gr.Number(label = 'Transpose', value=0, visible=True, interactive= True, info="integer, number of semitones, raise by an octave: 12, lower by an octave: -12")
@@ -668,16 +916,16 @@ def create_gui(theme, logs_in_gui=False):
             update_dict = {
                 f'tts_voice{i:02d}': gr.update(choices=tts_info.tts_list()) for i in range(6)
             }
-            update_dict["tts_test"] = gr.update(choices=tts_info.tts_list())
+            update_dict["tts_documents"] = gr.update(choices=tts_info.tts_list())
             print(update_dict.keys())
             return [value for value in update_dict.values()]
         create_xtts_wav.click(create_wav_file_vc, inputs=[
             wav_speaker_name,
             wav_speaker_file,
             ], outputs=[wav_speaker_output]).then(
-                update_tts_list, None, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05, tts_test])
+                update_tts_list, None, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05, tts_documents])
 
-        # run translate text
+        # Run translate text
         subs_button.click(translate_from_video, inputs=[
             video_input,
             blink_input,
@@ -710,7 +958,7 @@ def create_gui(theme, logs_in_gui=False):
             translate_process_dropdown,
             ], outputs=subs_edit_space)
 
-        # run translate
+        # Run translate tts and complete
         video_button.click(translate_from_video, inputs=[
             video_input,
             blink_input,
@@ -742,6 +990,22 @@ def create_gui(theme, logs_in_gui=False):
             diarization_process_dropdown,
             translate_process_dropdown,
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
+
+        # Run docs process
+        docs_button.click(document_process, inputs=[
+            text_docs,
+            input_docs,
+            directory_input_docs,
+            docs_SOURCE_LANGUAGE,
+            docs_TRANSLATE_TO,
+            tts_documents,
+            docs_OUTPUT_NAME,
+            docs_translate_process_dropdown,
+            docs_output_type,
+            docs_chunk_size,
+            docs_dummy_check,
+            ], outputs=docs_output)
+
     return app
 
 

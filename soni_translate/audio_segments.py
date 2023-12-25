@@ -1,27 +1,50 @@
 from pydub import AudioSegment
 from tqdm import tqdm
 import os
+from .utils import run_command
 
-def create_translated_audio(result_diarize, audio_files, Output_name_file):
+def create_translated_audio(result_diarize, audio_files, final_file, concat=False):
     total_duration = result_diarize['segments'][-1]['end'] # in seconds
 
-    # silent audio with total_duration
-    combined_audio = AudioSegment.silent(duration=int(total_duration * 1000))
-    print(round((total_duration / 60),2), 'minutes of video')
+    if concat:
+        """
+        file .\audio\1.ogg
+        file .\audio\2.ogg
+        file .\audio\3.ogg
+        file .\audio\4.ogg
+        ...
+        """
 
-    for line, audio_file in tqdm(zip(result_diarize['segments'], audio_files)):
-        start = float(line['start'])
+        # Write the file paths to list.txt
+        with open('list.txt', 'w') as file:
+            for i, audio_file in enumerate(audio_files):
+                if i == len(audio_files) - 1:  # Check if it's the last item
+                    file.write(f"file {audio_file}")
+                else:
+                    file.write(f"file {audio_file}\n")
 
-        # Overlay each audio at the corresponding time
-        try:
-          audio = AudioSegment.from_file(audio_file)
-          ###audio_a = audio.speedup(playback_speed=1.5)
-          start_time = start * 1000  # to ms
-          combined_audio = combined_audio.overlay(audio, position=start_time)
-        except:
-          print(f'ERROR AUDIO FILE {audio_file}')
+        #command = f"ffmpeg -f concat -safe 0 -i list.txt {final_file}"
+        command = f"ffmpeg -f concat -safe 0 -i list.txt -c:a pcm_s16le {final_file}"
+        run_command(command)
 
-    os.system("rm -rf audio/*")
+    else:
+        # silent audio with total_duration
+        combined_audio = AudioSegment.silent(duration=int(total_duration * 1000))
+        print(round((total_duration / 60),2), 'minutes of video')
 
-    # combined audio as a file
-    combined_audio.export(Output_name_file, format="wav") # best than ogg, change if the audio is anomalous
+        for line, audio_file in tqdm(zip(result_diarize['segments'], audio_files)):
+            start = float(line['start'])
+
+            # Overlay each audio at the corresponding time
+            try:
+              audio = AudioSegment.from_file(audio_file)
+              ###audio_a = audio.speedup(playback_speed=1.5)
+              start_time = start * 1000  # to ms
+              combined_audio = combined_audio.overlay(audio, position=start_time)
+            except:
+              print(f'ERROR AUDIO FILE {audio_file}')
+
+        os.system("rm -rf audio/*")
+
+        # combined audio as a file
+        combined_audio.export(final_file, format="wav") # best than ogg, change if the audio is anomalous
