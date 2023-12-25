@@ -27,9 +27,22 @@ def verify_saved_file_and_size(filename):
 def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
     print(f"Error: {str(error)}")
     try:
+        from tempfile import TemporaryFile
+
         tts = gTTS(segment["text"], lang=fix_code_language(TRANSLATE_AUDIO_TO))
-        tts.save(filename)
-        print(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')
+        #tts.save(filename)
+        f = TemporaryFile()
+        tts.write_to_fp(f)
+
+        # Reset the file pointer to the beginning of the file
+        f.seek(0)
+
+        # Read audio data from the TemporaryFile using soundfile
+        audio_data, samplerate = sf.read(f)
+        f.close()  # Close the TemporaryFile
+        sf.write(filename, audio_data, samplerate, format='ogg', subtype='vorbis')
+
+        print(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')    
         verify_saved_file_and_size(filename)
     except Exception as error:
         print(f"Error: {str(error)}")
