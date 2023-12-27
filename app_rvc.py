@@ -319,6 +319,15 @@ def docx_to_txt(docx_file):
         text += paragraph.text + '\n'
     return text
 
+def replace_multiple_elements(text, replacements):
+    pattern = re.compile('|'.join(map(re.escape, replacements.keys())))
+    replaced_text = pattern.sub(lambda match: replacements[match.group(0)], text)
+    
+    # Remove multiple spaces
+    replaced_text = re.sub(r'\s+', ' ', replaced_text)
+    
+    return replaced_text
+
 def document_preprocessor(file_path, is_string):
 
     if not is_string:
@@ -336,6 +345,14 @@ def document_preprocessor(file_path, is_string):
     else:
         raise Exception("Unsupported file format")
 
+    # Add space to break segments more easily later
+    replacements = {
+    "、": "、 ",
+    "。": "。 ",
+    #"\n": " ",
+    }
+    text = replace_multiple_elements(text, replacements)
+    
     # Save text to a .txt file
     #file_name = os.path.splitext(os.path.basename(file_path))[0]
     txt_file_path = "./text_preprocessor.txt"
@@ -564,6 +581,14 @@ def create_gui(theme, logs_in_gui=False):
                     tts_voice05 = gr.Dropdown(tts_info.tts_list(), value='en-GB-MaisieNeural-Female', label=lg_conf["sk6"], visible=False, interactive= True)
                     max_speakers.change(submit, max_speakers, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05])
 
+
+                    with gr.Column():
+                          with gr.Accordion("Create a text-to-speech (TTS) based on an audio", open=False):
+                            wav_speaker_file = gr.File(label="Upload a short audio with the voice")
+                            wav_speaker_name = gr.Textbox(label="Name for the TTS", value="",info="Use a simple name", placeholder="default_name", lines=1)
+                            wav_speaker_output = gr.HTML()
+                            create_xtts_wav = gr.Button("Process the audio and include it in the TTS selector")
+        
                     with gr.Column():
                           with gr.Accordion(lg_conf["extra_setting"], open=False):
                               audio_accelerate = gr.Slider(label = lg_conf["acc_max_label"], value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info=lg_conf["acc_max_info"])
@@ -699,22 +724,14 @@ def create_gui(theme, logs_in_gui=False):
                         outputs=[video_output],
                         cache_examples=False,
                     )
-
-        with gr.Tab("File tts"):
+                    
+        with gr.Tab("Document to audio translation"):
             with gr.Column():
-              with gr.Accordion("Create a wav speaker for XTTS", open=True):
-                wav_speaker_file = gr.File(label="Submit a sort audio for VC")
-                wav_speaker_name = gr.Textbox(label="Name for the TTS", value="",info="use romanize words only", placeholder="default_name", lines=1)
-                wav_speaker_output = gr.HTML()
-                create_xtts_wav = gr.Button("process audio and add to the TTS selector")
-
-
-            with gr.Column():
-              with gr.Accordion("Document to audio", open=False):
+              with gr.Accordion("Docs", open=True):
                 with gr.Column(variant='compact'):
                   with gr.Column():
 
-                    input_doc_type = gr.inputs.Dropdown(["WRITE TEXT", "SUBMIT DOCUMENT", "Find Document Path"], default="SUBMIT VIDEO", label=lg_conf["video_source"])
+                    input_doc_type = gr.inputs.Dropdown(["WRITE TEXT", "SUBMIT DOCUMENT", "Find Document Path"], default="SUBMIT DOCUMENT", label="Choose Document Source", info="It can be PDF, DOCX, TXT, or text")
                     def swap_visibility(data_type):
                         if data_type == "WRITE TEXT":
                             return gr.update(visible=True, value=""), gr.update(visible=False, value=None), gr.update(visible=False, value='')
@@ -722,9 +739,9 @@ def create_gui(theme, logs_in_gui=False):
                             return gr.update(visible=False, value=""), gr.update(visible=True, value=None), gr.update(visible=False, value='')
                         elif data_type == "Find Document Path":
                             return gr.update(visible=False, value=""), gr.update(visible=False, value=None), gr.update(visible=True, value='')
-                    text_docs = gr.Textbox(label="Text", value="This is an example",info="write a text", placeholder="...", lines=5, visible=False)
-                    input_docs = gr.File(label="VIDEO", visible=True)
-                    directory_input_docs = gr.Textbox(visible=False, label="Video Path.", info=lg_conf["dir_info"], placeholder=lg_conf["dir_ph"])
+                    text_docs = gr.Textbox(label="Text", value="This is an example",info="Write a text", placeholder="...", lines=5, visible=False)
+                    input_docs = gr.File(label="Document", visible=True)
+                    directory_input_docs = gr.Textbox(visible=False, label="Document Path", info="Example: /home/my_doc.pdf", placeholder="Path goes here...")
                     input_doc_type.change(fn=swap_visibility, inputs=input_doc_type, outputs=[text_docs, input_docs, directory_input_docs])
 
                     link = gr.HTML()
@@ -733,21 +750,21 @@ def create_gui(theme, logs_in_gui=False):
 
                     link = gr.HTML()
 
-                    docs_SOURCE_LANGUAGE = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["sl_label"], info=lg_conf["sl_info"])
+                    docs_SOURCE_LANGUAGE = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["sl_label"], info="This is the original language of the text")
                     docs_TRANSLATE_TO = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["tat_label"], info=lg_conf["tat_info"])
                     docs_valid_translate_process = ["google_translator_iterative", "disable_translation"]
                     docs_translate_process_dropdown = gr.inputs.Dropdown(docs_valid_translate_process, default=docs_valid_translate_process[0], label="Translation process")
 
                     line_ = gr.HTML("<hr></h2>")
 
-                    docs_output_type_opt = ["audio", "text"]
+                    docs_output_type_opt = ["audio", "text"] # Add DOCX and etc.
                     docs_output_type = gr.inputs.Dropdown(docs_output_type_opt, default=docs_output_type_opt[0], label="Output type")
-                    docs_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="final_sample", info=lg_conf["out_name_info"])
-                    docs_chunk_size = gr.Number(label = 'Max characters in a segment', value=0, visible=True, interactive= True, info="A value of 0 assign a dynamic and compatible value for the tts")
-                    docs_dummy_check = gr.Checkbox(True, visible= False)
+                    docs_OUTPUT_NAME = gr.Textbox(label="Final file name" ,value="final_sample", info=lg_conf["out_name_info"])
+                    docs_chunk_size = gr.Number(label = 'Max number of characters that the TTS will process per segment', value=0, visible=True, interactive= True, info="A value of 0 assigns a dynamic and more compatible value for the TTS.")
+                    docs_dummy_check = gr.Checkbox(True, visible=False)
 
                     with gr.Row():
-                        docs_button = gr.Button("Start process")
+                        docs_button = gr.Button("Start Language Conversion Bridge")
                     with gr.Row():
                         docs_output = gr.outputs.File(label="Result")
 
