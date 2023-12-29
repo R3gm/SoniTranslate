@@ -22,6 +22,7 @@ transformers
 accelerate
 optimum
 sentencepiece
+srt
 
 # after this
 # pip install git+https://github.com/omry/omegaconf.git@refs/pull/1137/merge

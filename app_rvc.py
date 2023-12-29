@@ -86,6 +86,43 @@ def custom_model_voice_enable(enable_custom_voice):
 from voice_main import ClassVoices
 voices_conversion = ClassVoices()
 
+import srt
+
+def extract_from_srt(file_path):
+    with open(file_path, 'r', encoding='utf-8') as file:
+        srt_content = file.read()
+
+    subtitle_generator = srt.parse(srt_content)
+    srt_content_list = list(subtitle_generator)
+
+    return srt_content_list
+
+def srt_file_to_segments(file_path, speaker=False):
+    srt_content_list = extract_from_srt(file_path)
+
+    segments = []
+    for segment in srt_content_list:
+      segments.append(
+          {
+              "text" : str(segment.content),
+              "start" : float(segment.start.total_seconds()),
+              "end" : float(segment.end.total_seconds())
+          }
+      )
+
+    if not segments:
+        raise Exception("No data found in srt subtitle file")
+
+    if speaker:
+        segments = [{**seg, "speaker": "SPEAKER_00"} for seg in segments]
+
+    return {"segments": segments}
+
+def prog_disp(msg, percent, is_gui, progress=None):
+    print(msg)
+    if is_gui:
+        progress(percent, desc=msg)
+
 def translate_from_video(
     video,
     link_video,
@@ -116,6 +153,8 @@ def translate_from_video(
     text_json = "{}",
     diarization_model= "pyannote/speaker-diarization@2.1",
     translate_process =  "google_translator_batch",
+    subtitle_file = None,
+    is_gui = False,
     progress=gr.Progress(),
     ):
 
@@ -159,31 +198,41 @@ def translate_from_video(
     mix_audio = "audio_mix.mp3"
 
     if not get_video_from_text_json:
-        progress(0.15, desc="Processing video...")
+        prog_disp("Processing video...", 0.15, is_gui, progress=progress)
         audio_video_preprocessor(preview, video, OutputFile, audio_wav)
-        print("Set file complete.")
+        #print("Set file complete.")
 
-        progress(0.30, desc="Transcribing...")
-        SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
-        audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
-        print("Transcript complete")
 
-        progress(0.45, desc="Aligning...")
+        if subtitle_file:
+            prog_disp("From SRT file...", 0.30, is_gui, progress=progress)
+            if SOURCE_LANGUAGE == "Automatic detection":
+                raise Exception("To use an SRT file, you need to specify its original language (Source language)")
+            subtitle_file = subtitle_file if isinstance(subtitle_file, str) else subtitle_file.name
+            audio = whisperx.load_audio(audio_wav)
+            result = srt_file_to_segments(subtitle_file)
+            result["language"] = SOURCE_LANGUAGE
+        else:
+            prog_disp("Transcribing...", 0.30, is_gui, progress=progress)
+            SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
+            audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
+        #print("Transcript complete")
+
+        prog_disp("Aligning...", 0.45, is_gui, progress=progress)
         align_language = result["language"]
         result = align_speech(audio, result)
-        print("Align complete")
+        #print("Align complete")
         if result['segments'] == []:
             raise ValueError('No active speech found in audio')
 
-        progress(0.60, desc="Diarizing...")
+        prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
         diarize_model_select = diarization_models[diarization_model]
         result_diarize = diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, diarize_model_select)
-        print("Diarize complete")
+        #print("Diarize complete")
         deep_copied_result = copy.deepcopy(result_diarize)
 
-        progress(0.75, desc="Translating...")
+        prog_disp("Translating...", 0.75, is_gui, progress=progress)
         result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=1800)
-        print("Translation complete")
+        #print("Translation complete")
         print(result_diarize)
 
     if get_translated_text:
@@ -204,8 +253,7 @@ def translate_from_video(
         for i, segment in enumerate(result_diarize['segments']):
             segment['text'] = text_json_loaded[i]['text']
 
-
-    progress(0.85, desc="Text_to_speech...")
+    prog_disp("Text to speech...", 0.85, is_gui, progress=progress)
     audio_files, speakers_list = audio_segmentation_to_voice(
         result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, True,
         tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
@@ -213,7 +261,7 @@ def translate_from_video(
 
     # custom voice
     if os.getenv('VOICES_MODELS') == 'ENABLE':
-        progress(0.90, desc="Applying customized voices...")
+        prog_disp("Applying customized voices...", 0.90, is_gui, progress=progress)
         voices_conversion(speakers_list, audio_files)
 
     # replace files with the accelerates
@@ -221,7 +269,7 @@ def translate_from_video(
 
     os.system(f"rm {Output_name_file}")
 
-    progress(0.95, desc="Creating final translated video...")
+    prog_disp("Creating final translated video...", 0.95, is_gui, progress=progress)
 
     create_translated_audio(result_diarize, audio_files, Output_name_file)
 
@@ -297,11 +345,6 @@ def translate_from_video(
 ### documents ###
 import re
 
-def prog_disp(msg, percent, is_gui, progress=None):
-    print(msg)
-    if is_gui:
-        progress(percent, desc=msg)
-
 def pdf_to_txt(pdf_file):
     import PyPDF2
     with open(pdf_file, 'rb') as file:
@@ -322,10 +365,10 @@ def docx_to_txt(docx_file):
 def replace_multiple_elements(text, replacements):
     pattern = re.compile('|'.join(map(re.escape, replacements.keys())))
     replaced_text = pattern.sub(lambda match: replacements[match.group(0)], text)
-    
+
     # Remove multiple spaces
     replaced_text = re.sub(r'\s+', ' ', replaced_text)
-    
+
     return replaced_text
 
 def document_preprocessor(file_path, is_string):
@@ -352,7 +395,7 @@ def document_preprocessor(file_path, is_string):
     #"\n": " ",
     }
     text = replace_multiple_elements(text, replacements)
-    
+
     # Save text to a .txt file
     #file_name = os.path.splitext(os.path.basename(file_path))[0]
     txt_file_path = "./text_preprocessor.txt"
@@ -588,7 +631,7 @@ def create_gui(theme, logs_in_gui=False):
                             wav_speaker_name = gr.Textbox(label="Name for the TTS", value="",info="Use a simple name", placeholder="default_name", lines=1)
                             wav_speaker_output = gr.HTML()
                             create_xtts_wav = gr.Button("Process the audio and include it in the TTS selector")
-        
+
                     with gr.Column():
                           with gr.Accordion(lg_conf["extra_setting"], open=False):
                               audio_accelerate = gr.Slider(label = lg_conf["acc_max_label"], value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info=lg_conf["acc_max_info"])
@@ -611,6 +654,7 @@ def create_gui(theme, logs_in_gui=False):
                               WHISPER_MODEL_SIZE = gr.inputs.Dropdown(whisper_model_options, default=whisper_model_default, label="Whisper model")
                               batch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
                               compute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
+                              input_srt = gr.File(label="Upload a SRT file (will be used instead of the transcription of Whisper)", file_types=[".srt", ".ass"], height=130)
                               pyannote_models_list = list(diarization_models.keys())
                               diarization_process_dropdown = gr.inputs.Dropdown(pyannote_models_list, default=pyannote_models_list[1], label="Diarization model")
                               valid_translate_process = ["google_translator_batch", "google_translator_iterative", "disable_translation"]
@@ -619,6 +663,7 @@ def create_gui(theme, logs_in_gui=False):
                               gr.HTML("<hr></h2>")
                               VIDEO_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="video_output.mp4", info=lg_conf["out_name_info"])
                               PREVIEW = gr.Checkbox(label="Preview", info=lg_conf["preview_info"])
+                              is_gui_dummy_check = gr.Checkbox(True, visible=False)
 
                 with gr.Column(variant='compact'):
 
@@ -724,14 +769,14 @@ def create_gui(theme, logs_in_gui=False):
                         outputs=[video_output],
                         cache_examples=False,
                     )
-                    
+
         with gr.Tab("Document to audio translation"):
             with gr.Column():
               with gr.Accordion("Docs", open=True):
                 with gr.Column(variant='compact'):
                   with gr.Column():
 
-                    input_doc_type = gr.inputs.Dropdown(["WRITE TEXT", "SUBMIT DOCUMENT", "Find Document Path"], default="SUBMIT DOCUMENT", label="Choose Document Source", info="It can be PDF, DOCX, TXT, or text")
+                    input_doc_type = gr.Dropdown(["WRITE TEXT", "SUBMIT DOCUMENT", "Find Document Path"], default="SUBMIT DOCUMENT", label="Choose Document Source", info="It can be PDF, DOCX, TXT, or text")
                     def swap_visibility(data_type):
                         if data_type == "WRITE TEXT":
                             return gr.update(visible=True, value=""), gr.update(visible=False, value=None), gr.update(visible=False, value='')
@@ -752,16 +797,19 @@ def create_gui(theme, logs_in_gui=False):
 
                     docs_SOURCE_LANGUAGE = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["sl_label"], info="This is the original language of the text")
                     docs_TRANSLATE_TO = gr.Dropdown(LANGUAGES_LIST[1:], value='English (en)', label=lg_conf["tat_label"], info=lg_conf["tat_info"])
-                    docs_valid_translate_process = ["google_translator_iterative", "disable_translation"]
-                    docs_translate_process_dropdown = gr.inputs.Dropdown(docs_valid_translate_process, default=docs_valid_translate_process[0], label="Translation process")
 
-                    line_ = gr.HTML("<hr></h2>")
+                    with gr.Column():
+                        with gr.Accordion(lg_conf["extra_setting"], open=False):
+                            docs_valid_translate_process = ["google_translator_iterative", "disable_translation"]
+                            docs_translate_process_dropdown = gr.inputs.Dropdown(docs_valid_translate_process, default=docs_valid_translate_process[0], label="Translation process")
 
-                    docs_output_type_opt = ["audio", "text"] # Add DOCX and etc.
-                    docs_output_type = gr.inputs.Dropdown(docs_output_type_opt, default=docs_output_type_opt[0], label="Output type")
-                    docs_OUTPUT_NAME = gr.Textbox(label="Final file name" ,value="final_sample", info=lg_conf["out_name_info"])
-                    docs_chunk_size = gr.Number(label = 'Max number of characters that the TTS will process per segment', value=0, visible=True, interactive= True, info="A value of 0 assigns a dynamic and more compatible value for the TTS.")
-                    docs_dummy_check = gr.Checkbox(True, visible=False)
+                            line_ = gr.HTML("<hr></h2>")
+
+                            docs_output_type_opt = ["audio", "text"] # Add DOCX and etc.
+                            docs_output_type = gr.inputs.Dropdown(docs_output_type_opt, default=docs_output_type_opt[0], label="Output type")
+                            docs_OUTPUT_NAME = gr.Textbox(label="Final file name" ,value="final_sample", info=lg_conf["out_name_info"])
+                            docs_chunk_size = gr.Number(label = 'Max number of characters that the TTS will process per segment', value=0, visible=True, interactive= True, info="A value of 0 assigns a dynamic and more compatible value for the TTS.")
+                            docs_dummy_check = gr.Checkbox(True, visible=False)
 
                     with gr.Row():
                         docs_button = gr.Button("Start Language Conversion Bridge")
@@ -934,7 +982,6 @@ def create_gui(theme, logs_in_gui=False):
                 f'tts_voice{i:02d}': gr.update(choices=tts_info.tts_list()) for i in range(6)
             }
             update_dict["tts_documents"] = gr.update(choices=tts_info.tts_list())
-            print(update_dict.keys())
             return [value for value in update_dict.values()]
         create_xtts_wav.click(create_wav_file_vc, inputs=[
             wav_speaker_name,
@@ -973,6 +1020,8 @@ def create_gui(theme, logs_in_gui=False):
             subs_edit_space,
             diarization_process_dropdown,
             translate_process_dropdown,
+            input_srt,
+            is_gui_dummy_check,
             ], outputs=subs_edit_space)
 
         # Run translate tts and complete
@@ -1006,6 +1055,8 @@ def create_gui(theme, logs_in_gui=False):
             subs_edit_space,
             diarization_process_dropdown,
             translate_process_dropdown,
+            input_srt,
+            is_gui_dummy_check,
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
 
         # Run docs process

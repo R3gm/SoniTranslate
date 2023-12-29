@@ -10,6 +10,7 @@ transformers
 accelerate
 optimum
 sentencepiece
+srt
 # Documents
 PyPDF2
 python-docx
