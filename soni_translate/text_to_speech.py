@@ -276,7 +276,8 @@ def audio_trimming(audio_path, destination, start, end):
     #file_ = f'{os.path.splitext(audio_path)[0]}_trim.wav'
     output_path = os.path.join(file_directory, file_)
 
-    command = f'ffmpeg -y -loglevel error -i "{audio_path}" -ss {start} -t {end} -acodec pcm_s16le -f wav "{output_path}"'
+    # -t (duration from -ss) | -to (time stop) | -af silenceremove=1:0:-50dB (remove silence)
+    command = f'ffmpeg -y -loglevel error -i "{audio_path}" -ss {start} -to {end} -acodec pcm_s16le -f wav "{output_path}"'
     run_command(command)
 
     return output_path
@@ -332,7 +333,7 @@ def create_wav_file_vc(
     from .mdx_net import process_uvr_task
     _, _, _, _, vocals_dereverb_path = process_uvr_task(
         orig_song_path = audio_segment,
-        main_vocals = False,
+        main_vocals = True,
         dereverb = True,
         )
 
@@ -357,7 +358,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
 
   for speaker in speakers_coqui:
     filtered_speaker = [segment for segment in segments_base if segment['speaker'] == speaker]
-    if len(filtered_speaker) > 5:
+    if len(filtered_speaker) > 4:
       filtered_speaker = filtered_speaker[1:]
     if filtered_speaker[0]["tts_name"] == "_XTTS_/AUTOMATIC.wav":
         name_automatic_wav = f"AUTOMATIC_{speaker}"
@@ -382,12 +383,18 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
                     break
 
             if not wav_ok:
+                print("Taking the first segment")
+                seg = filtered_speaker[0]
                 print(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                max_duration = float(seg['end']) - float(seg['start'])
+                if max_duration > 9.0:
+                    max_duration = 9.0                    
+
                 create_wav_file_vc(
                     sample_name = name_automatic_wav,
                     audio_wav = "audio.wav",
-                    start = (float(seg['start']) + 1.0),
-                    end = (float(seg['end']) - 1.0),
+                    start = (float(seg['start'])),
+                    end = (float(seg['start']) + max_duration),
                 )
 
 def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2", speakers_coqui=None, delete_previous_automatic=True, emotion=None):
@@ -408,13 +415,13 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
     #Emotion and speed can only be used with Coqui Studio models. Which is discontinued
     #emotions = ["Neutral", "Happy", "Sad", "Angry", "Dull"]
 
-    directory_audios_vc = "_XTTS_"
-    create_directories(directory_audios_vc)
-    create_new_files_for_vc(speakers_coqui, filtered_coqui_segments['segments'])
-
     if delete_previous_automatic:
         for spk in speakers_coqui:
             remove_files(f"_XTTS_/AUTOMATIC_{spk}.wav")
+
+    directory_audios_vc = "_XTTS_"
+    create_directories(directory_audios_vc)
+    create_new_files_for_vc(speakers_coqui, filtered_coqui_segments['segments'])
 
     # Init TTS
     model = TTS(model_id_coqui).to(device)
