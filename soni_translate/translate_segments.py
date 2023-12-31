@@ -3,6 +3,7 @@ from deep_translator import GoogleTranslator
 from itertools import chain
 import copy
 from .language_configuration import fix_code_language
+from .logging_setup import logger
 
 def translate_iterative(segments, TRANSLATE_AUDIO_TO):
     """
@@ -84,8 +85,8 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
     try:
         translated_lines = translator.translate_batch(text_merge)
     except Exception as error:
-        print(str(error))
-        print(f"The translation in chunks failed, switching to iterative. Related> too many request") # use proxy or less chunk size
+        logger.error(str(error))
+        logger.warning(f"The translation in chunks failed, switching to iterative. Related> too many request") # use proxy or less chunk size
         return translate_iterative(segments, TRANSLATE_AUDIO_TO)
 
     # un chunk
@@ -95,11 +96,11 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
     # verify integrity ok
     if len(segments) == len(translated_lines):
         for line in range(len(segments_copy)):
-            #print(segments_copy[line]['text'], translated_lines[line].strip())
+            logger.debug(segments_copy[line]['text'], translated_lines[line].strip())
             segments_copy[line]['text'] = translated_lines[line].strip()
         return segments_copy
     else:
-        print(f"The translation in chunks failed, switching to iterative. {len(segments), len(translated_lines)}")
+        logger.error(f"The translation in chunks failed, switching to iterative. {len(segments), len(translated_lines)}")
         return translate_iterative(segments, TRANSLATE_AUDIO_TO)
 
 def translate_text(segments, TRANSLATE_AUDIO_TO, translation_process="google_translator_batch", chunk_size=4500):

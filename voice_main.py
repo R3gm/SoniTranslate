@@ -16,6 +16,7 @@ from gtts import gTTS
 import edge_tts
 import asyncio
 import nest_asyncio
+from soni_translate.logging_setup import logger
 
 # model load
 def get_vc(sid, to_return_protect0, to_return_protect1):
@@ -23,7 +24,7 @@ def get_vc(sid, to_return_protect0, to_return_protect1):
     if sid == "" or sid == []:
         global hubert_model
         if hubert_model is not None:  # change model or not
-            print("clean_empty_cache")
+            logger.info("clean_empty_cache")
             del net_g, n_spk, vc, hubert_model, tgt_sr  # ,cpt
             hubert_model = net_g = n_spk = vc = hubert_model = tgt_sr = None
             if torch.cuda.is_available():
@@ -50,7 +51,7 @@ def get_vc(sid, to_return_protect0, to_return_protect1):
                 torch.cuda.empty_cache()
         return {"visible": False, "__type__": "update"}
     person = "%s/%s" % (weight_root, sid)
-    print("loading %s" % person)
+    logger.info("loading %s" % person)
     cpt = torch.load(person, map_location="cpu")
     tgt_sr = cpt["config"][-1]
     cpt["config"][-3] = cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
@@ -180,7 +181,7 @@ def vc_single(
         ), (tgt_sr, audio_opt)
     except:
         info = traceback.format_exc()
-        print(info)
+        logger.error(info)
         return info, (None, None)
 
 
@@ -235,7 +236,7 @@ class Config:
                 or "1070" in self.gpu_name
                 or "1080" in self.gpu_name
             ):
-                print("16 series / 10 series graphics cards and P40 force single precision")
+                logger.info("16 series / 10 series graphics cards and P40 force single precision")
                 self.is_half = False
                 for config_file in ["32k.json", "40k.json", "48k.json"]:
                     with open(f"configs/{config_file}", "r") as f:
@@ -261,10 +262,10 @@ class Config:
                 with open("trainset_preprocess_pipeline_print.py", "w") as f:
                     f.write(strr)
         elif torch.backends.mps.is_available():
-            print("Supported N-card not found, using MPS for inference")
+            logger.info("Supported N-card not found, using MPS for inference")
             self.device = "mps"
         else:
-            print("No supported N-card found, using CPU for inference")
+            logger.info("No supported N-card found, using CPU for inference")
             self.device = "cpu"
             self.is_half = False
             use_fp32_config()
@@ -294,7 +295,7 @@ class Config:
 
 
 
-        print(self.device, self.is_half)
+        logger.info(self.device, self.is_half)
 
         return x_pad, x_query, x_center, x_max
 
@@ -366,7 +367,7 @@ class ClassVoices:
             filename = "audio2/"+audio_files[_value_item] if _value_item != "test" else audio_files[0]
             #filename = "audio2/"+audio_files[_value_item]
             try:
-                print(audio_files[_value_item], model_voice_path)
+                logger.info(audio_files[_value_item], model_voice_path)
             except:
                 pass
 
@@ -408,7 +409,7 @@ class ClassVoices:
         if "SET_LIMIT" == os.getenv("DEMO"):
           if len(tts_text) > 60:
             tts_text = tts_text[:60]
-            print("DEMO; limit to 60 characters")
+            logger.warning("DEMO; limit to 60 characters")
 
         language = tts_voice[:2]
         try:
@@ -420,11 +421,11 @@ class ClassVoices:
               tts = gTTS(tts_text, lang=language)
               tts.save(filename)
               tts.save
-              print(f'No audio was received. Please change the tts voice for {tts_voice}. USING gTTS.')
+              logger.warning(f'No audio was received. Please change the tts voice for {tts_voice}. USING gTTS.')
           except:
             tts = gTTS('a', lang=language)
             tts.save(filename)
-            print('Error: Audio will be replaced.')
+            logger.error('Audio will be replaced.')
 
         os.system("cp test/test.wav test/real_test.wav")
 
@@ -466,14 +467,14 @@ class ClassVoices:
             if name.endswith(".index"):
                 index_paths.append(name)
 
-        print(names, index_paths)
+        logger.info(names, index_paths)
         # config machine
         hubert_model = None
         config = Config('cuda:0', is_half=True) # config = Config('cpu', is_half=False) # cpu
 
         # filter by speaker
         for _speak, _values in speakers_indices.items():
-            #print(_speak, _values)
+            logger.debug(_speak, _values)
             #for _value_item in _values:
             #  self.filename = "audio2/"+audio_files[_value_item]
             ###print(audio_files[_value_item])

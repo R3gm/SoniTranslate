@@ -1,7 +1,8 @@
 import os, zipfile, rarfile, shutil, subprocess, shlex, sys
+from .logging_setup import logger
 
 def run_command(command):
-    print(command)
+    logger.debug(command)
     if isinstance(command, str):
         command = shlex.split(command)
 
@@ -13,12 +14,12 @@ def run_command(command):
     process_wav = subprocess.Popen(command, **sub_params)
     output, errors = process_wav.communicate()
     if process_wav.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
-        print(errors.decode())
-        raise Exception("Error command")
+        logger.error("Error comnand")
+        raise Exception(errors.decode())
 
 def print_tree_directory(root_dir, indent=''):
     if not os.path.exists(root_dir):
-        print(f"{indent}Invalid directory or file: {root_dir}")
+        logger.error(f"{indent}Invalid directory or file: {root_dir}")
         return
 
     items = os.listdir(root_dir)
@@ -47,7 +48,7 @@ def upload_model_list():
         if name.endswith(".pth"):
             models.append(name)
     if models:
-        print(models)
+        logger.info(models)
 
     index_root = "logs"
     index_paths = []
@@ -55,22 +56,22 @@ def upload_model_list():
         if name.endswith(".index"):
             index_paths.append("logs/"+name)
     if index_paths:
-        print(index_paths)
+        logger.info(index_paths)
 
     return models, index_paths
 
 def manual_download(url, dst):
 
     if 'drive.google' in url:
-        print("Drive url")
+        logger.info("Drive url")
         if 'folders' in url:
-            print("folder")
+            logger.info("folder")
             os.system(f'gdown --folder "{url}" -O {dst} --fuzzy -c')
         else:
-            print("single")
+            logger.info("single")
             os.system(f'gdown "{url}" -O {dst} --fuzzy -c')
     elif 'huggingface' in url:
-        print("HuggingFace url")
+        logger.info("HuggingFace url")
         if '/blob/' in url or '/resolve/' in url:
           if '/blob/' in url:
               url = url.replace('/blob/', '/resolve/')
@@ -78,13 +79,13 @@ def manual_download(url, dst):
         else:
           os.system(f"git clone {url} {dst+'repo/'}")
     elif 'http' in url:
-        print("URL")
+        logger.info("URL")
         download_manager(url=url, path=dst, overwrite=True, progress=True)
     elif os.path.exists(url):
-        print("Path")
+        logger.info("Path")
         copy_files(url, dst)
     else:
-        print(f"No valid URL: {url}")
+        logger.error(f"No valid URL: {url}")
 
 def download_list(text_downloads):
     try:
@@ -178,11 +179,11 @@ def load_file_from_url(
 
     # Download
     if not os.path.exists(cached_file):
-        print(f'Downloading: "{url}" to {cached_file}\n')
+        logger.info(f'Downloading: "{url}" to {cached_file}\n')
         from torch.hub import download_url_to_file
         download_url_to_file(url, cached_file, progress=progress)
     else:
-        print(cached_file)
+        logger.debug(cached_file)
 
     return cached_file
 
@@ -245,10 +246,10 @@ def remove_directory_contents(directory_path):
                 elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception as e:
-                print(f"Failed to delete {file_path}. Reason: {e}")
-        print(f"Content in '{directory_path}' removed.")
+                logger.error(f"Failed to delete {file_path}. Reason: {e}")
+        logger.info(f"Content in '{directory_path}' removed.")
     else:
-        print(f"Directory '{directory_path}' does not exist.")
+        logger.error(f"Directory '{directory_path}' does not exist.")
 
 # Create directory if not exists
 def create_directories(directory_path):
@@ -257,7 +258,7 @@ def create_directories(directory_path):
     for one_dir_path in directory_path:
         if not os.path.exists(one_dir_path):
             os.makedirs(one_dir_path)
-            print(f"Directory '{one_dir_path}' created.")
+            logger.debug(f"Directory '{one_dir_path}' created.")
 
 def move_files(source_dir, destination_dir, extension=""):
     """
@@ -299,9 +300,9 @@ def copy_files(source_path, destination_path):
     for one_source_path in source_path:
         if os.path.exists(one_source_path):
             shutil.copy2(one_source_path, destination_path)
-            #print(f"File '{one_source_path}' copied to '{destination_path}'.")
+            logger.debug(f"File '{one_source_path}' copied to '{destination_path}'.")
         else:
-            print(f"File '{one_source_path}' does not exist.")
+            logger.error(f"File '{one_source_path}' does not exist.")
 
 def rename_file(current_name, new_name):
     file_directory = os.path.dirname(current_name)
@@ -309,8 +310,8 @@ def rename_file(current_name, new_name):
     if os.path.exists(current_name):
         dir_new_name_file = os.path.join(file_directory, new_name)
         os.rename(current_name, dir_new_name_file)
-        print(f"File '{current_name}' renamed to '{new_name}'.")
+        logger.debug(f"File '{current_name}' renamed to '{new_name}'.")
         return dir_new_name_file
     else:
-        print(f"File '{current_name}' does not exist.")
+        logger.error(f"File '{current_name}' does not exist.")
         return None

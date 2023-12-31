@@ -23,20 +23,21 @@ from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST, bar
 from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list, download_manager, move_files, run_command
 from soni_translate.mdx_net import UVR_MODELS, MDX_DOWNLOAD_LINK, mdxnet_models_dir
 from urllib.parse import unquote
+from soni_translate.logging_setup import logger
 from soni_translate.speech_segmentation import transcribe_speech, align_speech, diarize_speech, diarization_models
 import copy, logging, rarfile, zipfile, shutil, time, json, subprocess
 try:
     from piper import PiperVoice
     piper_enabled = True
-    print("PIPER TTS enabled")
+    logger.info("PIPER TTS enabled")
 except:
     piper_enabled = False
-    print("PIPER TTS disabled")
+    logger.info("PIPER TTS disabled")
 try:
     from TTS.api import TTS
     xtts_enabled = True
-    print("Coqui XTTS enabled")
-    print(
+    logger.info("Coqui XTTS enabled")
+    logger.info(
         "In this app, by using Coqui TTS (text-to-speech), you acknowledge and agree to the license.\n"
         "You confirm that you have read, understood, and agreed to the Terms and Conditions specified at the following link:\n"
         "https://coqui.ai/cpml.txt."
@@ -44,7 +45,7 @@ try:
     os.environ['COQUI_TOS_AGREED'] = "1"
 except:
     xtts_enabled = False
-    print("Coqui XTTS disabled")
+    logger.info("Coqui XTTS disabled")
 
 class TTS_Info:
     def __init__(self, piper_enabled, xtts_enabled):
@@ -73,7 +74,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 list_compute_type = ['int8', 'float16', 'float32'] if torch.cuda.is_available() else ['int8', 'float32']
 compute_type_default = 'float16' if torch.cuda.is_available() else 'float32'
 whisper_model_default = 'large-v3' if torch.cuda.is_available() else 'medium'
-print('Working in:', device)
+logger.info('Working in:', device)
 
 # Custom voice
 directories = ['downloads', 'logs', 'weights', 'clean_song_output', '_XTTS_', f'audio2{os.sep}audio', 'audio']
@@ -119,7 +120,7 @@ def srt_file_to_segments(file_path, speaker=False):
     return {"segments": segments}
 
 def prog_disp(msg, percent, is_gui, progress=None):
-    print(msg)
+    logger.info(msg)
     if is_gui:
         progress(percent, desc=msg)
 
@@ -168,7 +169,7 @@ def translate_from_video(
     TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
     SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
     if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
-        print("WARNING: Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
+        logger.warning("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
 
     if video is None:
         video = directory_input if os.path.exists(directory_input) else link_video
@@ -178,7 +179,7 @@ def translate_from_video(
         preview = True
         AUDIO_MIX_METHOD='Adjusting volumes and mixing audio'
         WHISPER_MODEL_SIZE="medium"
-        print(
+        logger.info(
             "DEMO; set preview=True; Generation is limited to 10 seconds to prevent CPU errors. No limitations with GPU.\n"
             "DEMO; set Adjusting volumes and mixing audio\n"
             "DEMO; set whisper model to medium"
@@ -200,7 +201,7 @@ def translate_from_video(
     if not get_video_from_text_json:
         prog_disp("Processing video...", 0.15, is_gui, progress=progress)
         audio_video_preprocessor(preview, video, OutputFile, audio_wav)
-        #print("Set file complete.")
+        #logger.info("Set file complete.")
 
 
         if subtitle_file:
@@ -215,25 +216,25 @@ def translate_from_video(
             prog_disp("Transcribing...", 0.30, is_gui, progress=progress)
             SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
             audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
-        #print("Transcript complete")
+        #logger.info("Transcript complete")
 
         prog_disp("Aligning...", 0.45, is_gui, progress=progress)
         align_language = result["language"]
         result = align_speech(audio, result)
-        #print("Align complete")
+        #logger.info("Align complete")
         if result['segments'] == []:
             raise ValueError('No active speech found in audio')
 
         prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
         diarize_model_select = diarization_models[diarization_model]
         result_diarize = diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, diarize_model_select)
-        #print("Diarize complete")
+        #logger.info("Diarize complete")
         deep_copied_result = copy.deepcopy(result_diarize)
 
         prog_disp("Translating...", 0.75, is_gui, progress=progress)
         result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=1800)
-        #print("Translation complete")
-        print(result_diarize)
+        #logger.info("Translation complete")
+        logger.(result_diarize)
 
     if get_translated_text:
         json_data = []
@@ -491,9 +492,9 @@ def document_process(
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
     else:
         TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
-        print("no translation")
+        logger.info("no translation")
     if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
-        print("WARNING: Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
+        logger.debug("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
 
     is_string = False
     if document is None:
@@ -520,7 +521,7 @@ def document_process(
 
     if "SET_LIMIT" == os.getenv("DEMO"):
         result_text = result_text[:50]
-        print(
+        logger.info(
             "DEMO; Generation is limited to 50 characters to prevent CPU errors. No limitations with GPU.\n"
         )
 
@@ -542,7 +543,7 @@ def document_process(
         result_text,
         chunk_size
     )
-    print(result_diarize)
+    logger.debug(result_diarize)
 
     prog_disp("Text to speech...", 0.45, is_gui, progress=progress)
     audio_files, speakers_list = audio_segmentation_to_voice(
@@ -949,7 +950,7 @@ def create_gui(theme, logs_in_gui=False):
             gr.Markdown(news)
 
         if logs_in_gui:
-            print("Logs in gui need public url")
+            logger.info("Logs in gui need public url")
             import sys
 
             class Logger:

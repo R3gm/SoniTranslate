@@ -1,3 +1,5 @@
+from .logging_setup import logger
+
 LANGUAGES = {
     'Automatic detection': 'Automatic detection',
     'Arabic (ar)': 'ar',
@@ -57,7 +59,7 @@ def fix_code_language(translate_to, syntax="google"):
         replace_lang_code = {"zh": "zh-cn", "zh-CN": "zh-cn"}
 
     new_code_lang = replace_lang_code.get(translate_to, translate_to)
-    print(f"{translate_to} -> {new_code_lang}")
+    logger.debug(f"Fix code {translate_to} -> {new_code_lang}")
     return new_code_lang
 
 

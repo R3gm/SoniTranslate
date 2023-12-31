@@ -9,6 +9,8 @@ from typing import Any, Dict
 from pathlib import Path
 #from scipy.io.wavfile import write as write_wav
 import soundfile as sf
+import logging
+from .logging_setup import logger
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 torch_dtype_env = torch.float16 if torch.cuda.is_available() else torch.float32
@@ -25,7 +27,7 @@ def verify_saved_file_and_size(filename):
         raise TTS_OperationError(f"File '{filename}' has a zero size. Related to incorrect TTS for the target language")
 
 def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
-    print(f"Error: {str(error)}")
+    logger.error(f"Error: {str(error)}")
     try:
         from tempfile import TemporaryFile
 
@@ -42,15 +44,15 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         f.close()  # Close the TemporaryFile
         sf.write(filename, audio_data, samplerate, format='ogg', subtype='vorbis')
 
-        print(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')    
+        logger.warning(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')    
         verify_saved_file_and_size(filename)
     except Exception as error:
-        print(f"Error: {str(error)}")
+        logger.critical(f"Error: {str(error)}")
         sample_rate_aux = 22050
         duration = float(segment['end']) - float(segment['start'])
         data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
         sf.write(filename, data, sample_rate_aux, format='ogg', subtype='vorbis')
-        print('Error: Audio will be replaced -> [silent audio].')
+        logger.error('Audio will be replaced -> [silent audio].')
         verify_saved_file_and_size(filename)
 
 # =====================================
@@ -75,12 +77,12 @@ def edge_tts_voices_list():
     formatted_voices = [f"{entry['Name']}-{entry['Gender']}" for entry in voices]
 
     if not formatted_voices:
-        print("The list of Edge TTS voices could not be obtained, switching to an alternative method")
+        logger.warning("The list of Edge TTS voices could not be obtained, switching to an alternative method")
         tts_voice_list = asyncio.new_event_loop().run_until_complete(edge_tts.list_voices())
         formatted_voices = sorted([f"{v['ShortName']}-{v['Gender']}" for v in tts_voice_list])
 
     if not formatted_voices:
-        print("Can't get EDGE TTS - list voices")
+        logger.error("Can't get EDGE TTS - list voices")
 
     return formatted_voices
 
@@ -96,7 +98,7 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
         # make the tts audio
         filename = f"audio/{start}.ogg"
 
-        print(text, filename)
+        logger.info(text, filename)
         try:
             #nest_asyncio.apply() if not is_gui else None
             asyncio.run(edge_tts.Communicate(text, "-".join(tts_name.split('-')[:-1])).save(filename))
@@ -126,7 +128,7 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
     #filtered_segments = filtered_bark_segments['segments']
     # Sorting the segments by 'tts_name'
     #sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
-    #print(sorted_segments)
+    #logger.debug(sorted_segments)
 
     for segment in tqdm(filtered_bark_segments['segments']):
 
@@ -139,7 +141,7 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        print(text, filename)
+        logger.info(text, filename)
         try:
             # Infer
             with torch.inference_mode():
@@ -169,7 +171,7 @@ def uromanize(input_string):
     #script_path = os.path.join(uroman_path, "bin", "uroman.pl")
 
     if not os.path.exists("./uroman"):
-        print("Clonning repository uroman https://github.com/isi-nlp/uroman.git for romanize the text")
+        logger.info("Clonning repository uroman https://github.com/isi-nlp/uroman.git for romanize the text")
         process = subprocess.Popen(["git", "clone", "https://github.com/isi-nlp/uroman.git"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
     script_path = os.path.join("./uroman", "bin", "uroman.pl")
@@ -192,7 +194,7 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
     filtered_segments = filtered_vits_segments['segments']
     # Sorting the segments by 'tts_name'
     sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
-    print(sorted_segments)
+    logger.debug(sorted_segments)
 
     model_name_key = None
     for segment in tqdm(sorted_segments):
@@ -210,14 +212,14 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
 
         if tokenizer.is_uroman:
             romanize_text = uromanize(text)
-            print(f"Romanize text: {romanize_text}")
+            logger.debug(f"Romanize text: {romanize_text}")
             inputs = tokenizer(romanize_text, return_tensors="pt")
         else:
             inputs = tokenizer(text, return_tensors="pt")
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        print(text, filename)
+        logger.info(text, filename)
         try:
             # Infer
             with torch.no_grad():
@@ -346,7 +348,7 @@ def create_wav_file_vc(
 
     final_sample = os.path.join(base_xtts_wav, sample_name)
     if os.path.exists(final_sample):
-        print(final_sample)
+        logger.info(final_sample)
         return final_sample
     else:
         raise Exception(f"Error wav: {final_sample}")
@@ -363,7 +365,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
     if filtered_speaker[0]["tts_name"] == "_XTTS_/AUTOMATIC.wav":
         name_automatic_wav = f"AUTOMATIC_{speaker}"
         if os.path.exists(f"_XTTS_/{name_automatic_wav}.wav"):
-            print(f"WAV automatic {speaker} exists")
+            logger.info(f"WAV automatic {speaker} exists")
             #path_wav = path_automatic_wav
             pass
         else:
@@ -372,7 +374,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
             for seg in filtered_speaker:
                 duration = float(seg['end']) - float(seg['start'])
                 if duration > 7.0 and duration < 12.0:
-                    print(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                    logger.debug(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
                     create_wav_file_vc(
                         sample_name = name_automatic_wav,
                         audio_wav = "audio.wav",
@@ -383,9 +385,9 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
                     break
 
             if not wav_ok:
-                print("Taking the first segment")
+                logger.debug("Taking the first segment")
                 seg = filtered_speaker[0]
-                print(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                logger.debug(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
                 max_duration = float(seg['end']) - float(seg['start'])
                 if max_duration > 9.0:
                     max_duration = 9.0                    
@@ -430,7 +432,7 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
     #filtered_segments = filtered_coqui_segments['segments']
     # Sorting the segments by 'tts_name'
     #sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
-    #print(sorted_segments)
+    #logger.debug(sorted_segments)
 
     for segment in tqdm(filtered_coqui_segments['segments']):
 
@@ -443,7 +445,7 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        print(text, filename)
+        logger.info(text, filename)
         try:
             # Infer
             wav = model.tts(text=text, speaker_wav=tts_name, language=TRANSLATE_AUDIO_TO)
@@ -486,10 +488,10 @@ def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_
     try:
         import onnxruntime as rt
         if rt.get_device() == 'GPU':
-            print("onnxruntime device > GPU")
+            logger.debug("onnxruntime device > GPU")
             cuda = True
         else:
-            print("onnxruntime device > CPU") # try pip install onnxruntime-gpu
+            logger.info("onnxruntime device > CPU") # try pip install onnxruntime-gpu
             cuda = False
     except Exception as error:
         raise TTS_OperationError(f"onnxruntime error: {str(error)}")
@@ -555,7 +557,7 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
     filtered_segments = filtered_onnx_vits_segments['segments']
     # Sorting the segments by 'tts_name'
     sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
-    print(sorted_segments)
+    logger.debug(sorted_segments)
 
     model_name_key = None
     for segment in tqdm(sorted_segments):
@@ -572,7 +574,7 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        print(text, filename)
+        logger.info(text, filename)
         try:
             # Infer
             speech_output = synthesize_text_to_audio_np_array(model, text, synthesize_args)
@@ -618,7 +620,7 @@ def audio_segmentation_to_voice(
     for segment in result_diarize['segments']:
         if 'speaker' not in segment:
             segment['speaker'] = 'SPEAKER_00'
-            print(f"NO SPEAKER DETECT IN SEGMENT: First TTS will be used in the segment time {segment['start'], segment['text']}")
+            logger.warning(f"NO SPEAKER DETECT IN SEGMENT: First TTS will be used in the segment time {segment['start'], segment['text']}")
          # Assign the TTS name
         segment['tts_name'] = speaker_to_voice[segment['speaker']]
 
@@ -644,19 +646,19 @@ def audio_segmentation_to_voice(
 
     # Infer
     if filtered_edge["segments"]:
-        print(f"EDGE TTS: {speakers_edge}")
+        logger.info(f"EDGE TTS: {speakers_edge}")
         segments_egde_tts(filtered_edge, TRANSLATE_AUDIO_TO, is_gui) # mp3
     if filtered_bark["segments"]:
-        print(f"BARK TTS: {speakers_bark}")
+        logger.info(f"BARK TTS: {speakers_bark}")
         segments_bark_tts(filtered_bark, TRANSLATE_AUDIO_TO, model_id_bark) # wav
     if filtered_vits["segments"]:
-        print(f"VITS TTS: {speakers_vits}")
+        logger.info(f"VITS TTS: {speakers_vits}")
         segments_vits_tts(filtered_vits, TRANSLATE_AUDIO_TO) # wav
     if filtered_coqui["segments"]:
-        print(f"Coqui TTS: {speakers_coqui}")
+        logger.info(f"Coqui TTS: {speakers_coqui}")
         segments_coqui_tts(filtered_coqui, TRANSLATE_AUDIO_TO, model_id_coqui, speakers_coqui, delete_previous_automatic) # wav
     if filtered_vits_onnx["segments"]:
-        print(f"PIPER TTS: {speakers_vits_onnx}")
+        logger.info(f"PIPER TTS: {speakers_vits_onnx}")
         segments_vits_onnx_tts(filtered_vits_onnx, TRANSLATE_AUDIO_TO) # wav
 
     [result.pop('tts_name', None) for result in result_diarize['segments']]
@@ -665,7 +667,7 @@ def audio_segmentation_to_voice(
 
 def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, speakers_bark, speakers_vits, speakers_coqui, speakers_vits_onnx):
 
-    print("Apply acceleration")
+    logger.info("Apply acceleration")
     audio_files = []
     speakers_list = []
     for segment in tqdm(result_diarize['segments']):
@@ -709,9 +711,11 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
             copy_files(filename, f"audio2{os.sep}audio")
         else:
             os.system(f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} audio2/{filename}")
-     
-        duration_create = librosa.get_duration(filename=f"audio2/{filename}")
-        print(acc_percentage, duration_tts, duration_create)
+        
+        if logger.isEnabledFor(logging.DEBUG):
+            duration_create = librosa.get_duration(filename=f"audio2/{filename}")
+            logger.debug(acc_percentage, duration_tts, duration_create)
+
         audio_files.append(filename)
         speakers_list.append(speaker)
 

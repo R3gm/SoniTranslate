@@ -2,6 +2,7 @@ from whisperx.alignment import DEFAULT_ALIGN_MODELS_TORCH as DAMT, DEFAULT_ALIGN
 import whisperx, torch, gc
 from IPython.utils import capture
 from .language_configuration import EXTRA_ALIGN
+from .logging_setup import logger
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -55,7 +56,7 @@ def align_speech(audio, result):
     DAMHF.update(DAMT) #lang align
     if not result['language'] in DAMHF.keys() and not result['language'] in EXTRA_ALIGN.keys():
         audio = result = None
-        print("Automatic detection: Source language not compatible with align")
+        logger.warning("Automatic detection: Source language not compatible with align")
         raise ValueError(f"Detected language {result['language']}  incompatible, you can select the source language to avoid this error.")
 
     model_a, metadata = whisperx.load_align_model(

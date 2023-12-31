@@ -2,6 +2,7 @@ from pydub import AudioSegment
 from tqdm import tqdm
 import os
 from .utils import run_command
+from .logging_setup import logger
 
 def create_translated_audio(result_diarize, audio_files, final_file, concat=False):
     total_duration = result_diarize['segments'][-1]['end'] # in seconds
@@ -30,7 +31,7 @@ def create_translated_audio(result_diarize, audio_files, final_file, concat=Fals
     else:
         # silent audio with total_duration
         combined_audio = AudioSegment.silent(duration=int(total_duration * 1000))
-        print(round((total_duration / 60),2), 'minutes of video')
+        logger.info(round((total_duration / 60),2), 'total duration')
 
         for line, audio_file in tqdm(zip(result_diarize['segments'], audio_files)):
             start = float(line['start'])
@@ -42,7 +43,7 @@ def create_translated_audio(result_diarize, audio_files, final_file, concat=Fals
               start_time = start * 1000  # to ms
               combined_audio = combined_audio.overlay(audio, position=start_time)
             except:
-              print(f'ERROR AUDIO FILE {audio_file}')
+              logger.error(f'Error audio file {audio_file}')
 
         os.system("rm -rf audio/*")
 

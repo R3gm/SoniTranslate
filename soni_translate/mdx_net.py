@@ -18,6 +18,7 @@ try:
     from .utils import remove_files, remove_directory_contents, create_directories
 except:
     from utils import remove_files, remove_directory_contents, create_directories
+from .logging_setup import logger
 
 #warnings.filterwarnings("ignore")
 stem_naming = {'Vocals': 'Instrumental', 'Other': 'Instruments', 'Instrumental': 'Vocals', 'Drums': 'Drumless', 'Bass': 'Bassless'}
@@ -344,11 +345,11 @@ def process_uvr_task(
     create_directories(song_output_dir)
     orig_song_path = convert_to_stereo_and_wav(orig_song_path)
     try:
-        print(f"onnxruntime device >> {ort.get_device()}")
+        logger.debug(f"onnxruntime device >> {ort.get_device()}")
     except:
-        print("Error onnxruntime")
+        logger.error("Error onnxruntime")
 
-    print("Separating Vocals from Instrumental...")
+    logger.info("Vocal Track Isolation and Instrumental Separation...")
     vocals_path, instrumentals_path = run_mdx(
         mdx_model_params,
         song_output_dir,
@@ -359,7 +360,7 @@ def process_uvr_task(
     )
 
     if main_vocals:
-        print("Separating Main Vocals from Backup Vocals...")
+        logger.info("Main Voice Separation from Supporting Vocals...")
         backup_vocals_path, main_vocals_path = run_mdx(
             mdx_model_params,
             song_output_dir,
@@ -373,7 +374,7 @@ def process_uvr_task(
         backup_vocals_path, main_vocals_path = None, vocals_path
 
     if dereverb:
-        print("Applying DeReverb to Vocals...")
+        logger.info("Vocal Clarity Enhancement through De-Reverberation...")
         _, vocals_dereverb_path = run_mdx(
             mdx_model_params,
             song_output_dir,
