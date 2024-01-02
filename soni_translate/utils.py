@@ -19,7 +19,7 @@ def run_command(command):
 
 def print_tree_directory(root_dir, indent=''):
     if not os.path.exists(root_dir):
-        logger.error(f"{indent}Invalid directory or file: {root_dir}")
+        logger.error(f"{indent} Invalid directory or file: {root_dir}")
         return
 
     items = os.listdir(root_dir)

@@ -98,7 +98,7 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
         # make the tts audio
         filename = f"audio/{start}.ogg"
 
-        logger.info(text, filename)
+        logger.info(f"{text} >> {filename}")
         try:
             #nest_asyncio.apply() if not is_gui else None
             asyncio.run(edge_tts.Communicate(text, "-".join(tts_name.split('-')[:-1])).save(filename))
@@ -141,7 +141,7 @@ def segments_bark_tts(filtered_bark_segments, TRANSLATE_AUDIO_TO, model_id_bark=
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        logger.info(text, filename)
+        logger.info(f"{text} >> {filename}")
         try:
             # Infer
             with torch.inference_mode():
@@ -219,7 +219,7 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        logger.info(text, filename)
+        logger.info(f"{text} >> {filename}")
         try:
             # Infer
             with torch.no_grad():
@@ -374,7 +374,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
             for seg in filtered_speaker:
                 duration = float(seg['end']) - float(seg['start'])
                 if duration > 7.0 and duration < 12.0:
-                    logger.debug(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                    logger.info(f"Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {duration}, {seg["text"]}")
                     create_wav_file_vc(
                         sample_name = name_automatic_wav,
                         audio_wav = "audio.wav",
@@ -385,9 +385,9 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
                     break
 
             if not wav_ok:
-                logger.debug("Taking the first segment")
+                logger.info("Taking the first segment")
                 seg = filtered_speaker[0]
-                logger.debug(seg["start"], seg["end"], seg["speaker"], duration, seg["text"])
+                logger.info(f"Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {seg["text"]}")
                 max_duration = float(seg['end']) - float(seg['start'])
                 if max_duration > 9.0:
                     max_duration = 9.0                    
@@ -445,7 +445,7 @@ def segments_coqui_tts(filtered_coqui_segments, TRANSLATE_AUDIO_TO, model_id_coq
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        logger.info(text, filename)
+        logger.info(f"{text} >> {filename}")
         try:
             # Infer
             wav = model.tts(text=text, speaker_wav=tts_name, language=TRANSLATE_AUDIO_TO)
@@ -574,7 +574,7 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
-        logger.info(text, filename)
+        logger.info(f"{text} >> {filename}")
         try:
             # Infer
             speech_output = synthesize_text_to_audio_np_array(model, text, synthesize_args)
@@ -714,7 +714,7 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         
         if logger.isEnabledFor(logging.DEBUG):
             duration_create = librosa.get_duration(filename=f"audio2/{filename}")
-            logger.debug(acc_percentage, duration_tts, duration_create)
+            logger.debug(f"acc_percen is {acc_percentage}, tts duration is {duration_tts}, new duration is {duration_create}, for {filename}")
 
         audio_files.append(filename)
         speakers_list.append(speaker)

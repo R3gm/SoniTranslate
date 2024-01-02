@@ -96,7 +96,7 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
     # verify integrity ok
     if len(segments) == len(translated_lines):
         for line in range(len(segments_copy)):
-            logger.debug(segments_copy[line]['text'], translated_lines[line].strip())
+            logger.debug(f"{segments_copy[line]['text']} >> {translated_lines[line].strip()}")
             segments_copy[line]['text'] = translated_lines[line].strip()
         return segments_copy
     else:

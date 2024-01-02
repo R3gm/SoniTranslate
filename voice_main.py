@@ -24,7 +24,7 @@ def get_vc(sid, to_return_protect0, to_return_protect1):
     if sid == "" or sid == []:
         global hubert_model
         if hubert_model is not None:  # change model or not
-            logger.info("clean_empty_cache")
+            logger.info("Clean empty cache")
             del net_g, n_spk, vc, hubert_model, tgt_sr  # ,cpt
             hubert_model = net_g = n_spk = vc = hubert_model = tgt_sr = None
             if torch.cuda.is_available():
@@ -51,7 +51,7 @@ def get_vc(sid, to_return_protect0, to_return_protect1):
                 torch.cuda.empty_cache()
         return {"visible": False, "__type__": "update"}
     person = "%s/%s" % (weight_root, sid)
-    logger.info("loading %s" % person)
+    logger.info("Loading %s" % person)
     cpt = torch.load(person, map_location="cpu")
     tgt_sr = cpt["config"][-1]
     cpt["config"][-3] = cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
@@ -181,7 +181,7 @@ def vc_single(
         ), (tgt_sr, audio_opt)
     except:
         info = traceback.format_exc()
-        logger.error(info)
+        logger.error(str(info))
         return info, (None, None)
 
 
@@ -295,7 +295,7 @@ class Config:
 
 
 
-        logger.info(self.device, self.is_half)
+        logger.info(f"Config: Device is {self.device}, float16 is {self.is_half}")
 
         return x_pad, x_query, x_center, x_max
 
@@ -367,7 +367,7 @@ class ClassVoices:
             filename = "audio2/"+audio_files[_value_item] if _value_item != "test" else audio_files[0]
             #filename = "audio2/"+audio_files[_value_item]
             try:
-                logger.info(audio_files[_value_item], model_voice_path)
+                logger.info(f"{audio_files[_value_item]}, {model_voice_path}")
             except:
                 pass
 
@@ -467,14 +467,14 @@ class ClassVoices:
             if name.endswith(".index"):
                 index_paths.append(name)
 
-        logger.info(names, index_paths)
+        logger.info(f"{names}, {index_paths}")
         # config machine
         hubert_model = None
         config = Config('cuda:0', is_half=True) # config = Config('cpu', is_half=False) # cpu
 
         # filter by speaker
         for _speak, _values in speakers_indices.items():
-            logger.debug(_speak, _values)
+            logger.debug(f"{_speak}, {_values}")
             #for _value_item in _values:
             #  self.filename = "audio2/"+audio_files[_value_item]
             ###print(audio_files[_value_item])

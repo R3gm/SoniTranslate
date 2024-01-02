@@ -74,7 +74,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 list_compute_type = ['int8', 'float16', 'float32'] if torch.cuda.is_available() else ['int8', 'float32']
 compute_type_default = 'float16' if torch.cuda.is_available() else 'float32'
 whisper_model_default = 'large-v3' if torch.cuda.is_available() else 'medium'
-logger.info('Working in:', device)
+logger.info(f'Working in: {device}')
 
 # Custom voice
 directories = ['downloads', 'logs', 'weights', 'clean_song_output', '_XTTS_', f'audio2{os.sep}audio', 'audio']
@@ -234,7 +234,7 @@ def translate_from_video(
         prog_disp("Translating...", 0.75, is_gui, progress=progress)
         result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=1800)
         #logger.info("Translation complete")
-        logger.(result_diarize)
+        logger.debug(result_diarize)
 
     if get_translated_text:
         json_data = []
@@ -492,7 +492,7 @@ def document_process(
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
     else:
         TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
-        logger.info("no translation")
+        logger.info("No translation")
     if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
         logger.debug("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
 

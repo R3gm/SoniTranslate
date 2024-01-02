@@ -131,7 +131,7 @@ def old_audio_video_preprocessor(preview, video, OutputFile, audio_wav):
 
         for i in range (120):
             time.sleep(1)
-            logger.info('process audio...')
+            logger.info('Process audio...')
             if os.path.exists(audio_wav):
                 break
             if i == 119:
@@ -159,7 +159,7 @@ def old_audio_video_preprocessor(preview, video, OutputFile, audio_wav):
                 
             for i in range (120):
                 time.sleep(1)
-                logger.info('process audio...')
+                logger.info('Process audio...')
                 if os.path.exists(audio_wav) and not os.path.exists('audio.webm'):
                     time.sleep(1)
                     result_convert_video = subprocess.run(mp4_, capture_output=True, text=True, shell=True)

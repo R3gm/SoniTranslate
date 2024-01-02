@@ -31,7 +31,7 @@ def create_translated_audio(result_diarize, audio_files, final_file, concat=Fals
     else:
         # silent audio with total_duration
         combined_audio = AudioSegment.silent(duration=int(total_duration * 1000))
-        logger.info(round((total_duration / 60),2), 'total duration')
+        logger.info(f"{round((total_duration / 60),2)} total duration")
 
         for line, audio_file in tqdm(zip(result_diarize['segments'], audio_files)):
             start = float(line['start'])

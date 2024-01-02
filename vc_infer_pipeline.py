@@ -132,7 +132,7 @@ class VC(object):
             if hasattr(self, "model_rmvpe") == False:
                 from lib.rmvpe import RMVPE
 
-                logger.info("loading rmvpe model")
+                logger.info("Loading rmvpe model")
                 self.model_rmvpe = RMVPE(
                     "rmvpe.pt", is_half=self.is_half, device=self.device
                 )
