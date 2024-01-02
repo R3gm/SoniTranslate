@@ -374,7 +374,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
             for seg in filtered_speaker:
                 duration = float(seg['end']) - float(seg['start'])
                 if duration > 7.0 and duration < 12.0:
-                    logger.info(f"Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {duration}, {seg["text"]}")
+                    logger.info(f'Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {duration}, {seg["text"]}')
                     create_wav_file_vc(
                         sample_name = name_automatic_wav,
                         audio_wav = "audio.wav",
@@ -387,7 +387,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
             if not wav_ok:
                 logger.info("Taking the first segment")
                 seg = filtered_speaker[0]
-                logger.info(f"Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {seg["text"]}")
+                logger.info(f'Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {seg["text"]}')
                 max_duration = float(seg['end']) - float(seg['start'])
                 if max_duration > 9.0:
                     max_duration = 9.0                    
