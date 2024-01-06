@@ -65,6 +65,9 @@ class TTS_Info:
 logging.getLogger("numba").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("markdown_it").setLevel(logging.WARNING)
+logging.getLogger("speechbrain").setLevel(logging.WARNING)
+logging.getLogger("fairseq").setLevel(logging.WARNING)
+
 
 from soni_translate.languages_gui import language_data
 selected_language = os.getenv("SONITRANSLATE_LANGUAGE")
@@ -241,11 +244,11 @@ def translate_from_video(
         for segment in result_diarize['segments']:
             start = segment['start']
             text = segment['text']
-            json_data.append({'start': start, 'text': text})
+            speaker = int( segment.get('speaker', 'SPEAKER_00')[-1] ) + 1
+            json_data.append({'start': start, 'text': text, 'speaker': speaker})
 
         # Convert the list of dictionaries to a JSON string with indentation
         json_string = json.dumps(json_data, indent=2)
-        #segments[line]['text'] = translated_line
         return json_string.encode().decode('unicode_escape')
 
     if get_video_from_text_json:
@@ -253,6 +256,7 @@ def translate_from_video(
         text_json_loaded = json.loads(text_json)
         for i, segment in enumerate(result_diarize['segments']):
             segment['text'] = text_json_loaded[i]['text']
+            segment['speaker'] = "SPEAKER_0" + str(int(text_json_loaded[i]['speaker']) - 1)
 
     prog_disp("Text to speech...", 0.85, is_gui, progress=progress)
     audio_files, speakers_list = audio_segmentation_to_voice(
@@ -266,38 +270,41 @@ def translate_from_video(
         voices_conversion(speakers_list, audio_files)
 
     # replace files with the accelerates
-    os.system("mv -f audio2/audio/*.ogg audio/")
-
-    os.system(f"rm {Output_name_file}")
+    move_files("audio2/audio/", "audio/")
 
     prog_disp("Creating final translated video...", 0.95, is_gui, progress=progress)
-
+    remove_files([Output_name_file, mix_audio])
     create_translated_audio(result_diarize, audio_files, Output_name_file)
 
-    os.system(f"rm {mix_audio}")
-
     # TYPE MIX AUDIO
+    command_volume_mix = f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}'
+    command_background_mix = f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}'
     if AUDIO_MIX_METHOD == 'Adjusting volumes and mixing audio':
         # volume mix
-        os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+        run_command(command_volume_mix)
     else:
         try:
             # background mix
-            os.system(f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}')
-        except:
+            run_command(command_background_mix)
+        except Exception as error_mix:
             # volume mix except
-            os.system(f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}')
+            logger.error(str(error_mix))
+            run_command(command_volume_mix)
 
-    os.system(f"rm {video_output}")
-    os.system(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
+    # Merge new audio + video
+    remove_files(video_output)
+    run_command(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
 
     # Write subtitle
-    #output_format_subtitle = ["srt", "vtt", "txt", "tsv", "json", "aud"]
-    #output_format_subtitle = "vtt"
+    sub_file = process_subtitles(deep_copied_result, align_language, result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO)
+
+    return video_output
+
+def process_subtitles(deep_copied_result, align_language, result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO):
+
     name_ori = "sub_ori."
     name_tra = "sub_tra."
-    deep_copied_result["language"] = align_language
-    result_diarize["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh"] else align_language
+    remove_files([name_ori+output_format_subtitle, name_tra+output_format_subtitle])
 
     writer = get_writer(output_format_subtitle, output_dir=".")
     word_options = {
@@ -306,42 +313,34 @@ def translate_from_video(
         "max_line_width" : None,
     }
 
-    if os.path.exists(name_ori+output_format_subtitle): os.remove(name_ori+output_format_subtitle)
-    if os.path.exists(name_tra+output_format_subtitle): os.remove(name_tra+output_format_subtitle)
     # original lang
-    # for segment in deep_copied_result["segments"]:
-    #     for dictionary in segment:
-    #         dictionary.pop('speaker', None)
-
-    #deep_copied_result["segments"][0].pop('speaker')
     subs_copy_result = copy.deepcopy(deep_copied_result)
-    for i in range(len(subs_copy_result["segments"])):
-        if 'speaker' in subs_copy_result["segments"][i]:
-            subs_copy_result["segments"][i].pop('speaker')
+    subs_copy_result["language"] = align_language
+    for segment in subs_copy_result["segments"]:
+        segment.pop('speaker', None)
 
     writer(
         subs_copy_result,
         name_ori[:-1]+".mp3",
         word_options,
     )
+
     # translated lang
-    # result_diarize.pop('word_segments')
-    # result_diarize["segments"][0].pop('speaker')
-    # result_diarize["segments"][0].pop('chars')
-    # result_diarize["segments"][0].pop('words')
     subs_tra_copy_result = copy.deepcopy(result_diarize)
-    subs_tra_copy_result.pop('word_segments')
-    for i in range(len(subs_tra_copy_result["segments"])):
-        subs_tra_copy_result["segments"][i].pop('speaker')
-        subs_tra_copy_result["segments"][i].pop('chars')
-        subs_tra_copy_result["segments"][i].pop('words')
+    subs_tra_copy_result["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh"] else align_language
+    subs_tra_copy_result.pop('word_segments', None)
+    for segment in subs_tra_copy_result["segments"]:
+        for key in ['speaker', 'chars', 'words']:
+            segment.pop(key, None)
+
     writer(
         subs_tra_copy_result,
         name_tra[:-1]+".mp3",
         word_options,
     )
 
-    return video_output
+    return name_tra+output_format_subtitle
+
 
 ### documents ###
 import re
@@ -626,12 +625,14 @@ def create_gui(theme, logs_in_gui=False):
                     max_speakers.change(submit, max_speakers, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05])
 
 
-                    with gr.Column():
-                          with gr.Accordion("Create a text-to-speech (TTS) based on an audio", open=False):
-                            wav_speaker_file = gr.File(label="Upload a short audio with the voice")
-                            wav_speaker_name = gr.Textbox(label="Name for the TTS", value="",info="Use a simple name", placeholder="default_name", lines=1)
-                            wav_speaker_output = gr.HTML()
-                            create_xtts_wav = gr.Button("Process the audio and include it in the TTS selector")
+                    if xtts_enabled:
+                        with gr.Column():
+                              with gr.Accordion("Create a text-to-speech (TTS) based on an audio", open=False):
+                                gr.Markdown("Upload an audio file of maximum 10 seconds with a voice. Using XTTS, a new TTS will be created with a voice similar to the provided audio file.")
+                                wav_speaker_file = gr.File(label="Upload a short audio with the voice")
+                                wav_speaker_name = gr.Textbox(label="Name for the TTS", value="",info="Use a simple name", placeholder="default_name", lines=1)
+                                wav_speaker_output = gr.HTML()
+                                create_xtts_wav = gr.Button("Process the audio and include it in the TTS selector")
 
                     with gr.Column():
                           with gr.Accordion(lg_conf["extra_setting"], open=False):
@@ -977,18 +978,19 @@ def create_gui(theme, logs_in_gui=False):
                 logs = gr.Textbox(label=">>>")
                 app.load(read_logs, None, logs, every=1)
 
-        # Update tts list
-        def update_tts_list():
-            update_dict = {
-                f'tts_voice{i:02d}': gr.update(choices=tts_info.tts_list()) for i in range(6)
-            }
-            update_dict["tts_documents"] = gr.update(choices=tts_info.tts_list())
-            return [value for value in update_dict.values()]
-        create_xtts_wav.click(create_wav_file_vc, inputs=[
-            wav_speaker_name,
-            wav_speaker_file,
-            ], outputs=[wav_speaker_output]).then(
-                update_tts_list, None, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05, tts_documents])
+        if xtts_enabled:
+            # Update tts list
+            def update_tts_list():
+                update_dict = {
+                    f'tts_voice{i:02d}': gr.update(choices=tts_info.tts_list()) for i in range(6)
+                }
+                update_dict["tts_documents"] = gr.update(choices=tts_info.tts_list())
+                return [value for value in update_dict.values()]
+            create_xtts_wav.click(create_wav_file_vc, inputs=[
+                wav_speaker_name,
+                wav_speaker_file,
+                ], outputs=[wav_speaker_output]).then(
+                    update_tts_list, None, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05, tts_documents])
 
         # Run translate text
         subs_button.click(translate_from_video, inputs=[
