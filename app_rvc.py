@@ -18,7 +18,7 @@ import os
 from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import audio_segmentation_to_voice, edge_tts_voices_list, coqui_xtts_voices_list, piper_tts_voices_list, create_wav_file_vc
 from soni_translate.translate_segments import translate_text
-from soni_translate.preprocessor import audio_video_preprocessor
+from soni_translate.preprocessor import audio_video_preprocessor, audio_preprocessor
 from soni_translate.language_configuration import LANGUAGES, LANGUAGES_LIST, bark_voices_list, vits_voices_list
 from soni_translate.utils import print_tree_directory, remove_files, select_zip_and_rar_files, download_list, manual_download, upload_model_list, download_manager, move_files, run_command
 from soni_translate.mdx_net import UVR_MODELS, MDX_DOWNLOAD_LINK, mdxnet_models_dir
@@ -294,6 +294,15 @@ def process_subtitles(deep_copied_result, align_language, result_diarize, output
 
     return name_tra+output_format_subtitle
 
+def is_audio_file(string_path):
+    audio_extensions = [".mp3", ".wav", ".aiff", ".aif", ".flac", ".aac", ".ogg", ".wma", ".m4a", ".alac", ".pcm"]
+
+    # Check if the string_path ends with any audio extension
+    if any(string_path.endswith(ext) for ext in audio_extensions) and os.path.exists(string_path):
+        return True
+    else:
+        return False
+
 def prog_disp(msg, percent, is_gui, progress=None):
     logger.info(msg)
     if is_gui:
@@ -309,8 +318,8 @@ class SoniTranslate:
 
     def multilingual_media_conversion(
         self,
-        video,
-        link_video,
+        media_file,
+        link_media,
         directory_input,
         YOUR_HF_TOKEN,
         preview=False,
@@ -327,7 +336,7 @@ class SoniTranslate:
         tts_voice03="en-GB-SoniaNeural-Female",
         tts_voice04="en-NZ-MitchellNeural-Male",
         tts_voice05="en-GB-MaisieNeural-Female",
-        video_output="video_dub.mp4",
+        video_output_name="video_dub",
         AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
         max_accelerate_audio = 2.1,
         volume_original_audio = 0.25,
@@ -356,9 +365,9 @@ class SoniTranslate:
         if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
             logger.warning("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
 
-        if video is None:
-            video = directory_input if os.path.exists(directory_input) else link_video
-        video = video if isinstance(video, str) else video.name
+        if media_file is None:
+            media_file = directory_input if os.path.exists(directory_input) else link_media
+        media_file = media_file if isinstance(media_file, str) else media_file.name
 
         if "SET_LIMIT" == os.getenv("DEMO"):
             preview = True
@@ -373,15 +382,20 @@ class SoniTranslate:
         # Check GPU
         compute_type = "float32" if self.device == "cpu" else compute_type
 
-        OutputFile = 'Video.mp4'
-        audio_wav = "audio.wav"
-        Output_name_file = "audio_dub_solo.ogg"
-        mix_audio = "audio_mix.mp3"
+        base_video_file = 'Video.mp4'
+        base_audio_wav = "audio.wav"
+        dub_audio_file = "audio_dub_solo.ogg"
+        mix_audio_file = "audio_mix.mp3"
+        video_output_file = f"{video_output_name}.mp4"
 
         if not get_video_from_text_json:
             self.result_diarize = self.align_language = self.result_source_lang = None
-            prog_disp("Processing video...", 0.15, is_gui, progress=progress)
-            audio_video_preprocessor(preview, video, OutputFile, audio_wav)
+            if is_audio_file(media_file):
+                prog_disp("Processing audio...", 0.15, is_gui, progress=progress)
+                audio_preprocessor(preview, media_file, base_audio_wav)
+            else:
+                prog_disp("Processing video...", 0.15, is_gui, progress=progress)
+                audio_video_preprocessor(preview, media_file, base_video_file, base_audio_wav)
             logger.debug("Set file complete.")
 
 
@@ -390,13 +404,13 @@ class SoniTranslate:
                 if SOURCE_LANGUAGE == "Automatic detection":
                     raise Exception("To use an SRT file, you need to specify its original language (Source language)")
                 subtitle_file = subtitle_file if isinstance(subtitle_file, str) else subtitle_file.name
-                audio = whisperx.load_audio(audio_wav)
+                audio = whisperx.load_audio(base_audio_wav)
                 result = srt_file_to_segments(subtitle_file)
                 result["language"] = SOURCE_LANGUAGE
             else:
                 prog_disp("Transcribing...", 0.30, is_gui, progress=progress)
                 SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
-                audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
+                audio, result = transcribe_speech(base_audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
             logger.debug("Transcript complete")
 
             prog_disp("Aligning...", 0.45, is_gui, progress=progress)
@@ -408,7 +422,7 @@ class SoniTranslate:
 
             prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
             diarize_model_select = diarization_models[diarization_model]
-            self.result_diarize = diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, diarize_model_select)
+            self.result_diarize = diarize_speech(base_audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, diarize_model_select)
             logger.debug("Diarize complete")
             self.result_source_lang = copy.deepcopy(self.result_diarize)
 
@@ -457,12 +471,12 @@ class SoniTranslate:
         move_files("audio2/audio/", "audio/")
 
         prog_disp("Creating final translated video...", 0.95, is_gui, progress=progress)
-        remove_files([Output_name_file, mix_audio])
-        create_translated_audio(self.result_diarize, audio_files, Output_name_file)
+        remove_files([dub_audio_file, mix_audio_file])
+        create_translated_audio(self.result_diarize, audio_files, dub_audio_file)
 
         # TYPE MIX AUDIO
-        command_volume_mix = f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}'
-        command_background_mix = f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}'
+        command_volume_mix = f'ffmpeg -y -i {base_audio_wav} -i {dub_audio_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio_file}'
+        command_background_mix = f'ffmpeg -i {base_audio_wav} -i {dub_audio_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio_file}'
         if AUDIO_MIX_METHOD == 'Adjusting volumes and mixing audio':
             # volume mix
             run_command(command_volume_mix)
@@ -475,14 +489,14 @@ class SoniTranslate:
                 logger.error(str(error_mix))
                 run_command(command_volume_mix)
 
-        if output_type == "audio":
-            return mix_audio
+        if output_type == "audio" or is_audio_file(media_file):
+            return mix_audio_file
 
         # Merge new audio + video
-        remove_files(video_output)
-        run_command(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
+        remove_files(video_output_file)
+        run_command(f"ffmpeg -i {base_video_file} -i {mix_audio_file} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output_file}")
 
-        return video_output
+        return video_output_file
 
     def multilingual_docs_conversion(
         self,

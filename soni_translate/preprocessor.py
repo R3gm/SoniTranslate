@@ -8,6 +8,31 @@ class OperationFailedError(Exception):
         self.message = message
         super().__init__(self.message)
 
+def audio_preprocessor(preview, base_audio, audio_wav, use_cuda=False):
+
+    base_audio = base_audio.strip()
+    previous_files_to_remove = [audio_wav]
+    remove_files(previous_files_to_remove)
+
+    if preview:
+        logger.warning('Creating a preview video of 10 seconds, to disable this option, go to advanced settings and turn off preview.')
+        wav_ = f"ffmpeg -y -i {base_audio} -ss 00:00:20 -t 00:00:10 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+    else:
+        wav_ = f"ffmpeg -y -i {base_audio} -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+
+    # Run cmd process
+    sub_params = {
+        "stdout" : subprocess.PIPE,
+        "stderr" : subprocess.PIPE,
+        "creationflags" : subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+    }
+    wav_ = shlex.split(wav_)
+    result_convert_audio = subprocess.Popen(wav_, **sub_params)
+    output, errors = result_convert_audio.communicate()
+    time.sleep(1)
+    if result_convert_audio.returncode in [1, 2] or not os.path.exists(audio_wav):
+        raise OperationFailedError("Error can't create the audio file")
+
 def audio_video_preprocessor(preview, video, OutputFile, audio_wav, use_cuda=False):
 
     video = video.strip()
