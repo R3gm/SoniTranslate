@@ -676,42 +676,42 @@ def create_gui(theme, logs_in_gui=False):
 
                     with gr.Column():
                           with gr.Accordion(lg_conf["extra_setting"], open=False):
-                              audio_accelerate = gr.Slider(label = lg_conf["acc_max_label"], value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info=lg_conf["acc_max_info"])
+                                audio_accelerate = gr.Slider(label = lg_conf["acc_max_label"], value=2.1, step=0.1, minimum=1.0, maximum=2.5, visible=True, interactive= True, info=lg_conf["acc_max_info"])
 
-                              audio_mix_options = ['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio']
-                              AUDIO_MIX = gr.Dropdown(audio_mix_options, value=audio_mix_options[1], label=lg_conf["aud_mix_label"], info=lg_conf["aud_mix_info"])
-                              volume_original_mix = gr.Slider(label=lg_conf["vol_ori"], info='for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
-                              volume_translated_mix = gr.Slider(label=lg_conf["vol_tra"], info='for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
+                                audio_mix_options = ['Mixing audio with sidechain compression', 'Adjusting volumes and mixing audio']
+                                AUDIO_MIX = gr.Dropdown(audio_mix_options, value=audio_mix_options[1], label=lg_conf["aud_mix_label"], info=lg_conf["aud_mix_info"])
+                                volume_original_mix = gr.Slider(label=lg_conf["vol_ori"], info='for <Adjusting volumes and mixing audio>', value=0.25, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
+                                volume_translated_mix = gr.Slider(label=lg_conf["vol_tra"], info='for <Adjusting volumes and mixing audio>', value=1.80, step=0.05, minimum=0.0, maximum=2.50, visible=True, interactive= True,)
 
-                              gr.HTML("<hr></h2>")
-                              sub_type_options = ["srt", "vtt", "txt", "tsv", "json", "aud"]
-                            def get_subs_path(type_subs):
-                                if os.path.exists(f"sub_ori.{type_subs}") and os.path.exists(f"sub_tra.{type_subs}"):
-                                    return f"sub_ori.{type_subs}", f"sub_tra.{type_subs}"
-                                else:
-                                    return None, None
-                              sub_type_output = gr.inputs.Dropdown(sub_type_options, default=sub_type_options[0], label=lg_conf["sub_type"])
+                                gr.HTML("<hr></h2>")
+                                sub_type_options = ["srt", "vtt", "txt", "tsv", "json", "aud"]
+                                def get_subs_path(type_subs):
+                                    if os.path.exists(f"sub_ori.{type_subs}") and os.path.exists(f"sub_tra.{type_subs}"):
+                                        return f"sub_ori.{type_subs}", f"sub_tra.{type_subs}"
+                                    else:
+                                        return None, None
+                                sub_type_output = gr.inputs.Dropdown(sub_type_options, default=sub_type_options[0], label=lg_conf["sub_type"])
 
 
-                              gr.HTML("<hr></h2>")
-                              gr.Markdown(lg_conf["whisper_title"])
-                              whisper_model_options = ['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2', 'large-v3']
-                              WHISPER_MODEL_SIZE = gr.inputs.Dropdown(whisper_model_options, default=whisper_model_default, label="Whisper model")
-                              batch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
-                              compute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
-                              input_srt = gr.File(label="Upload a SRT file (will be used instead of the transcription of Whisper)", file_types=[".srt", ".ass"], height=130)
-                              pyannote_models_list = list(diarization_models.keys())
-                              diarization_process_dropdown = gr.inputs.Dropdown(pyannote_models_list, default=pyannote_models_list[1], label="Diarization model")
-                              valid_translate_process = ["google_translator_batch", "google_translator_iterative", "disable_translation"]
-                              translate_process_dropdown = gr.inputs.Dropdown(valid_translate_process, default=valid_translate_process[0], label="Translation process")
+                                gr.HTML("<hr></h2>")
+                                gr.Markdown(lg_conf["whisper_title"])
+                                whisper_model_options = ['tiny', 'base', 'small', 'medium', 'large-v1', 'large-v2', 'large-v3']
+                                WHISPER_MODEL_SIZE = gr.inputs.Dropdown(whisper_model_options, default=whisper_model_default, label="Whisper model")
+                                batch_size = gr.inputs.Slider(1, 32, default=16, label="Batch size", step=1)
+                                compute_type = gr.inputs.Dropdown(list_compute_type, default=compute_type_default, label="Compute type")
+                                input_srt = gr.File(label="Upload a SRT file (will be used instead of the transcription of Whisper)", file_types=[".srt", ".ass"], height=130)
+                                pyannote_models_list = list(diarization_models.keys())
+                                diarization_process_dropdown = gr.inputs.Dropdown(pyannote_models_list, default=pyannote_models_list[1], label="Diarization model")
+                                valid_translate_process = ["google_translator_batch", "google_translator_iterative", "disable_translation"]
+                                translate_process_dropdown = gr.inputs.Dropdown(valid_translate_process, default=valid_translate_process[0], label="Translation process")
 
-                              gr.HTML("<hr></h2>")
-                              main_output_type_opt = ["video", "audio", "subtitle"]
-                              main_output_type = gr.inputs.Dropdown(main_output_type_opt, default=main_output_type_opt[0], label="Output type")
-                              main_voiceless_track = gr.Checkbox(label="Voiceless Track", info="This feature allows to extract or exclude voices, creating a version of the audio that primarily focuses on ambient sounds, background music, or other non-vocal elements present in the original audio. (Experimental)")
-                              VIDEO_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="video_output", info=lg_conf["out_name_info"])
-                              PREVIEW = gr.Checkbox(label="Preview", info=lg_conf["preview_info"])
-                              is_gui_dummy_check = gr.Checkbox(True, visible=False)
+                                gr.HTML("<hr></h2>")
+                                main_output_type_opt = ["video", "audio", "subtitle"]
+                                main_output_type = gr.inputs.Dropdown(main_output_type_opt, default=main_output_type_opt[0], label="Output type")
+                                main_voiceless_track = gr.Checkbox(label="Voiceless Track", info="Voiceless Track: This feature allows to extract or exclude voices, creating a version of the audio that primarily focuses on ambient sounds, background music, or other non-vocal elements present in the original audio. (Experimental)")
+                                VIDEO_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="video_output", info=lg_conf["out_name_info"])
+                                PREVIEW = gr.Checkbox(label="Preview", info=lg_conf["preview_info"])
+                                is_gui_dummy_check = gr.Checkbox(True, visible=False)
 
                 with gr.Column(variant='compact'):
 
@@ -761,7 +761,7 @@ def create_gui(theme, logs_in_gui=False):
                                 'en-GB-SoniaNeural-Female',
                                 'en-NZ-MitchellNeural-Male',
                                 'en-GB-MaisieNeural-Female',
-                                "video_output.mp4",
+                                "video_output",
                                 'Adjusting volumes and mixing audio',
                             ],
                             [
@@ -783,7 +783,7 @@ def create_gui(theme, logs_in_gui=False):
                                 'en-GB-SoniaNeural-Female',
                                 'en-NZ-MitchellNeural-Male',
                                 'en-GB-MaisieNeural-Female',
-                                "video_output.mp4",
+                                "video_output",
                                 'Adjusting volumes and mixing audio',
                             ],
                         ], # no update
