@@ -651,8 +651,11 @@ def create_gui(theme, logs_in_gui=False):
 
                               gr.HTML("<hr></h2>")
                               sub_type_options = ["srt", "vtt", "txt", "tsv", "json", "aud"]
-                              def get_subs_path(type_subs):
-                                return f"sub_ori.{type_subs}", f"sub_tra.{type_subs}"
+                            def get_subs_path(type_subs):
+                                if os.path.exists(f"sub_ori.{type_subs}") and os.path.exists(f"sub_tra.{type_subs}"):
+                                    return f"sub_ori.{type_subs}", f"sub_tra.{type_subs}"
+                                else:
+                                    return None, None
                               sub_type_output = gr.inputs.Dropdown(sub_type_options, default=sub_type_options[0], label=lg_conf["sub_type"])
 
 
