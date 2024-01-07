@@ -122,226 +122,6 @@ def srt_file_to_segments(file_path, speaker=False):
 
     return {"segments": segments}
 
-def prog_disp(msg, percent, is_gui, progress=None):
-    logger.info(msg)
-    if is_gui:
-        progress(percent, desc=msg)
-
-def translate_from_video(
-    video,
-    link_video,
-    directory_input,
-    YOUR_HF_TOKEN,
-    preview=False,
-    WHISPER_MODEL_SIZE="large-v1",
-    batch_size=16,
-    compute_type="float16",
-    SOURCE_LANGUAGE= "Automatic detection",
-    TRANSLATE_AUDIO_TO="English (en)",
-    min_speakers=1,
-    max_speakers=2,
-    tts_voice00="en-AU-WilliamNeural-Male",
-    tts_voice01="en-CA-ClaraNeural-Female",
-    tts_voice02="en-GB-ThomasNeural-Male",
-    tts_voice03="en-GB-SoniaNeural-Female",
-    tts_voice04="en-NZ-MitchellNeural-Male",
-    tts_voice05="en-GB-MaisieNeural-Female",
-    video_output="video_dub.mp4",
-    AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
-    max_accelerate_audio = 2.1,
-    volume_original_audio = 0.25,
-    volume_translated_audio = 1.80,
-    output_format_subtitle = "srt",
-    get_translated_text = False,
-    get_video_from_text_json = False,
-    text_json = "{}",
-    diarization_model= "pyannote/speaker-diarization@2.1",
-    translate_process =  "google_translator_batch",
-    subtitle_file = None,
-    is_gui = False,
-    progress=gr.Progress(),
-    ):
-
-    if not YOUR_HF_TOKEN:
-      YOUR_HF_TOKEN = os.getenv("YOUR_HF_TOKEN")
-      if not YOUR_HF_TOKEN:
-          raise ValueError("No valid token")
-      else:
-          os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
-
-    TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
-    SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
-    if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
-        logger.warning("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
-
-    if video is None:
-        video = directory_input if os.path.exists(directory_input) else link_video
-    video = video if isinstance(video, str) else video.name
-
-    if "SET_LIMIT" == os.getenv("DEMO"):
-        preview = True
-        AUDIO_MIX_METHOD='Adjusting volumes and mixing audio'
-        WHISPER_MODEL_SIZE="medium"
-        logger.info(
-            "DEMO; set preview=True; Generation is limited to 10 seconds to prevent CPU errors. No limitations with GPU.\n"
-            "DEMO; set Adjusting volumes and mixing audio\n"
-            "DEMO; set whisper model to medium"
-        )
-
-    # Check GPU
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    compute_type = "float32" if device == "cpu" else compute_type
-
-    global result_diarize, result, align_language, deep_copied_result
-
-    os.makedirs('audio') if not os.path.exists('audio') else None
-    os.makedirs('audio2/audio') if not os.path.exists('audio2/audio') else None
-    OutputFile = 'Video.mp4'
-    audio_wav = "audio.wav"
-    Output_name_file = "audio_dub_solo.ogg"
-    mix_audio = "audio_mix.mp3"
-
-    if not get_video_from_text_json:
-        prog_disp("Processing video...", 0.15, is_gui, progress=progress)
-        audio_video_preprocessor(preview, video, OutputFile, audio_wav)
-        #logger.info("Set file complete.")
-
-
-        if subtitle_file:
-            prog_disp("From SRT file...", 0.30, is_gui, progress=progress)
-            if SOURCE_LANGUAGE == "Automatic detection":
-                raise Exception("To use an SRT file, you need to specify its original language (Source language)")
-            subtitle_file = subtitle_file if isinstance(subtitle_file, str) else subtitle_file.name
-            audio = whisperx.load_audio(audio_wav)
-            result = srt_file_to_segments(subtitle_file)
-            result["language"] = SOURCE_LANGUAGE
-        else:
-            prog_disp("Transcribing...", 0.30, is_gui, progress=progress)
-            SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
-            audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
-        #logger.info("Transcript complete")
-
-        prog_disp("Aligning...", 0.45, is_gui, progress=progress)
-        align_language = result["language"]
-        result = align_speech(audio, result)
-        #logger.info("Align complete")
-        if result['segments'] == []:
-            raise ValueError('No active speech found in audio')
-
-        prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
-        diarize_model_select = diarization_models[diarization_model]
-        result_diarize = diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, diarize_model_select)
-        #logger.info("Diarize complete")
-        deep_copied_result = copy.deepcopy(result_diarize)
-
-        prog_disp("Translating...", 0.75, is_gui, progress=progress)
-        result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=1800)
-        #logger.info("Translation complete")
-        logger.debug(result_diarize)
-
-    if get_translated_text:
-        json_data = []
-        for segment in result_diarize['segments']:
-            start = segment['start']
-            text = segment['text']
-            speaker = int( segment.get('speaker', 'SPEAKER_00')[-1] ) + 1
-            json_data.append({'start': start, 'text': text, 'speaker': speaker})
-
-        # Convert the list of dictionaries to a JSON string with indentation
-        json_string = json.dumps(json_data, indent=2)
-        return json_string.encode().decode('unicode_escape')
-
-    if get_video_from_text_json:
-        # with open('text_json.json', 'r') as file:
-        text_json_loaded = json.loads(text_json)
-        for i, segment in enumerate(result_diarize['segments']):
-            segment['text'] = text_json_loaded[i]['text']
-            segment['speaker'] = "SPEAKER_0" + str(int(text_json_loaded[i]['speaker']) - 1)
-
-    prog_disp("Text to speech...", 0.85, is_gui, progress=progress)
-    audio_files, speakers_list = audio_segmentation_to_voice(
-        result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, True,
-        tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
-    )
-
-    # custom voice
-    if os.getenv('VOICES_MODELS') == 'ENABLE':
-        prog_disp("Applying customized voices...", 0.90, is_gui, progress=progress)
-        voices_conversion(speakers_list, audio_files)
-
-    # replace files with the accelerates
-    move_files("audio2/audio/", "audio/")
-
-    prog_disp("Creating final translated video...", 0.95, is_gui, progress=progress)
-    remove_files([Output_name_file, mix_audio])
-    create_translated_audio(result_diarize, audio_files, Output_name_file)
-
-    # TYPE MIX AUDIO
-    command_volume_mix = f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}'
-    command_background_mix = f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}'
-    if AUDIO_MIX_METHOD == 'Adjusting volumes and mixing audio':
-        # volume mix
-        run_command(command_volume_mix)
-    else:
-        try:
-            # background mix
-            run_command(command_background_mix)
-        except Exception as error_mix:
-            # volume mix except
-            logger.error(str(error_mix))
-            run_command(command_volume_mix)
-
-    # Merge new audio + video
-    remove_files(video_output)
-    run_command(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
-
-    # Write subtitle
-    sub_file = process_subtitles(deep_copied_result, align_language, result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO)
-
-    return video_output
-
-def process_subtitles(deep_copied_result, align_language, result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO):
-
-    name_ori = "sub_ori."
-    name_tra = "sub_tra."
-    remove_files([name_ori+output_format_subtitle, name_tra+output_format_subtitle])
-
-    writer = get_writer(output_format_subtitle, output_dir=".")
-    word_options = {
-        "highlight_words": False,
-        "max_line_count" : None,
-        "max_line_width" : None,
-    }
-
-    # original lang
-    subs_copy_result = copy.deepcopy(deep_copied_result)
-    subs_copy_result["language"] = align_language
-    for segment in subs_copy_result["segments"]:
-        segment.pop('speaker', None)
-
-    writer(
-        subs_copy_result,
-        name_ori[:-1]+".mp3",
-        word_options,
-    )
-
-    # translated lang
-    subs_tra_copy_result = copy.deepcopy(result_diarize)
-    subs_tra_copy_result["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh"] else align_language
-    subs_tra_copy_result.pop('word_segments', None)
-    for segment in subs_tra_copy_result["segments"]:
-        for key in ['speaker', 'chars', 'words']:
-            segment.pop(key, None)
-
-    writer(
-        subs_tra_copy_result,
-        name_tra[:-1]+".mp3",
-        word_options,
-    )
-
-    return name_tra+output_format_subtitle
-
-
 ### documents ###
 import re
 
@@ -471,98 +251,324 @@ def segments_to_plain_text(result_diarize):
 
     return txt_file_path, complete_text
 
-def document_process(
-    string_text, # string
-    document=None, # doc path gui
-    directory_input="", # doc path
-    SOURCE_LANGUAGE= "English (en)",
-    TRANSLATE_AUDIO_TO="English (en)",
-    tts_voice00="en-AU-WilliamNeural-Male",
-    name_final_file = "sample",
-    translate_process =  "google_translator_iterative",
-    output_type="audio",
-    chunk_size = None,
-    is_gui = False,
-    progress=gr.Progress(),
-    ):
+### subtitles ###
 
-    SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
-    if translate_process != "disable translation":
+def process_subtitles(deep_copied_result, align_language, result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO):
+
+    name_ori = "sub_ori."
+    name_tra = "sub_tra."
+    remove_files([name_ori+output_format_subtitle, name_tra+output_format_subtitle])
+
+    writer = get_writer(output_format_subtitle, output_dir=".")
+    word_options = {
+        "highlight_words": False,
+        "max_line_count" : None,
+        "max_line_width" : None,
+    }
+
+    # original lang
+    subs_copy_result = copy.deepcopy(deep_copied_result)
+    subs_copy_result["language"] = align_language
+    for segment in subs_copy_result["segments"]:
+        segment.pop('speaker', None)
+
+    writer(
+        subs_copy_result,
+        name_ori[:-1]+".mp3",
+        word_options,
+    )
+
+    # translated lang
+    subs_tra_copy_result = copy.deepcopy(result_diarize)
+    subs_tra_copy_result["language"] = "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh"] else align_language
+    subs_tra_copy_result.pop('word_segments', None)
+    for segment in subs_tra_copy_result["segments"]:
+        for key in ['speaker', 'chars', 'words']:
+            segment.pop(key, None)
+
+    writer(
+        subs_tra_copy_result,
+        name_tra[:-1]+".mp3",
+        word_options,
+    )
+
+    return name_tra+output_format_subtitle
+
+def prog_disp(msg, percent, is_gui, progress=None):
+    logger.info(msg)
+    if is_gui:
+        progress(percent, desc=msg)
+
+class SoniTranslate:
+
+    def __init__(self, dev=True):
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.result_diarize = None
+        self.align_language = None
+        self.result_source_lang = None
+
+    def multilingual_media_conversion(
+        self,
+        video,
+        link_video,
+        directory_input,
+        YOUR_HF_TOKEN,
+        preview=False,
+        WHISPER_MODEL_SIZE="large-v3",
+        batch_size=16,
+        compute_type="float16",
+        SOURCE_LANGUAGE= "Automatic detection",
+        TRANSLATE_AUDIO_TO="English (en)",
+        min_speakers=1,
+        max_speakers=2,
+        tts_voice00="en-AU-WilliamNeural-Male",
+        tts_voice01="en-CA-ClaraNeural-Female",
+        tts_voice02="en-GB-ThomasNeural-Male",
+        tts_voice03="en-GB-SoniaNeural-Female",
+        tts_voice04="en-NZ-MitchellNeural-Male",
+        tts_voice05="en-GB-MaisieNeural-Female",
+        video_output="video_dub.mp4",
+        AUDIO_MIX_METHOD='Adjusting volumes and mixing audio',
+        max_accelerate_audio = 2.1,
+        volume_original_audio = 0.25,
+        volume_translated_audio = 1.80,
+        output_format_subtitle = "srt",
+        get_translated_text = False,
+        get_video_from_text_json = False,
+        text_json = "{}",
+        diarization_model= "pyannote/speaker-diarization@2.1",
+        translate_process =  "google_translator_batch",
+        subtitle_file = None,
+        is_gui = False,
+        progress=gr.Progress(),
+        ):
+
+        if not YOUR_HF_TOKEN:
+          YOUR_HF_TOKEN = os.getenv("YOUR_HF_TOKEN")
+          if not YOUR_HF_TOKEN:
+              raise ValueError("No valid token")
+          else:
+              os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
+
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
-    else:
-        TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
-        logger.info("No translation")
-    if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
-        logger.debug("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
+        SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+        if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
+            logger.warning("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
 
-    is_string = False
-    if document is None:
-        if os.path.exists(directory_input):
-            document = directory_input
-        else:
-            document = string_text
-            is_string = True
-    document = document if isinstance(document, str) else document.name
-    if not document:
-      raise Exception("No data found")
+        if video is None:
+            video = directory_input if os.path.exists(directory_input) else link_video
+        video = video if isinstance(video, str) else video.name
 
-    # Check GPU
-    #device = "cuda" if torch.cuda.is_available() else "cpu"
+        if "SET_LIMIT" == os.getenv("DEMO"):
+            preview = True
+            AUDIO_MIX_METHOD='Adjusting volumes and mixing audio'
+            WHISPER_MODEL_SIZE="medium"
+            logger.info(
+                "DEMO; set preview=True; Generation is limited to 10 seconds to prevent CPU errors. No limitations with GPU.\n"
+                "DEMO; set Adjusting volumes and mixing audio\n"
+                "DEMO; set whisper model to medium"
+            )
 
-    #audio_wav = "audio.wav"
-    final_wav_file = "audio_book.wav" if not name_final_file else f"{name_final_file}.wav"
+        # Check GPU
+        compute_type = "float32" if self.device == "cpu" else compute_type
 
-    prog_disp("Processing text...", 0.15, is_gui, progress=progress)
-    result_file_path, result_text = document_preprocessor(document, is_string)
+        OutputFile = 'Video.mp4'
+        audio_wav = "audio.wav"
+        Output_name_file = "audio_dub_solo.ogg"
+        mix_audio = "audio_mix.mp3"
 
-    if output_type == "text" and translate_process == "disable translation":
-        return result_file_path
+        if not get_video_from_text_json:
+            self.result_diarize = self.align_language = self.result_source_lang = None
+            prog_disp("Processing video...", 0.15, is_gui, progress=progress)
+            audio_video_preprocessor(preview, video, OutputFile, audio_wav)
+            logger.debug("Set file complete.")
 
-    if "SET_LIMIT" == os.getenv("DEMO"):
-        result_text = result_text[:50]
-        logger.info(
-            "DEMO; Generation is limited to 50 characters to prevent CPU errors. No limitations with GPU.\n"
+
+            if subtitle_file:
+                prog_disp("From SRT file...", 0.30, is_gui, progress=progress)
+                if SOURCE_LANGUAGE == "Automatic detection":
+                    raise Exception("To use an SRT file, you need to specify its original language (Source language)")
+                subtitle_file = subtitle_file if isinstance(subtitle_file, str) else subtitle_file.name
+                audio = whisperx.load_audio(audio_wav)
+                result = srt_file_to_segments(subtitle_file)
+                result["language"] = SOURCE_LANGUAGE
+            else:
+                prog_disp("Transcribing...", 0.30, is_gui, progress=progress)
+                SOURCE_LANGUAGE = None if SOURCE_LANGUAGE == 'Automatic detection' else SOURCE_LANGUAGE
+                audio, result = transcribe_speech(audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE)
+            logger.debug("Transcript complete")
+
+            prog_disp("Aligning...", 0.45, is_gui, progress=progress)
+            self.align_language = result["language"]
+            result = align_speech(audio, result)
+            logger.debug("Align complete")
+            if result['segments'] == []:
+                raise ValueError('No active speech found in audio')
+
+            prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
+            diarize_model_select = diarization_models[diarization_model]
+            self.result_diarize = diarize_speech(audio_wav, result, min_speakers, max_speakers, YOUR_HF_TOKEN, diarize_model_select)
+            logger.debug("Diarize complete")
+            self.result_source_lang = copy.deepcopy(self.result_diarize)
+
+            prog_disp("Translating...", 0.75, is_gui, progress=progress)
+            self.result_diarize['segments'] = translate_text(self.result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=1800)
+            logger.debug("Translation complete")
+            logger.debug(self.result_diarize)
+
+        if get_translated_text:
+            json_data = []
+            for segment in self.result_diarize['segments']:
+                start = segment['start']
+                text = segment['text']
+                speaker = int( segment.get('speaker', 'SPEAKER_00')[-1] ) + 1
+                json_data.append({'start': start, 'text': text, 'speaker': speaker})
+
+            # Convert the list of dictionaries to a JSON string with indentation
+            json_string = json.dumps(json_data, indent=2)
+            return json_string.encode().decode('unicode_escape')
+
+        if get_video_from_text_json:
+            # with open('text_json.json', 'r') as file:
+            text_json_loaded = json.loads(text_json)
+            for i, segment in enumerate(self.result_diarize['segments']):
+                segment['text'] = text_json_loaded[i]['text']
+                segment['speaker'] = "SPEAKER_0" + str(int(text_json_loaded[i]['speaker']) - 1)
+
+        # Write subtitle
+        sub_file = process_subtitles(self.result_source_lang, self.align_language, self.result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO)
+
+        prog_disp("Text to speech...", 0.85, is_gui, progress=progress)
+        audio_files, speakers_list = audio_segmentation_to_voice(
+            self.result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, True,
+            tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
         )
 
-    if translate_process != "disable translation":
-        # chunks text for translation
-        result_diarize = plain_text_to_segments(result_text, 1700)
-        prog_disp("Translating...", 0.30, is_gui, progress=progress)
-        # not or iterative with 1700 chars
-        result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=0)
+        # custom voice
+        if os.getenv('VOICES_MODELS') == 'ENABLE':
+            prog_disp("Applying customized voices...", 0.90, is_gui, progress=progress)
+            voices_conversion(speakers_list, audio_files)
 
-        txt_file_path, result_text = segments_to_plain_text(result_diarize)
+        # replace files with the accelerates
+        move_files("audio2/audio/", "audio/")
 
-        if output_type == "text":
-            return txt_file_path
+        prog_disp("Creating final translated video...", 0.95, is_gui, progress=progress)
+        remove_files([Output_name_file, mix_audio])
+        create_translated_audio(self.result_diarize, audio_files, Output_name_file)
 
-    # (TTS limits) plain text to result_diarize
-    chunk_size = chunk_size if chunk_size else determine_chunk_size(tts_voice00)
-    result_diarize = plain_text_to_segments(
-        result_text,
-        chunk_size
-    )
-    logger.debug(result_diarize)
+        # TYPE MIX AUDIO
+        command_volume_mix = f'ffmpeg -y -i {audio_wav} -i {Output_name_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio}'
+        command_background_mix = f'ffmpeg -i {audio_wav} -i {Output_name_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio}'
+        if AUDIO_MIX_METHOD == 'Adjusting volumes and mixing audio':
+            # volume mix
+            run_command(command_volume_mix)
+        else:
+            try:
+                # background mix
+                run_command(command_background_mix)
+            except Exception as error_mix:
+                # volume mix except
+                logger.error(str(error_mix))
+                run_command(command_volume_mix)
 
-    prog_disp("Text to speech...", 0.45, is_gui, progress=progress)
-    audio_files, speakers_list = audio_segmentation_to_voice(
-        result_diarize, TRANSLATE_AUDIO_TO, 1.0, is_gui,
-        tts_voice00, "", "", "", "", "",
-    )
+        # Merge new audio + video
+        remove_files(video_output)
+        run_command(f"ffmpeg -i {OutputFile} -i {mix_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output}")
 
-    # custom voice
-    if os.getenv('VOICES_MODELS') == 'ENABLE':
-        prog_disp("Applying customized voices...", 0.80, is_gui, progress=progress)
-        voices_conversion(speakers_list, audio_files)
+        return video_output
 
-    # replace files with the accelerates and custom voice
-    move_files("audio2/audio/", "audio/")
+    def multilingual_docs_conversion(
+        self,
+        string_text, # string
+        document=None, # doc path gui
+        directory_input="", # doc path
+        SOURCE_LANGUAGE= "English (en)",
+        TRANSLATE_AUDIO_TO="English (en)",
+        tts_voice00="en-AU-WilliamNeural-Male",
+        name_final_file = "sample",
+        translate_process =  "google_translator_iterative",
+        output_type="audio",
+        chunk_size = None,
+        is_gui = False,
+        progress=gr.Progress(),
+        ):
 
-    prog_disp("Creating final audio file...", 0.90, is_gui, progress=progress)
-    remove_files(final_wav_file)
-    create_translated_audio(result_diarize, audio_files, final_wav_file, True)
+        SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+        if translate_process != "disable translation":
+            TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
+        else:
+            TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
+            logger.info("No translation")
+        if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
+            logger.debug("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
 
-    return final_wav_file
+        is_string = False
+        if document is None:
+            if os.path.exists(directory_input):
+                document = directory_input
+            else:
+                document = string_text
+                is_string = True
+        document = document if isinstance(document, str) else document.name
+        if not document:
+          raise Exception("No data found")
+
+        #audio_wav = "audio.wav"
+        final_wav_file = "audio_book.wav" if not name_final_file else f"{name_final_file}.wav"
+
+        prog_disp("Processing text...", 0.15, is_gui, progress=progress)
+        result_file_path, result_text = document_preprocessor(document, is_string)
+
+        if output_type == "text" and translate_process == "disable translation":
+            return result_file_path
+
+        if "SET_LIMIT" == os.getenv("DEMO"):
+            result_text = result_text[:50]
+            logger.info(
+                "DEMO; Generation is limited to 50 characters to prevent CPU errors. No limitations with GPU.\n"
+            )
+
+        if translate_process != "disable translation":
+            # chunks text for translation
+            result_diarize = plain_text_to_segments(result_text, 1700)
+            prog_disp("Translating...", 0.30, is_gui, progress=progress)
+            # not or iterative with 1700 chars
+            result_diarize['segments'] = translate_text(result_diarize['segments'], TRANSLATE_AUDIO_TO, translate_process, chunk_size=0)
+
+            txt_file_path, result_text = segments_to_plain_text(result_diarize)
+
+            if output_type == "text":
+                return txt_file_path
+
+        # (TTS limits) plain text to result_diarize
+        chunk_size = chunk_size if chunk_size else determine_chunk_size(tts_voice00)
+        result_diarize = plain_text_to_segments(
+            result_text,
+            chunk_size
+        )
+        logger.debug(result_diarize)
+
+        prog_disp("Text to speech...", 0.45, is_gui, progress=progress)
+        audio_files, speakers_list = audio_segmentation_to_voice(
+            result_diarize, TRANSLATE_AUDIO_TO, 1.0, is_gui,
+            tts_voice00, "", "", "", "", "",
+        )
+
+        # custom voice
+        if os.getenv('VOICES_MODELS') == 'ENABLE':
+            prog_disp("Applying customized voices...", 0.80, is_gui, progress=progress)
+            voices_conversion(speakers_list, audio_files)
+
+        # replace files with the accelerates and custom voice
+        move_files("audio2/audio/", "audio/")
+
+        prog_disp("Creating final audio file...", 0.90, is_gui, progress=progress)
+        remove_files(final_wav_file)
+        create_translated_audio(result_diarize, audio_files, final_wav_file, True)
+
+        return final_wav_file
+
+SoniTr = SoniTranslate()
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 news = """ ## 📖 News
@@ -741,7 +747,7 @@ def create_gui(theme, logs_in_gui=False):
                                 'Adjusting volumes and mixing audio',
                             ],
                         ], # no update
-                        fn=translate_from_video,
+                        fn=SoniTr.multilingual_media_conversion,
                         inputs=[
                         video_input,
                         blink_input,
@@ -993,7 +999,7 @@ def create_gui(theme, logs_in_gui=False):
                     update_tts_list, None, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05, tts_documents])
 
         # Run translate text
-        subs_button.click(translate_from_video, inputs=[
+        subs_button.click(SoniTr.multilingual_media_conversion, inputs=[
             video_input,
             blink_input,
             directory_input,
@@ -1028,7 +1034,7 @@ def create_gui(theme, logs_in_gui=False):
             ], outputs=subs_edit_space)
 
         # Run translate tts and complete
-        video_button.click(translate_from_video, inputs=[
+        video_button.click(SoniTr.multilingual_media_conversion, inputs=[
             video_input,
             blink_input,
             directory_input,
@@ -1063,7 +1069,7 @@ def create_gui(theme, logs_in_gui=False):
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
 
         # Run docs process
-        docs_button.click(document_process, inputs=[
+        docs_button.click(SoniTr.multilingual_docs_conversion, inputs=[
             text_docs,
             input_docs,
             directory_input_docs,
