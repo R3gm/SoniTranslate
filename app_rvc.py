@@ -339,6 +339,7 @@ class SoniTranslate:
         diarization_model= "pyannote/speaker-diarization@2.1",
         translate_process =  "google_translator_batch",
         subtitle_file = None,
+        output_type = "video",
         is_gui = False,
         progress=gr.Progress(),
         ):
@@ -438,6 +439,9 @@ class SoniTranslate:
         # Write subtitle
         sub_file = process_subtitles(self.result_source_lang, self.align_language, self.result_diarize, output_format_subtitle, TRANSLATE_AUDIO_TO)
 
+        if output_type == "subtitle":
+            return sub_file
+
         prog_disp("Text to speech...", 0.85, is_gui, progress=progress)
         audio_files, speakers_list = audio_segmentation_to_voice(
             self.result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, True,
@@ -470,6 +474,9 @@ class SoniTranslate:
                 # volume mix except
                 logger.error(str(error_mix))
                 run_command(command_volume_mix)
+
+        if output_type == "audio":
+            return mix_audio
 
         # Merge new audio + video
         remove_files(video_output)
@@ -672,6 +679,8 @@ def create_gui(theme, logs_in_gui=False):
                               translate_process_dropdown = gr.inputs.Dropdown(valid_translate_process, default=valid_translate_process[0], label="Translation process")
 
                               gr.HTML("<hr></h2>")
+                              main_output_type_opt = ["video", "audio", "subtitle"]
+                              main_output_type = gr.inputs.Dropdown(main_output_type_opt, default=main_output_type_opt[0], label="Output type")
                               VIDEO_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="video_output.mp4", info=lg_conf["out_name_info"])
                               PREVIEW = gr.Checkbox(label="Preview", info=lg_conf["preview_info"])
                               is_gui_dummy_check = gr.Checkbox(True, visible=False)
@@ -1033,6 +1042,7 @@ def create_gui(theme, logs_in_gui=False):
             diarization_process_dropdown,
             translate_process_dropdown,
             input_srt,
+            main_output_type,
             is_gui_dummy_check,
             ], outputs=subs_edit_space)
 
@@ -1068,6 +1078,7 @@ def create_gui(theme, logs_in_gui=False):
             diarization_process_dropdown,
             translate_process_dropdown,
             input_srt,
+            main_output_type,
             is_gui_dummy_check,
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
 
