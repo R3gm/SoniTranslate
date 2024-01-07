@@ -332,6 +332,7 @@ def process_uvr_task(
     main_vocals: bool = False,
     dereverb: bool = True,
     song_id: str = "mdx", # folder output name
+    only_voiceless: bool = False,
     remove_files_output_dir: bool = False,
     ):
 
@@ -349,14 +350,15 @@ def process_uvr_task(
     except:
         logger.error("Error onnxruntime")
 
-    logger.info("Vocal Track Isolation and Instrumental Separation...")
+    logger.info("Vocal Track Isolation and Voiceless Track Separation...")
     vocals_path, instrumentals_path = run_mdx(
         mdx_model_params,
         song_output_dir,
         os.path.join(mdxnet_models_dir, 'UVR-MDX-NET-Voc_FT.onnx'),
         orig_song_path,
         denoise=True,
-        keep_orig=True
+        keep_orig=True,
+        exclude_main=only_voiceless,
     )
 
     if main_vocals:

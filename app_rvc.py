@@ -349,6 +349,7 @@ class SoniTranslate:
         translate_process =  "google_translator_batch",
         subtitle_file = None,
         output_type = "video",
+        voiceless_track = True,
         is_gui = False,
         progress=gr.Progress(),
         ):
@@ -473,6 +474,18 @@ class SoniTranslate:
         prog_disp("Creating final translated video...", 0.95, is_gui, progress=progress)
         remove_files([dub_audio_file, mix_audio_file])
         create_translated_audio(self.result_diarize, audio_files, dub_audio_file)
+
+        # Voiceless track
+        if voiceless_track:
+            from soni_translate.mdx_net import process_uvr_task
+            _, base_audio_wav, _, _, _ = process_uvr_task(
+                orig_song_path = base_audio_wav,
+                main_vocals = False,
+                dereverb = False,
+                song_id = "voiceless",
+                only_voiceless = True,
+                remove_files_output_dir = False
+                )
 
         # TYPE MIX AUDIO
         command_volume_mix = f'ffmpeg -y -i {base_audio_wav} -i {dub_audio_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio_file}'
@@ -695,7 +708,8 @@ def create_gui(theme, logs_in_gui=False):
                               gr.HTML("<hr></h2>")
                               main_output_type_opt = ["video", "audio", "subtitle"]
                               main_output_type = gr.inputs.Dropdown(main_output_type_opt, default=main_output_type_opt[0], label="Output type")
-                              VIDEO_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="video_output.mp4", info=lg_conf["out_name_info"])
+                              main_voiceless_track = gr.Checkbox(label="Voiceless Track", info="This feature allows to extract or exclude voices, creating a version of the audio that primarily focuses on ambient sounds, background music, or other non-vocal elements present in the original audio. (Experimental)")
+                              VIDEO_OUTPUT_NAME = gr.Textbox(label=lg_conf["out_name_label"] ,value="video_output", info=lg_conf["out_name_info"])
                               PREVIEW = gr.Checkbox(label="Preview", info=lg_conf["preview_info"])
                               is_gui_dummy_check = gr.Checkbox(True, visible=False)
 
@@ -1057,6 +1071,7 @@ def create_gui(theme, logs_in_gui=False):
             translate_process_dropdown,
             input_srt,
             main_output_type,
+            main_voiceless_track,
             is_gui_dummy_check,
             ], outputs=subs_edit_space)
 
@@ -1093,6 +1108,7 @@ def create_gui(theme, logs_in_gui=False):
             translate_process_dropdown,
             input_srt,
             main_output_type,
+            main_voiceless_track,
             is_gui_dummy_check,
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
 
