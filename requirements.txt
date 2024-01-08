@@ -1,6 +1,9 @@
 # Temporal requirements
 nest_asyncio
---extra-index-url https://download.pytorch.org/whl/cu117 torch==2.0.0+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.0
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch>=2.1.0+cu118
+torchvision>=0.16.0+cu118
+torchaudio>=2.1.0+cu118
 yt-dlp
 gradio==3.41.2
 pydub==0.25.1
@@ -23,10 +26,11 @@ accelerate
 optimum
 sentencepiece
 srt
+onnxruntime-gpu
+# Documents
+PyPDF2
+python-docx
 
 # after this
 # pip install git+https://github.com/omry/omegaconf.git@refs/pull/1137/merge
 
-# Documents
-PyPDF2
-python-docx
