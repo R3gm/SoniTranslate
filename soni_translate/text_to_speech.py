@@ -481,6 +481,28 @@ def piper_tts_voices_list():
 
     return piper_id_models
 
+def replace_text_in_json(file_path, key_to_replace, new_text, condition=None):
+    # Read the JSON file
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+    # Modify the specified key's value with the new text
+    if key_to_replace in data:
+
+        if condition:
+          value_condition = condition
+        else:
+          value_condition = data[key_to_replace]
+
+        if data[key_to_replace] == value_condition:
+            data[key_to_replace] = new_text
+    # else:
+    #     print(f"The key '{key_to_replace}' does not exist in the JSON file.")
+
+    # Write the modified content back to the JSON file
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=2)  # Write the modified data back to the file with indentation for readability
+
 def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_voices: bool = False):
     from piper import PiperVoice
     from piper.download import ensure_voice_exists, find_voice, get_voices
@@ -517,6 +539,8 @@ def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_
         voices_info.update(aliases_info)
         ensure_voice_exists(model, data_dir, download_dir, voices_info)
         model, config = find_voice(model, data_dir)
+
+        replace_text_in_json(config, "phoneme_type", "espeak", "PhonemeType.ESPEAK")
 
     # Load voice
     voice = PiperVoice.load(model, config_path=config, use_cuda=cuda)
