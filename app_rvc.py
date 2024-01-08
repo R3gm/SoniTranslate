@@ -68,6 +68,16 @@ logging.getLogger("markdown_it").setLevel(logging.WARNING)
 logging.getLogger("speechbrain").setLevel(logging.WARNING)
 logging.getLogger("fairseq").setLevel(logging.WARNING)
 
+def set_logging_level(verbosity_level):
+    logging_level_mapping = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'warning': logging.WARNING,
+        'error': logging.ERROR,
+        'critical': logging.CRITICAL
+    }
+
+    logger.setLevel(logging_level_mapping.get(verbosity_level, logging.INFO))
 
 from soni_translate.languages_gui import language_data
 selected_language = os.getenv("SONITRANSLATE_LANGUAGE")
@@ -349,7 +359,7 @@ class SoniTranslate:
         translate_process =  "google_translator_batch",
         subtitle_file = None,
         output_type = "video",
-        voiceless_track = True,
+        voiceless_track = False,
         is_gui = False,
         progress=gr.Progress(),
         ):
@@ -839,7 +849,7 @@ def create_gui(theme, logs_in_gui=False):
 
                     link = gr.HTML()
 
-                    tts_documents = gr.Dropdown(tts_info.tts_list(), value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
+                    tts_documents = gr.Dropdown(list(filter(lambda x: x != "_XTTS_/AUTOMATIC.wav", tts_info.tts_list())), value='en-GB-ThomasNeural-Male', label = 'TTS', visible=True, interactive= True)
 
                     link = gr.HTML()
 
@@ -1030,7 +1040,7 @@ def create_gui(theme, logs_in_gui=False):
                 update_dict = {
                     f'tts_voice{i:02d}': gr.update(choices=tts_info.tts_list()) for i in range(6)
                 }
-                update_dict["tts_documents"] = gr.update(choices=tts_info.tts_list())
+                update_dict["tts_documents"] = gr.update(choices=list(filter(lambda x: x != "_XTTS_/AUTOMATIC.wav", tts_info.tts_list())))
                 return [value for value in update_dict.values()]
             create_xtts_wav.click(create_wav_file_vc, inputs=[
                 wav_speaker_name,
@@ -1137,9 +1147,20 @@ def create_parser():
     parser.add_argument("--theme", type=str, default="Taithrah/Minimal", help="Specify the theme; find themes in https://huggingface.co/spaces/gradio/theme-gallery; Example: --theme aliabid94/new-theme")
     parser.add_argument("--public_url", action="store_true", default=False, help="Enable public link")
     parser.add_argument("--logs_in_gui", action="store_true", default=False, help="Displays the operations performed in Logs")
+    parser.add_argument("--verbosity_level", type=str, default="info", help="set logger verbosity level:  debug, info, warning, error or critical")
     return parser
 
 if __name__ == '__main__':
+
+    parser = create_parser()
+
+    args = parser.parse_args()
+    # Simulating command-line arguments
+    #args_list = "--theme aliabid94/new-theme --public_url".split()
+    #args = parser.parse_args(args_list)
+
+    set_logging_level(args.verbosity_level)
+
     for id_model in UVR_MODELS:
         download_manager(os.path.join(MDX_DOWNLOAD_LINK, id_model), mdxnet_models_dir)
 
@@ -1148,13 +1169,6 @@ if __name__ == '__main__':
 
     models, index_paths = upload_model_list()
     os.environ["VOICES_MODELS"] = 'DISABLE'
-
-    parser = create_parser()
-
-    args = parser.parse_args()
-    # Simulating command-line arguments
-    #args_list = "--theme aliabid94/new-theme --public_url".split()
-    #args = parser.parse_args(args_list)
 
     app = create_gui(args.theme, logs_in_gui=args.logs_in_gui)
     app.launch(
