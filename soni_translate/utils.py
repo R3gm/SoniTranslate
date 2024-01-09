@@ -11,9 +11,9 @@ def run_command(command):
         "stderr" : subprocess.PIPE,
         "creationflags" : subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
     }
-    process_wav = subprocess.Popen(command, **sub_params)
-    output, errors = process_wav.communicate()
-    if process_wav.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
+    process_command= subprocess.Popen(command, **sub_params)
+    output, errors = process_command.communicate()
+    if process_command.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
         logger.error("Error comnand")
         raise Exception(errors.decode())
 

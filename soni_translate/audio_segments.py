@@ -3,9 +3,10 @@ from tqdm import tqdm
 import os
 from .utils import run_command
 from .logging_setup import logger
+from .utils import remove_directory_contents
 
 def create_translated_audio(result_diarize, audio_files, final_file, concat=False):
-    total_duration = result_diarize['segments'][-1]['end'] # in seconds
+    total_duration = result_diarize['segments'][-1]['end'] # in seconds    
 
     if concat:
         """
@@ -31,7 +32,7 @@ def create_translated_audio(result_diarize, audio_files, final_file, concat=Fals
     else:
         # silent audio with total_duration
         combined_audio = AudioSegment.silent(duration=int(total_duration * 1000))
-        logger.info(f"{round((total_duration / 60),2)} total duration")
+        logger.info(f"Audio duration: {total_duration // 60} minutes and {int(total_duration % 60)} seconds")
 
         for line, audio_file in tqdm(zip(result_diarize['segments'], audio_files)):
             start = float(line['start'])
@@ -45,7 +46,7 @@ def create_translated_audio(result_diarize, audio_files, final_file, concat=Fals
             except:
               logger.error(f'Error audio file {audio_file}')
 
-        os.system("rm -rf audio/*")
-
         # combined audio as a file
         combined_audio.export(final_file, format="wav") # best than ogg, change if the audio is anomalous
+
+    remove_directory_contents("audio")

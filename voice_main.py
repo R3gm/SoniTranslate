@@ -9,7 +9,7 @@ from vc_infer_pipeline import VC
 import traceback, pdb
 from lib.audio import load_audio
 import numpy as np
-import os
+import os, shutil
 from fairseq import checkpoint_utils
 import soundfile as sf
 from gtts import gTTS
@@ -17,6 +17,7 @@ import edge_tts
 import asyncio
 import nest_asyncio
 from soni_translate.logging_setup import logger
+from soni_translate.utils import remove_directory_contents, create_directories
 
 # model load
 def get_vc(sid, to_return_protect0, to_return_protect1):
@@ -403,7 +404,9 @@ class ClassVoices:
         transpose,
         f0_method,
         ):
-        os.system("rm -rf test")
+
+        create_directories("test")
+        remove_directory_contents("test")
         filename = "test/test.wav"
 
         if "SET_LIMIT" == os.getenv("DEMO"):
@@ -413,7 +416,6 @@ class ClassVoices:
 
         language = tts_voice[:2]
         try:
-          os.system("mkdir test")
           #nest_asyncio.apply() # gradio;not
           asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
         except:
@@ -427,7 +429,7 @@ class ClassVoices:
             tts.save(filename)
             logger.error('Audio will be replaced.')
 
-        os.system("cp test/test.wav test/real_test.wav")
+        shutil.copy("test/test.wav", "test/real_test.wav")
 
         self([],[]) # start modules
 

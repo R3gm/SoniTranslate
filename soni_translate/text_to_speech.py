@@ -509,7 +509,7 @@ def load_piper_model(model: str, data_dir: list, download_dir: str = '', update_
 
     try:
         import onnxruntime as rt
-        if rt.get_device() == 'GPU':
+        if rt.get_device() == 'GPU' and torch.cuda.is_available():
             logger.debug("onnxruntime device > GPU")
             cuda = True
         else:

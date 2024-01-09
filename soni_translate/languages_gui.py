@@ -97,7 +97,7 @@ language_data = {
     "cv_button_apply" : "APPLY CONFIGURATION"
   },
 
-  "español": {
+  "spanish": {
     "description": """
         ### 🎥 **¡Traduce videos fácilmente con SoniTranslate!** 📽️
 
