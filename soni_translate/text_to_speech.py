@@ -893,6 +893,7 @@ def toneconverter(result_diarize, preprocessor_max_segments, remove_previous_pro
     tone_color_converter = ToneColorConverter(config_path, device=device)
     tone_color_converter.load_ckpt(checkpoint_path)
 
+    logger.info("Openvoice tone color converter:")
     for source_seg, target_seg, speaker in zip(path_source_segments, path_target_segments, valid_speakers):
         #source_se_path = os.path.join(source_seg, 'se.pth')
         source_se = se_process_audio_segments(source_seg, tone_color_converter)
@@ -905,7 +906,7 @@ def toneconverter(result_diarize, preprocessor_max_segments, remove_previous_pro
         for seg in filtered_speaker:
 
             src_path = save_path = f"audio2/audio/{str(seg['start'])}.ogg" # overwrite
-            logger.info(f"Openvoice tone color converter: {src_path}")
+            logger.info(f"{src_path}")
 
             tone_color_converter.convert(
                 audio_src_path=src_path,

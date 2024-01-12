@@ -694,7 +694,7 @@ def create_gui(theme, logs_in_gui=False):
                             ### Replicate a person's voice accurately across various languages.
                             While effective with most voices when used appropriately, it may not achieve perfection in every case. The tone color converter solely replicates the reference speaker's tone, excluding accent and emotion, which are governed by the base speaker TTS model and not replicated by the converter.
                             """)
-                            voice_imitation_gui = gr.Checkbox(False, label="Active Voice Imitation", info="Active Voice Imitation: Replicates the original speaker's tone")
+                            voice_imitation_gui = gr.Checkbox(True, label="Active Voice Imitation", info="Active Voice Imitation: Replicates the original speaker's tone")
                             voice_imitation_max_segments_gui = gr.Slider(label="Max samples", info="Max samples: Is the number of audio samples that will be generated for the process, more is better but it can add noise", value=1, step=1, minimum=1, maximum=10, visible=True, interactive= True,)
                             voice_imitation_vocals_dereverb_gui = gr.Checkbox(False, label="Dereverb", info="Dereverb: Applies vocal dereverb to the audio samples.")
                             voice_imitation_remove_previous_gui = gr.Checkbox(True, label="Remove previous samples", info="Remove previous samples: Remove the previous samples generated, so new ones need to be created.")
