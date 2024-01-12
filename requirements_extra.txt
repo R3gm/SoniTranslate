@@ -11,6 +11,7 @@ accelerate
 optimum
 sentencepiece
 srt
+git+https://github.com/R3gm/openvoice_package.git@lite
 # Documents
 PyPDF2
 python-docx

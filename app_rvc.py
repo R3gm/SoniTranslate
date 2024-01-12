@@ -1,4 +1,3 @@
-#%cd SoniTranslate
 import numpy as np
 import gradio as gr
 import whisperx
@@ -355,11 +354,14 @@ class SoniTranslate:
         get_translated_text = False,
         get_video_from_text_json = False,
         text_json = "{}",
-        diarization_model= "pyannote/speaker-diarization@2.1",
+        diarization_model= "pyannote_2.1",
         translate_process =  "google_translator_batch",
         subtitle_file = None,
         output_type = "video",
         voiceless_track = False,
+        voice_imitation = False,
+        voice_imitation_max_segments = 3,
+        voice_imitation_remove_previous = True,
         is_gui = False,
         progress=gr.Progress(),
         ):
@@ -472,6 +474,11 @@ class SoniTranslate:
             self.result_diarize, TRANSLATE_AUDIO_TO, max_accelerate_audio, True,
             tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05
         )
+
+        # Tone color converter
+        if voice_imitation:
+            from soni_translate.text_to_speech import toneconverter
+            toneconverter(copy.deepcopy(self.result_diarize), preprocessor_max_segments=voice_imitation_max_segments, remove_previous_process=voice_imitation_remove_previous)
 
         # custom voice
         if os.getenv('VOICES_MODELS') == 'ENABLE':

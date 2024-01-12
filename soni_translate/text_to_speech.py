@@ -1,5 +1,5 @@
 from gtts import gTTS
-import edge_tts, asyncio, nest_asyncio, json
+import edge_tts, asyncio, nest_asyncio, json, glob
 from tqdm import tqdm
 import librosa, os, re, torch, gc, subprocess, random
 from .language_configuration import fix_code_language, bark_voices_list, vits_voices_list
@@ -44,7 +44,7 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         f.close()  # Close the TemporaryFile
         sf.write(filename, audio_data, samplerate, format='ogg', subtype='vorbis')
 
-        logger.warning(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')    
+        logger.warning(f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}')
         verify_saved_file_and_size(filename)
     except Exception as error:
         logger.critical(f"Error: {str(error)}")
@@ -312,7 +312,8 @@ def create_wav_file_vc(
     sample_name = "", # name final file
     audio_wav = "", # path
     start = None, # trim start
-    end = None # trim end
+    end = None, # trim end
+    output_final_path = "_XTTS_",
     ):
 
     sample_name = sample_name if sample_name else "default_name"
@@ -323,7 +324,6 @@ def create_wav_file_vc(
 
     output_dir = os.path.join(BASE_DIR, 'clean_song_output') # remove content
     #remove_directory_contents(output_dir)
-    base_xtts_wav = "_XTTS_"
 
     if start or end:
         # Cut file
@@ -344,9 +344,9 @@ def create_wav_file_vc(
     sample_name = f"{sample_name}.wav"
     sample_rename = rename_file(sample, sample_name)
 
-    copy_files(sample_rename, base_xtts_wav)
+    copy_files(sample_rename, output_final_path)
 
-    final_sample = os.path.join(base_xtts_wav, sample_name)
+    final_sample = os.path.join(output_final_path, sample_name)
     if os.path.exists(final_sample):
         logger.info(final_sample)
         return final_sample
@@ -389,8 +389,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
                 seg = filtered_speaker[0]
                 logger.info(f'Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {seg["text"]}')
                 max_duration = float(seg['end']) - float(seg['start'])
-                if max_duration > 9.0:
-                    max_duration = 9.0                    
+                max_duration = max(2.0, min(max_duration, 9.0))
 
                 create_wav_file_vc(
                     sample_name = name_automatic_wav,
@@ -496,8 +495,6 @@ def replace_text_in_json(file_path, key_to_replace, new_text, condition=None):
 
         if data[key_to_replace] == value_condition:
             data[key_to_replace] = new_text
-    # else:
-    #     print(f"The key '{key_to_replace}' does not exist in the JSON file.")
 
     # Write the modified content back to the JSON file
     with open(file_path, 'w') as file:
@@ -725,17 +722,17 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         acc_percentage = round(acc_percentage+0.0, 1)
 
         # Format read if need
-        if speaker in speakers_edge:  
+        if speaker in speakers_edge:
             info_enc = sf.info(filename).format
         else:
             info_enc = "OGG"
-            
+
         # Apply aceleration or opposite to the audio file in audio2 folder
         if acc_percentage == 1.0 and info_enc == "OGG":
             copy_files(filename, f"audio2{os.sep}audio")
         else:
             os.system(f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} audio2/{filename}")
-        
+
         if logger.isEnabledFor(logging.DEBUG):
             duration_create = librosa.get_duration(filename=f"audio2/{filename}")
             logger.debug(f"acc_percen is {acc_percentage}, tts duration is {duration_tts}, new duration is {duration_create}, for {filename}")
@@ -744,6 +741,175 @@ def accelerate_segments(result_diarize, max_accelerate_audio, speakers_edge, spe
         speakers_list.append(speaker)
 
     return audio_files, speakers_list
+
+# =====================================
+# Tone color converter
+# =====================================
+
+def se_process_audio_segments(source_seg, tone_color_converter, remove_previous_processed=True):
+    # list wav seg
+    source_audio_segs = glob.glob(f"{source_seg}/*.wav")
+    if not source_audio_segs:
+        raise ValueError(f'No audio segments found in {str(source_audio_segs)}')
+
+    source_se_path = os.path.join(source_seg, 'se.pth')
+
+    # if exist not create wav
+    if os.path.isfile(source_se_path):
+        se = torch.load(source_se_path).to(device)
+        logger.debug(f"Previous created {source_se_path}")
+    else:
+        se = tone_color_converter.extract_se(source_audio_segs, source_se_path)
+
+    return se
+
+def openvoice_wav_vc(valid_speakers, segments_base, audio_name, max_segments=10, target_dir='processed'):
+    #valid_speakers = list({item['speaker'] for item in segments_base})
+
+
+    # before function delete automatic delete_previous_automatic
+    output_dir = os.path.join(".", target_dir) # remove content
+    #remove_directory_contents(output_dir)
+
+    path_source_segments = []
+    path_target_segments = []
+    for speaker in valid_speakers:
+        filtered_speaker = [segment for segment in segments_base if segment['speaker'] == speaker]
+        if len(filtered_speaker) > 4:
+            filtered_speaker = filtered_speaker[1:]
+        #if filtered_speaker[0]["tts_name"] == "_XTTS_/AUTOMATIC.wav":
+        #name_automatic_wav = f"AUTOMATIC_{speaker}"
+        #if os.path.exists(f"_XTTS_/{name_automatic_wav}.wav"):
+        #    logger.info(f"WAV automatic {speaker} exists")
+
+        dir_name_speaker = speaker+audio_name
+        dir_name_speaker_tts = "tts"+speaker+audio_name
+        dir_path_speaker = os.path.join(output_dir, dir_name_speaker)
+        dir_path_speaker_tts = os.path.join(output_dir, dir_name_speaker_tts)
+        create_directories([dir_path_speaker, dir_path_speaker_tts])
+
+        path_target_segments.append(dir_path_speaker)
+        path_source_segments.append(dir_path_speaker_tts)
+
+        # create wav
+        max_segments_count = 0
+        for seg in filtered_speaker:
+            duration = float(seg['end']) - float(seg['start'])
+            if duration > 3.0 and duration < 18.0:
+                logger.info(f'Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {duration}, {seg["text"]}')
+                name_new_wav = str(seg['start'])
+
+                check_segment_audio_target_file = os.path.join(dir_path_speaker, f"{name_new_wav}.wav")
+
+                if os.path.exists(check_segment_audio_target_file):
+                    logger.debug(f"Segment vc source exists: {check_segment_audio_target_file}")
+                    pass
+                else:
+                    create_wav_file_vc(
+                        sample_name = name_new_wav,
+                        audio_wav = "audio.wav",
+                        start = (float(seg['start']) + 1.0),
+                        end = (float(seg['end']) - 1.0),
+                        output_final_path = dir_path_speaker
+                    )
+
+                    file_name_tts = f"audio2/audio/{str(seg['start'])}.ogg"
+                    #copy_files(file_name_tts, os.path.join(output_dir, dir_name_speaker_tts)
+                    convert_to_xtts_good_sample(file_name_tts, dir_path_speaker_tts)
+
+                max_segments_count += 1
+                if max_segments_count == max_segments:
+                    break
+
+        if max_segments_count == 0:
+            logger.info("Taking the first segment")
+            seg = filtered_speaker[0]
+            logger.info(f'Processing segment: {seg["start"]}, {seg["end"]}, {seg["speaker"]}, {seg["text"]}')
+            max_duration = float(seg['end']) - float(seg['start'])
+            max_duration = max(1.0, min(max_duration, 18.0))
+
+            name_new_wav = str(seg['start'])
+            create_wav_file_vc(
+                sample_name = name_new_wav,
+                audio_wav = "audio.wav",
+                start = (float(seg['start'])),
+                end = (float(seg['start']) + max_duration),
+                output_final_path = dir_path_speaker
+            )
+
+            file_name_tts = f"audio2/audio/{str(seg['start'])}.ogg"
+            #copy_files(file_name_tts, os.path.join(output_dir, dir_name_speaker_tts)
+            convert_to_xtts_good_sample(file_name_tts, dir_path_speaker_tts)
+
+    logger.debug(f"Base: {str(path_source_segments)}")
+    logger.debug(f"Target: {str(path_target_segments)}")
+
+    return path_source_segments, path_target_segments
+
+def toneconverter(result_diarize, preprocessor_max_segments, remove_previous_process=True):
+
+    audio_path = "audio.wav"
+    se_path = "se.pth"
+    target_dir= "processed"
+    create_directories(target_dir)
+
+    from openvoice import se_extractor
+    from openvoice.api import ToneColorConverter
+
+    audio_name = f"{os.path.basename(audio_path).rsplit('.', 1)[0]}_{se_extractor.hash_numpy_array(audio_path)}"
+    #se_path = os.path.join(target_dir, audio_name, 'se.pth')
+
+    #create wav seg original and target
+
+    valid_speakers = list({item['speaker'] for item in result_diarize["segments"]})
+
+    logger.info("Openvoice preprocessor...")
+
+    if remove_previous_process:
+        remove_directory_contents(target_dir)
+
+    path_source_segments, path_target_segments = openvoice_wav_vc(
+        valid_speakers,
+        result_diarize["segments"],
+        audio_name,
+        max_segments=preprocessor_max_segments
+    )
+
+    logger.info("Openvoice loading model...")
+
+    model_path_openvoice = "./OPENVOICE_MODELS"
+    url_model_openvoice = "https://huggingface.co/myshell-ai/OpenVoice/resolve/main/checkpoints/converter"
+
+    config_url = f'{url_model_openvoice}/config.json'
+    checkpoint_url = f'{url_model_openvoice}/checkpoint.pth'
+
+    config_path = download_manager(url=config_url, path=model_path_openvoice)
+    checkpoint_path = download_manager(url=checkpoint_url, path=model_path_openvoice)
+
+    tone_color_converter = ToneColorConverter(config_path, device=device)
+    tone_color_converter.load_ckpt(checkpoint_path)
+
+    for source_seg, target_seg, speaker in zip(path_source_segments, path_target_segments, valid_speakers):
+        #source_se_path = os.path.join(source_seg, 'se.pth')
+        source_se = se_process_audio_segments(source_seg, tone_color_converter)
+        #target_se_path = os.path.join(target_seg, 'se.pth')
+        target_se = se_process_audio_segments(target_seg, tone_color_converter)
+
+        # Iterate throw segments
+        encode_message = "@MyShell"
+        filtered_speaker = [segment for segment in result_diarize["segments"] if segment['speaker'] == speaker]
+        for seg in filtered_speaker:
+
+            src_path = save_path = f"audio2/audio/{str(seg['start'])}.ogg" # overwrite
+            logger.info(f"Openvoice tone color converter: {src_path}")
+
+            tone_color_converter.convert(
+                audio_src_path=src_path,
+                src_se=source_se,
+                tgt_se=target_se,
+                output_path=save_path,
+                message=encode_message
+            )
 
 if __name__ == '__main__':
     from segments import result_diarize
