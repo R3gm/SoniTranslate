@@ -681,6 +681,16 @@ def create_gui(theme, logs_in_gui=False):
                     tts_voice05 = gr.Dropdown(tts_info.tts_list(), value='en-GB-MaisieNeural-Female', label=lg_conf["sk6"], visible=False, interactive= True)
                     max_speakers.change(submit, max_speakers, [tts_voice00, tts_voice01, tts_voice02, tts_voice03, tts_voice04, tts_voice05])
 
+                    with gr.Column():
+                          with gr.Accordion("Voice Imitation in Different Languages", open=False):
+                            gr.Markdown(
+                            """
+                            ### Replicate a person's voice accurately across various languages.
+                            While effective with most voices when used appropriately, it may not achieve perfection in every case. The tone color converter solely replicates the reference speaker's tone, excluding accent and emotion, which are governed by the base speaker TTS model and not replicated by the converter.
+                            """)
+                            voice_imitation_gui = gr.Checkbox(False, label="Active Voice Imitation", info="Active Voice Imitation: Replicates the original speaker's tone")
+                            voice_imitation_max_segments_gui = gr.Slider(label="Max samples", info="Max samples: Is the number of audio samples that will be generated for the process, more is better but it can add noise", value=1, step=1, minimum=1, maximum=10, visible=True, interactive= True,)
+                            voice_imitation_remove_previous_gui = gr.Checkbox(True, label="Remove previous samples", info="Remove previous samples: Remove the previous samples generated, so new ones need to be created.")
 
                     if xtts_enabled:
                         with gr.Column():
@@ -1089,6 +1099,9 @@ def create_gui(theme, logs_in_gui=False):
             input_srt,
             main_output_type,
             main_voiceless_track,
+            voice_imitation_gui,
+            voice_imitation_max_segments_gui,
+            voice_imitation_remove_previous_gui,
             is_gui_dummy_check,
             ], outputs=subs_edit_space)
 
@@ -1126,6 +1139,9 @@ def create_gui(theme, logs_in_gui=False):
             input_srt,
             main_output_type,
             main_voiceless_track,
+            voice_imitation_gui,
+            voice_imitation_max_segments_gui,
+            voice_imitation_remove_previous_gui,
             is_gui_dummy_check,
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
 
