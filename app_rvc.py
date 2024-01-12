@@ -29,7 +29,8 @@ try:
     from piper import PiperVoice
     piper_enabled = True
     logger.info("PIPER TTS enabled")
-except:
+except Exception as error:
+    logger.warning(str(error))
     piper_enabled = False
     logger.info("PIPER TTS disabled")
 try:
@@ -42,7 +43,8 @@ try:
         "https://coqui.ai/cpml.txt."
     )
     os.environ['COQUI_TOS_AGREED'] = "1"
-except:
+except Exception as error:
+    logger.warning(str(error))
     xtts_enabled = False
     logger.info("Coqui XTTS disabled")
 
@@ -377,7 +379,10 @@ class SoniTranslate:
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
         if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
-            logger.warning("Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS.")
+            wrn_lang = "Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS."
+            logger.warning(wrn_lang)
+            if is_gui:
+                gr.Warning(wrn_lang)
 
         if media_file is None:
             media_file = directory_input if os.path.exists(directory_input) else link_media
@@ -691,7 +696,7 @@ def create_gui(theme, logs_in_gui=False):
                             """)
                             voice_imitation_gui = gr.Checkbox(False, label="Active Voice Imitation", info="Active Voice Imitation: Replicates the original speaker's tone")
                             voice_imitation_max_segments_gui = gr.Slider(label="Max samples", info="Max samples: Is the number of audio samples that will be generated for the process, more is better but it can add noise", value=1, step=1, minimum=1, maximum=10, visible=True, interactive= True,)
-                            voice_imitation_vocals_dereverb_gui = gr.Checkbox(True, label="Dereverb", info="Dereverb: Applies vocal dereverb to the audio samples.")
+                            voice_imitation_vocals_dereverb_gui = gr.Checkbox(False, label="Dereverb", info="Dereverb: Applies vocal dereverb to the audio samples.")
                             voice_imitation_remove_previous_gui = gr.Checkbox(True, label="Remove previous samples", info="Remove previous samples: Remove the previous samples generated, so new ones need to be created.")
 
                     if xtts_enabled:
