@@ -314,6 +314,7 @@ def create_wav_file_vc(
     start = None, # trim start
     end = None, # trim end
     output_final_path = "_XTTS_",
+    get_vocals_dereverb = True,
     ):
 
     sample_name = sample_name if sample_name else "default_name"
@@ -336,7 +337,7 @@ def create_wav_file_vc(
     _, _, _, _, vocals_dereverb_path = process_uvr_task(
         orig_song_path = audio_segment,
         main_vocals = True,
-        dereverb = True,
+        dereverb = get_vocals_dereverb,
         )
 
     sample = convert_to_xtts_good_sample(vocals_dereverb_path)
@@ -763,7 +764,7 @@ def se_process_audio_segments(source_seg, tone_color_converter, remove_previous_
 
     return se
 
-def openvoice_wav_vc(valid_speakers, segments_base, audio_name, max_segments=10, target_dir='processed'):
+def openvoice_wav_vc(valid_speakers, segments_base, audio_name, max_segments=10, target_dir='processed', get_vocals_dereverb=False):
     #valid_speakers = list({item['speaker'] for item in segments_base})
 
 
@@ -810,7 +811,8 @@ def openvoice_wav_vc(valid_speakers, segments_base, audio_name, max_segments=10,
                         audio_wav = "audio.wav",
                         start = (float(seg['start']) + 1.0),
                         end = (float(seg['end']) - 1.0),
-                        output_final_path = dir_path_speaker
+                        output_final_path = dir_path_speaker,
+                        get_vocals_dereverb=get_vocals_dereverb
                     )
 
                     file_name_tts = f"audio2/audio/{str(seg['start'])}.ogg"
@@ -834,7 +836,8 @@ def openvoice_wav_vc(valid_speakers, segments_base, audio_name, max_segments=10,
                 audio_wav = "audio.wav",
                 start = (float(seg['start'])),
                 end = (float(seg['start']) + max_duration),
-                output_final_path = dir_path_speaker
+                output_final_path = dir_path_speaker,
+                get_vocals_dereverb=get_vocals_dereverb
             )
 
             file_name_tts = f"audio2/audio/{str(seg['start'])}.ogg"
@@ -846,7 +849,7 @@ def openvoice_wav_vc(valid_speakers, segments_base, audio_name, max_segments=10,
 
     return path_source_segments, path_target_segments
 
-def toneconverter(result_diarize, preprocessor_max_segments, remove_previous_process=True):
+def toneconverter(result_diarize, preprocessor_max_segments, remove_previous_process=True, get_vocals_dereverb=False):
 
     audio_path = "audio.wav"
     se_path = "se.pth"
@@ -872,7 +875,8 @@ def toneconverter(result_diarize, preprocessor_max_segments, remove_previous_pro
         valid_speakers,
         result_diarize["segments"],
         audio_name,
-        max_segments=preprocessor_max_segments
+        max_segments=preprocessor_max_segments,
+        get_vocals_dereverb=get_vocals_dereverb
     )
 
     logger.info("Openvoice loading model...")

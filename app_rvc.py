@@ -362,6 +362,7 @@ class SoniTranslate:
         voice_imitation = False,
         voice_imitation_max_segments = 3,
         voice_imitation_remove_previous = True,
+        voice_imitation_vocals_dereverb = False,
         is_gui = False,
         progress=gr.Progress(),
         ):
@@ -478,7 +479,7 @@ class SoniTranslate:
         # Tone color converter
         if voice_imitation:
             from soni_translate.text_to_speech import toneconverter
-            toneconverter(copy.deepcopy(self.result_diarize), preprocessor_max_segments=voice_imitation_max_segments, remove_previous_process=voice_imitation_remove_previous)
+            toneconverter(copy.deepcopy(self.result_diarize), preprocessor_max_segments=voice_imitation_max_segments, remove_previous_process=voice_imitation_remove_previous, get_vocals_dereverb=voice_imitation_remove_previous)
 
         # custom voice
         if os.getenv('VOICES_MODELS') == 'ENABLE':
@@ -690,6 +691,7 @@ def create_gui(theme, logs_in_gui=False):
                             """)
                             voice_imitation_gui = gr.Checkbox(False, label="Active Voice Imitation", info="Active Voice Imitation: Replicates the original speaker's tone")
                             voice_imitation_max_segments_gui = gr.Slider(label="Max samples", info="Max samples: Is the number of audio samples that will be generated for the process, more is better but it can add noise", value=1, step=1, minimum=1, maximum=10, visible=True, interactive= True,)
+                            voice_imitation_vocals_dereverb_gui = gr.Checkbox(True, label="Dereverb", info="Dereverb: Applies vocal dereverb to the audio samples.")
                             voice_imitation_remove_previous_gui = gr.Checkbox(True, label="Remove previous samples", info="Remove previous samples: Remove the previous samples generated, so new ones need to be created.")
 
                     if xtts_enabled:
@@ -1101,6 +1103,7 @@ def create_gui(theme, logs_in_gui=False):
             main_voiceless_track,
             voice_imitation_gui,
             voice_imitation_max_segments_gui,
+            voice_imitation_vocals_dereverb_gui,
             voice_imitation_remove_previous_gui,
             is_gui_dummy_check,
             ], outputs=subs_edit_space)
@@ -1141,6 +1144,7 @@ def create_gui(theme, logs_in_gui=False):
             main_voiceless_track,
             voice_imitation_gui,
             voice_imitation_max_segments_gui,
+            voice_imitation_vocals_dereverb_gui,
             voice_imitation_remove_previous_gui,
             is_gui_dummy_check,
             ], outputs=video_output).then(get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output])
