@@ -363,8 +363,8 @@ class SoniTranslate:
         voiceless_track = False,
         voice_imitation = False,
         voice_imitation_max_segments = 3,
-        voice_imitation_remove_previous = True,
         voice_imitation_vocals_dereverb = False,
+        voice_imitation_remove_previous = True,
         is_gui = False,
         progress=gr.Progress(),
         ):
