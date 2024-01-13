@@ -1,5 +1,7 @@
-import os, zipfile, rarfile, shutil, subprocess, shlex, sys
+import os, zipfile, rarfile, shutil, subprocess, shlex, sys # noqa
 from .logging_setup import logger
+from urllib.parse import urlparse
+
 
 def run_command(command):
     logger.debug(command)
@@ -7,17 +9,22 @@ def run_command(command):
         command = shlex.split(command)
 
     sub_params = {
-        "stdout" : subprocess.PIPE,
-        "stderr" : subprocess.PIPE,
-        "creationflags" : subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
+        "stdout": subprocess.PIPE,
+        "stderr": subprocess.PIPE,
+        "creationflags": subprocess.CREATE_NO_WINDOW
+        if sys.platform == "win32"
+        else 0,
     }
-    process_command= subprocess.Popen(command, **sub_params)
+    process_command = subprocess.Popen(command, **sub_params)
     output, errors = process_command.communicate()
-    if process_command.returncode != 0: # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
+    if (
+        process_command.returncode != 0
+    ):  # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
         logger.error("Error comnand")
         raise Exception(errors.decode())
 
-def print_tree_directory(root_dir, indent=''):
+
+def print_tree_directory(root_dir, indent=""):
     if not os.path.exists(root_dir):
         logger.error(f"{indent} Invalid directory or file: {root_dir}")
         return
@@ -28,18 +35,23 @@ def print_tree_directory(root_dir, indent=''):
         item_path = os.path.join(root_dir, item)
         is_last_item = index == len(items) - 1
 
-        if os.path.isfile(item_path) and item_path.endswith('.zip'):
-            with zipfile.ZipFile(item_path, 'r') as zip_file:
-                print(f"{indent}{'└──' if is_last_item else '├──'} {item} (zip file)")
+        if os.path.isfile(item_path) and item_path.endswith(".zip"):
+            with zipfile.ZipFile(item_path, "r") as zip_file:
+                print(
+                    f"{indent}{'└──' if is_last_item else '├──'} {item} (zip file)"
+                )
                 zip_contents = zip_file.namelist()
                 for zip_item in sorted(zip_contents):
-                    print(f"{indent}{'    ' if is_last_item else '│   '}{zip_item}")
+                    print(
+                        f"{indent}{'    ' if is_last_item else '│   '}{zip_item}"
+                    )
         else:
             print(f"{indent}{'└──' if is_last_item else '├──'} {item}")
 
             if os.path.isdir(item_path):
-                new_indent = indent + ('    ' if is_last_item else '│   ')
+                new_indent = indent + ("    " if is_last_item else "│   ")
                 print_tree_directory(item_path, new_indent)
+
 
 def upload_model_list():
     weight_root = "weights"
@@ -54,31 +66,31 @@ def upload_model_list():
     index_paths = []
     for name in os.listdir(index_root):
         if name.endswith(".index"):
-            index_paths.append("logs/"+name)
+            index_paths.append("logs/" + name)
     if index_paths:
         logger.info(index_paths)
 
     return models, index_paths
 
-def manual_download(url, dst):
 
-    if 'drive.google' in url:
+def manual_download(url, dst):
+    if "drive.google" in url:
         logger.info("Drive url")
-        if 'folders' in url:
+        if "folders" in url:
             logger.info("folder")
             os.system(f'gdown --folder "{url}" -O {dst} --fuzzy -c')
         else:
             logger.info("single")
             os.system(f'gdown "{url}" -O {dst} --fuzzy -c')
-    elif 'huggingface' in url:
+    elif "huggingface" in url:
         logger.info("HuggingFace url")
-        if '/blob/' in url or '/resolve/' in url:
-          if '/blob/' in url:
-              url = url.replace('/blob/', '/resolve/')
-          download_manager(url=url, path=dst, overwrite=True, progress=True)
+        if "/blob/" in url or "/resolve/" in url:
+            if "/blob/" in url:
+                url = url.replace("/blob/", "/resolve/")
+            download_manager(url=url, path=dst, overwrite=True, progress=True)
         else:
-          os.system(f"git clone {url} {dst+'repo/'}")
-    elif 'http' in url:
+            os.system(f"git clone {url} {dst+'repo/'}")
+    elif "http" in url:
         logger.info("URL")
         download_manager(url=url, path=dst, overwrite=True, progress=True)
     elif os.path.exists(url):
@@ -87,22 +99,23 @@ def manual_download(url, dst):
     else:
         logger.error(f"No valid URL: {url}")
 
+
 def download_list(text_downloads):
     try:
-      urls = [elem.strip() for elem in text_downloads.split(',')]
+        urls = [elem.strip() for elem in text_downloads.split(",")]
     except Exception as error:
-      raise ValueError(f"No valid URL. {str(error)}")
+        raise ValueError(f"No valid URL. {str(error)}")
 
-    create_directories(['downloads', 'logs', 'weights'])
+    create_directories(["downloads", "logs", "weights"])
 
     path_download = "downloads/"
     for url in urls:
-      manual_download(url, path_download)
+        manual_download(url, path_download)
 
     # Tree
-    print('####################################')
-    print_tree_directory("downloads", indent='')
-    print('####################################')
+    print("####################################")
+    print_tree_directory("downloads", indent="")
+    print("####################################")
 
     # Place files
     select_zip_and_rar_files("downloads/")
@@ -114,8 +127,9 @@ def download_list(text_downloads):
 
     return f"Downloaded = {models}"
 
+
 def select_zip_and_rar_files(directory_path="downloads/"):
-    #filter
+    # filter
     zip_files = []
     rar_files = []
 
@@ -128,12 +142,12 @@ def select_zip_and_rar_files(directory_path="downloads/"):
     # extract
     for file_name in zip_files:
         file_path = os.path.join(directory_path, file_name)
-        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        with zipfile.ZipFile(file_path, "r") as zip_ref:
             zip_ref.extractall(directory_path)
 
     for file_name in rar_files:
         file_path = os.path.join(directory_path, file_name)
-        with rarfile.RarFile(file_path, 'r') as rar_ref:
+        with rarfile.RarFile(file_path, "r") as rar_ref:
             rar_ref.extractall(directory_path)
 
     # set in path
@@ -148,12 +162,37 @@ def select_zip_and_rar_files(directory_path="downloads/"):
     move_files_with_extension(directory_path, ".index", "logs/")
     move_files_with_extension(directory_path, ".pth", "weights/")
 
-    return 'Download complete'
+    return "Download complete"
+
+
+def is_audio_file(string_path):
+    audio_extensions = [
+        ".mp3",
+        ".wav",
+        ".aiff",
+        ".aif",
+        ".flac",
+        ".aac",
+        ".ogg",
+        ".wma",
+        ".m4a",
+        ".alac",
+        ".pcm",
+    ]
+
+    # Check if the string_path ends with any audio extension
+    if any(
+        string_path.endswith(ext) for ext in audio_extensions
+    ) and os.path.exists(string_path):
+        return True
+    else:
+        return False
+
 
 # =====================================
 # Download Manager
 # =====================================
-from urllib.parse import urlparse
+
 
 def load_file_from_url(
     url: str,
@@ -162,7 +201,8 @@ def load_file_from_url(
     overwrite: bool = False,
     progress: bool = True,
 ) -> str:
-    """Download a file from `url` into `model_dir`, using the file present if possible.
+    """Download a file from `url` into `model_dir`, 
+    using the file present if possible.
 
     Returns the path to the downloaded file.
     """
@@ -181,11 +221,13 @@ def load_file_from_url(
     if not os.path.exists(cached_file):
         logger.info(f'Downloading: "{url}" to {cached_file}\n')
         from torch.hub import download_url_to_file
+
         download_url_to_file(url, cached_file, progress=progress)
     else:
         logger.debug(cached_file)
 
     return cached_file
+
 
 def friendly_name(file: str):
     if file.startswith("http"):
@@ -196,7 +238,13 @@ def friendly_name(file: str):
     return model_name, extension
 
 
-def download_manager(url: str, path: str, extension: str = "", overwrite: bool = False, progress: bool = True):
+def download_manager(
+    url: str,
+    path: str,
+    extension: str = "",
+    overwrite: bool = False,
+    progress: bool = True,
+):
     url = url.strip()
 
     name, ext = friendly_name(url)
@@ -216,10 +264,10 @@ def download_manager(url: str, path: str, extension: str = "", overwrite: bool =
     return filename
 
 
-
 # =====================================
 # File management
 # =====================================
+
 
 # only remove files
 def remove_files(file_list):
@@ -230,12 +278,14 @@ def remove_files(file_list):
         if os.path.exists(file):
             os.remove(file)
 
+
 def remove_directory_contents(directory_path):
     """
     Removes all files and subdirectories within a directory.
 
     Parameters:
-    directory_path (str): Path to the directory whose contents need to be removed.
+    directory_path (str): Path to the directory whose 
+    contents need to be removed.
     """
     if os.path.exists(directory_path):
         for filename in os.listdir(directory_path):
@@ -251,6 +301,7 @@ def remove_directory_contents(directory_path):
     else:
         logger.error(f"Directory '{directory_path}' does not exist.")
 
+
 # Create directory if not exists
 def create_directories(directory_path):
     if isinstance(directory_path, str):
@@ -259,6 +310,7 @@ def create_directories(directory_path):
         if not os.path.exists(one_dir_path):
             os.makedirs(one_dir_path)
             logger.debug(f"Directory '{one_dir_path}' created.")
+
 
 def move_files(source_dir, destination_dir, extension=""):
     """
@@ -278,12 +330,14 @@ def move_files(source_dir, destination_dir, extension=""):
             continue
         os.replace(source_path, destination_path)
 
+
 def copy_files(source_path, destination_path):
     """
     Copies a file or multiple files from a source path to a destination path.
 
     Parameters:
-    source_path (str or list): Path or list of paths to the source file(s) or directory.
+    source_path (str or list): Path or list of paths to the source 
+    file(s) or directory.
     destination_path (str): Path to the destination directory.
     """
     create_directories(destination_path)
@@ -295,14 +349,19 @@ def copy_files(source_path, destination_path):
         # Copy all files from the source directory to the destination directory
         base_path = source_path[0]
         source_path = os.listdir(source_path[0])
-        source_path = [os.path.join(base_path, file_name) for file_name in source_path]
+        source_path = [
+            os.path.join(base_path, file_name) for file_name in source_path
+        ]
 
     for one_source_path in source_path:
         if os.path.exists(one_source_path):
             shutil.copy2(one_source_path, destination_path)
-            logger.debug(f"File '{one_source_path}' copied to '{destination_path}'.")
+            logger.debug(
+                f"File '{one_source_path}' copied to '{destination_path}'."
+            )
         else:
             logger.error(f"File '{one_source_path}' does not exist.")
+
 
 def rename_file(current_name, new_name):
     file_directory = os.path.dirname(current_name)

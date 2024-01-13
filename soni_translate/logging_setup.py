@@ -1,4 +1,6 @@
-import logging, sys
+import logging
+import sys
+
 
 def setup_logger(name_log):
     logger = logging.getLogger(name_log)
@@ -16,9 +18,22 @@ def setup_logger(name_log):
         formatter = logging.Formatter("[%(levelname)s] >> %(message)s")
         handler.setFormatter(formatter)
 
-    #logger.handlers
+    # logger.handlers
 
     return logger
 
+
 logger = setup_logger("sonitranslate")
 logger.setLevel(logging.INFO)
+
+
+def set_logging_level(verbosity_level):
+    logging_level_mapping = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warning": logging.WARNING,
+        "error": logging.ERROR,
+        "critical": logging.CRITICAL,
+    }
+
+    logger.setLevel(logging_level_mapping.get(verbosity_level, logging.INFO))
