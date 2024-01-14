@@ -454,7 +454,7 @@ def create_wav_file_vc(
         raise Exception(f"Error wav: {final_sample}")
 
 
-def create_new_files_for_vc(speakers_coqui, segments_base):
+def create_new_files_for_vc(speakers_coqui, segments_base, dereverb_automatic=True):
     # before function delete automatic delete_previous_automatic
     output_dir = os.path.join(".", "clean_song_output")  # remove content
     remove_directory_contents(output_dir)
@@ -487,6 +487,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
                             audio_wav="audio.wav",
                             start=(float(seg["start"]) + 1.0),
                             end=(float(seg["end"]) - 1.0),
+                            get_vocals_dereverb=dereverb_automatic,
                         )
                         wav_ok = True
                         break
@@ -505,6 +506,7 @@ def create_new_files_for_vc(speakers_coqui, segments_base):
                         audio_wav="audio.wav",
                         start=(float(seg["start"])),
                         end=(float(seg["start"]) + max_duration),
+                        get_vocals_dereverb=dereverb_automatic,
                     )
 
 
@@ -514,6 +516,7 @@ def segments_coqui_tts(
     model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2",
     speakers_coqui=None,
     delete_previous_automatic=True,
+    dereverb_automatic=True,
     emotion=None,
 ):
     """XTTS
@@ -559,7 +562,9 @@ def segments_coqui_tts(
     directory_audios_vc = "_XTTS_"
     create_directories(directory_audios_vc)
     create_new_files_for_vc(
-        speakers_coqui, filtered_coqui_segments["segments"]
+        speakers_coqui, 
+        filtered_coqui_segments["segments"],
+        dereverb_automatic,
     )
 
     # Init TTS
@@ -805,6 +810,7 @@ def audio_segmentation_to_voice(
     tts_voice03,
     tts_voice04,
     tts_voice05,
+    dereverb_automatic=True,
     model_id_bark="suno/bark-small",
     model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2",
     delete_previous_automatic=True,
@@ -919,6 +925,7 @@ def audio_segmentation_to_voice(
             model_id_coqui,
             speakers_coqui,
             delete_previous_automatic,
+            dereverb_automatic,
         )  # wav
     if filtered_vits_onnx["segments"]:
         logger.info(f"PIPER TTS: {speakers_vits_onnx}")

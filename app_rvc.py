@@ -206,6 +206,7 @@ class SoniTranslate:
         voice_imitation_max_segments=3,
         voice_imitation_vocals_dereverb=False,
         voice_imitation_remove_previous=True,
+        dereverb_automatic_xtts=True,
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -380,6 +381,7 @@ class SoniTranslate:
             tts_voice03,
             tts_voice04,
             tts_voice05,
+            dereverb_automatic_xtts,
         )
 
         # Tone color converter
@@ -805,6 +807,26 @@ def create_gui(theme, logs_in_gui=False):
                                     info="Use a simple name",
                                     placeholder="default_name",
                                     lines=1,
+                                )
+                                wav_speaker_start = gr.Number(
+                                    label="Time audio start",
+                                    value=0,
+                                    visible=False,
+                                )
+                                wav_speaker_end = gr.Number(
+                                    label="Time audio end",
+                                    value=0,
+                                    visible=False,
+                                )
+                                wav_speaker_dir = gr.Textbox(
+                                    label="Directory save",
+                                    value="_XTTS_",
+                                    visible=False,
+                                )
+                                wav_speaker_dereverb = gr.Checkbox(
+                                    True,
+                                    label="Dereverb audio", 
+                                    info="Dereverb audio: Applies vocal dereverb to the audio"
                                 )
                                 wav_speaker_output = gr.HTML()
                                 create_xtts_wav = gr.Button(
@@ -1640,6 +1662,10 @@ def create_gui(theme, logs_in_gui=False):
                 inputs=[
                     wav_speaker_name,
                     wav_speaker_file,
+                    wav_speaker_start,
+                    wav_speaker_end,
+                    wav_speaker_dir,
+                    wav_speaker_dereverb,
                 ],
                 outputs=[wav_speaker_output],
             ).then(
@@ -1696,6 +1722,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_max_segments_gui,
                 voice_imitation_vocals_dereverb_gui,
                 voice_imitation_remove_previous_gui,
+                wav_speaker_dereverb,
                 is_gui_dummy_check,
             ],
             outputs=subs_edit_space,
@@ -1741,6 +1768,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_max_segments_gui,
                 voice_imitation_vocals_dereverb_gui,
                 voice_imitation_remove_previous_gui,
+                wav_speaker_dereverb,
                 is_gui_dummy_check,
             ],
             outputs=video_output,
