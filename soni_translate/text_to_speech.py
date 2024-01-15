@@ -635,7 +635,7 @@ def piper_tts_voices_list():
 
 def replace_text_in_json(file_path, key_to_replace, new_text, condition=None):
     # Read the JSON file
-    with open(file_path, "r") as file:
+    with open(file_path, "r", encoding="utf-8") as file:
         data = json.load(file)
 
     # Modify the specified key's value with the new text
