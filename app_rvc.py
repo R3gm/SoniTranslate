@@ -116,9 +116,6 @@ for module in modules:
     logging.getLogger(module).setLevel(logging.WARNING)
 
 
-selected_language = os.getenv("SONITRANSLATE_LANGUAGE")
-lg_conf = language_data.get(selected_language, language_data.get("english"))
-
 device = "cuda" if torch.cuda.is_available() else "cpu"
 list_compute_type = (
     ["int8", "float16", "float32"]
@@ -384,7 +381,7 @@ class SoniTranslate:
             dereverb_automatic_xtts,
         )
 
-        # Tone color converter
+        # Voice Imitation (Tone color converter)
         if voice_imitation:
             from soni_translate.text_to_speech import toneconverter
 
@@ -754,23 +751,18 @@ def create_gui(theme, logs_in_gui=False):
 
                     with gr.Column():
                         with gr.Accordion(
-                            "Voice Imitation in Different Languages",
+                            lg_conf["vc_title"],
                             open=False,
                         ):
-                            gr.Markdown(
-                                """
-                            ### Replicate a person's voice accurately across various languages.
-                            While effective with most voices when used appropriately, it may not achieve perfection in every case. The tone color converter solely replicates the reference speaker's tone, excluding accent and emotion, which are governed by the base speaker TTS model and not replicated by the converter.
-                            """
-                            )
+                            gr.Markdown(lg_conf["vc_subtitle"])
                             voice_imitation_gui = gr.Checkbox(
                                 True,
-                                label="Active Voice Imitation",
-                                info="Active Voice Imitation: Replicates the original speaker's tone",
+                                label=lg_conf["vc_active_label"],
+                                info=lg_conf["vc_active_info"],
                             )
                             voice_imitation_max_segments_gui = gr.Slider(
-                                label="Max samples",
-                                info="Max samples: Is the number of audio samples that will be generated for the process, more is better but it can add noise",
+                                label=lg_conf["vc_segments_label"],
+                                info=lg_conf["vc_segments_info"],
                                 value=1,
                                 step=1,
                                 minimum=1,
@@ -780,31 +772,29 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             voice_imitation_vocals_dereverb_gui = gr.Checkbox(
                                 False,
-                                label="Dereverb",
-                                info="Dereverb: Applies vocal dereverb to the audio samples.",
+                                label=lg_conf["vc_dereverb_label"],
+                                info=lg_conf["vc_dereverb_info"],
                             )
                             voice_imitation_remove_previous_gui = gr.Checkbox(
                                 True,
-                                label="Remove previous samples",
-                                info="Remove previous samples: Remove the previous samples generated, so new ones need to be created.",
+                                label=lg_conf["vc_remove_label"],
+                                info=lg_conf["vc_remove_info"],
                             )
 
                     if xtts_enabled:
                         with gr.Column():
                             with gr.Accordion(
-                                "Create a text-to-speech (TTS) based on an audio",
+                                lg_conf["xtts_title"],
                                 open=False,
                             ):
-                                gr.Markdown(
-                                    "Upload an audio file of maximum 10 seconds with a voice. Using XTTS, a new TTS will be created with a voice similar to the provided audio file."
-                                )
+                                gr.Markdown(lg_conf["xtts_subtitle"])
                                 wav_speaker_file = gr.File(
-                                    label="Upload a short audio with the voice"
+                                    label=lg_conf["xtts_file_label"]
                                 )
                                 wav_speaker_name = gr.Textbox(
-                                    label="Name for the TTS",
+                                    label=lg_conf["xtts_name_label"],
                                     value="",
-                                    info="Use a simple name",
+                                    info=lg_conf["xtts_name_info"],
                                     placeholder="default_name",
                                     lines=1,
                                 )
@@ -825,14 +815,14 @@ def create_gui(theme, logs_in_gui=False):
                                 )
                                 wav_speaker_dereverb = gr.Checkbox(
                                     True,
-                                    label="Dereverb audio", 
-                                    info="Dereverb audio: Applies vocal dereverb to the audio"
+                                    label=lg_conf["xtts_dereverb_label"],
+                                    info=lg_conf["xtts_dereverb_info"]
                                 )
                                 wav_speaker_output = gr.HTML()
                                 create_xtts_wav = gr.Button(
-                                    "Process the audio and include it in the TTS selector"
+                                    lg_conf["xtts_button"]
                                 )
-
+                                gr.Markdown(lg_conf["xtts_footer"])
                     with gr.Column():
                         with gr.Accordion(
                             lg_conf["extra_setting"], open=False
@@ -931,7 +921,7 @@ def create_gui(theme, logs_in_gui=False):
                                 label="Compute type",
                             )
                             input_srt = gr.File(
-                                label="Upload a SRT file (will be used instead of the transcription of Whisper)",
+                                label=lg_conf["srt_file_label"],
                                 file_types=[".srt", ".ass"],
                                 height=130,
                             )
@@ -966,8 +956,8 @@ def create_gui(theme, logs_in_gui=False):
                                 label="Output type",
                             )
                             main_voiceless_track = gr.Checkbox(
-                                label="Voiceless Track",
-                                info="Voiceless Track: This feature allows to extract or exclude voices, creating a version of the audio that primarily focuses on ambient sounds, background music, or other non-vocal elements present in the original audio. (Experimental)",
+                                label=lg_conf["voiceless_tk_label"],
+                                info=lg_conf["voiceless_tk_info"],
                             )
                             VIDEO_OUTPUT_NAME = gr.Textbox(
                                 label=lg_conf["out_name_label"],
@@ -1129,7 +1119,7 @@ def create_gui(theme, logs_in_gui=False):
                         cache_examples=False,
                     )
 
-        with gr.Tab("Document to audio translation"):
+        with gr.Tab(lg_conf["tab_docs"]):
             with gr.Column():
                 with gr.Accordion("Docs", open=True):
                     with gr.Column(variant="compact"):
@@ -1141,8 +1131,8 @@ def create_gui(theme, logs_in_gui=False):
                                     "Find Document Path",
                                 ],
                                 default="SUBMIT DOCUMENT",
-                                label="Choose Document Source",
-                                info="It can be PDF, DOCX, TXT, or text",
+                                label=lg_conf["docs_input_label"],
+                                info=lg_conf["docs_input_info"],
                             )
 
                             def swap_visibility(data_type):
@@ -1213,7 +1203,7 @@ def create_gui(theme, logs_in_gui=False):
                                 LANGUAGES_LIST[1:],
                                 value="English (en)",
                                 label=lg_conf["sl_label"],
-                                info="This is the original language of the text",
+                                info=lg_conf["docs_source_info"],
                             )
                             docs_TRANSLATE_TO = gr.Dropdown(
                                 LANGUAGES_LIST[1:],
@@ -1255,11 +1245,11 @@ def create_gui(theme, logs_in_gui=False):
                                         info=lg_conf["out_name_info"],
                                     )
                                     docs_chunk_size = gr.Number(
-                                        label="Max number of characters that the TTS will process per segment",
+                                        label=lg_conf["chunk_size_label"],
                                         value=0,
                                         visible=True,
                                         interactive=True,
-                                        info="A value of 0 assigns a dynamic and more compatible value for the TTS.",
+                                        info=lg_conf["chunk_size_info"],
                                     )
                                     docs_dummy_check = gr.Checkbox(
                                         True, visible=False
@@ -1267,7 +1257,7 @@ def create_gui(theme, logs_in_gui=False):
 
                             with gr.Row():
                                 docs_button = gr.Button(
-                                    "Start Language Conversion Bridge"
+                                    lg_conf["docs_button"]
                                 )
                             with gr.Row():
                                 docs_output = gr.outputs.File(label="Result")
@@ -1824,7 +1814,13 @@ def create_parser():
         "--verbosity_level",
         type=str,
         default="info",
-        help="set logger verbosity level:  debug, info, warning, error or critical",
+        help="Set logger verbosity level:  debug, info, warning, error or critical",
+    )
+    parser.add_argument(
+        "--language",
+        type=str,
+        default="english",
+        help=" Select the language of the interface: english, spanish",
     )
     return parser
 
@@ -1850,6 +1846,8 @@ if __name__ == "__main__":
     models, index_paths = upload_model_list()
     os.environ["VOICES_MODELS"] = "DISABLE"
 
+    lg_conf = language_data.get(args.language, language_data.get("english"))
+
     app = create_gui(args.theme, logs_in_gui=args.logs_in_gui)
     app.launch(
         share=args.public_url,
@@ -1858,3 +1856,4 @@ if __name__ == "__main__":
         quiet=False,
         debug=True,
     )
+
