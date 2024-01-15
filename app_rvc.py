@@ -993,6 +993,7 @@ def create_gui(theme, logs_in_gui=False):
 
                     subs_button = gr.Button(
                         lg_conf["button_subs"],
+                        variant="primary",
                         visible=False,
                     )
                     subs_edit_space = gr.Textbox(
@@ -1009,7 +1010,10 @@ def create_gui(theme, logs_in_gui=False):
                     )
 
                     with gr.Row():
-                        video_button = gr.Button(lg_conf["button_translate"])
+                        video_button = gr.Button(
+                            lg_conf["button_translate"],
+                            variant="primary",
+                        )
                     with gr.Row():
                         video_output = gr.outputs.File(
                             label=lg_conf["output_result_label"]
@@ -1257,7 +1261,8 @@ def create_gui(theme, logs_in_gui=False):
 
                             with gr.Row():
                                 docs_button = gr.Button(
-                                    lg_conf["docs_button"]
+                                    lg_conf["docs_button"],
+                                    variant="primary",
                                 )
                             with gr.Row():
                                 docs_output = gr.outputs.File(label="Result")
@@ -1472,7 +1477,10 @@ def create_gui(theme, logs_in_gui=False):
                                 )
 
                     with gr.Row(variant="compact"):
-                        button_config = gr.Button(lg_conf["cv_button_apply"])
+                        button_config = gr.Button(
+                            lg_conf["cv_button_apply"],
+                            variant="primary",
+                        )
 
                         confirm_conf = gr.HTML()
 
