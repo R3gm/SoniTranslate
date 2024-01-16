@@ -4,14 +4,14 @@ language_data = {
     "description": """
         ### 🎥 **Translate videos easily with SoniTranslate!** 📽️
 
-        Upload a video or provide a YouTube link. 📽️ **Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+        Upload a video, audio file or provide a YouTube link. 📽️ **Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
 
         See the tab `Help` for instructions on how to use it. Let's start having fun with video translation! 🚀🎉
         """,
     "tutorial" : """
         # 🔰 **Instructions for use:**
 
-        1. 📤 **Upload a video** or 🌐 **use a YouTube link**.
+        1. 📤 Upload a **video**, **audio file** or provide a 🌐 **YouTube link.**
 
         2. 🌍 Choose the language in which you want to **translate the video**.
 
@@ -19,6 +19,7 @@ language_data = {
 
         4. 🚀 Press the '**Translate**' button to obtain the results.
 
+        ---
 
         # 🧩 **SoniTranslate supports different TTS (Text-to-Speech) engines, which are:**
         - EDGE-TTS → format `en-AU-WilliamNeural-Male` → Fast and accurate.
@@ -27,6 +28,7 @@ language_data = {
         - BARK → format `en_speaker_0-Male BARK` → Good quality but slow, and it is prone to hallucinations.
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Only available for Chinese (Simplified), English, French, German, Italian, Portuguese, Polish, Turkish, Russian, Dutch, Czech, Arabic, Spanish, Hungarian, Korean and Japanese.
 
+        ---
 
         # 🎤 How to Use R.V.C. and R.V.C.2 Voices (Optional) 🎶
 
@@ -43,7 +45,9 @@ language_data = {
         5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the R.V.C. 🗣️
 
         Tip: You can use `Test R.V.C.` to experiment and find the best TTS or configurations to apply to the R.V.C. 🧪🔍
-
+        
+        ---
+        
         """,
     "tab_translate" : "Video translation",
     "video_source": "Choose Video Source",
@@ -144,21 +148,22 @@ language_data = {
     "description": """
         ### 🎥 **¡Traduce videos fácilmente con SoniTranslate!** 📽️
 
-        Sube un video o proporciona un enlace de YouTube. 📽️ **Obtén el cuaderno actualizado desde el repositorio oficial: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+        Sube un video, audio o proporciona un enlace de YouTube. 📽️ **Obtén el cuaderno actualizado desde el repositorio oficial: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
 
         Consulta la pestaña `Ayuda` para obtener instrucciones sobre cómo usarlo. ¡Comencemos a divertirnos con la traducción de videos! 🚀🎉
         """,
     "tutorial": """
         # 🔰 **Instrucciones de uso:**
 
-        1. 📤 **Sube un video** o 🌐 **utiliza un enlace de YouTube**.
+        1. 📤 Sube un archivo de **video**, **audio** o proporciona un enlace de 🌐 **YouTube**.
 
         2. 🌍 Elige el idioma en el que deseas **traducir el video**.
 
         3. 🗣️ Especifica el **número de personas que hablan** en el video y **asigna a cada una una voz de texto a voz** adecuada para el idioma de traducción.
 
         4. 🚀 Presiona el botón '**Traducir**' para obtener los resultados.
-
+        
+        ---
 
         # 🧩 **SoniTranslate admite diferentes motores de TTS (Texto a Voz), los cuales son:**
         - EDGE-TTS → formato `en-AU-WilliamNeural-Male` → Rapidos y precisos.
@@ -167,6 +172,7 @@ language_data = {
         - BARK → formato `en_speaker_0-Male BARK` → De buena calidad pero lento y propenso a alucinaciones.
         - Coqui XTTS → formato `_XTTS_/AUTOMATIC.wav` → Solo disponible para Chinese (Simplified), English, French, German, Italian, Portuguese, Polish, Turkish, Russian, Dutch, Czech, Arabic, Spanish, Hungarian, Korean y Japanese.
 
+        ---
 
         # 🎤 Cómo usar las voces R.V.C. y R.V.C.2 (Opcional) 🎶
 
@@ -183,7 +189,9 @@ language_data = {
         5. Vuelve a la pestaña de traducción de video y haz clic en 'Traducir' ▶️ Ahora, la traducción se realizará aplicando el R.V.C. 🗣️
 
         Consejo: Puedes usar `Probar R.V.C.` para experimentar y encontrar el mejor TTS o configuraciones para aplicar al R.V.C. 🧪🔍
-
+        
+        ---
+        
         """,
     "tab_translate" : "Traducción de video",
     "video_source": "Seleccionar Fuente de Video",
