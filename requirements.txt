@@ -1,9 +1,37 @@
+# Temporal requirements
 nest_asyncio
---extra-index-url https://download.pytorch.org/whl/cu117 torch==2.0.0+cu117 torchvision==0.15.2+cu117 torchaudio==2.0.0
-yt-dlp 
-gradio
-gTTS
+--extra-index-url https://download.pytorch.org/whl/cu118
+torch>=2.1.0+cu118
+torchvision>=0.16.0+cu118
+torchaudio>=2.1.0+cu118
+yt-dlp
+gradio==3.41.2
 pydub==0.25.1
 edge_tts==6.1.7
 deep_translator==1.11.4
-git+https://github.com/m-bain/whisperx.git
+git+https://github.com/m-bain/whisperX.git@a5dca2c
+gTTS
+gradio_client==0.5.0
+praat-parselmouth>=0.4.3
+pyworld==0.3.2
+faiss-cpu==1.7.3
+torchcrepe==0.0.20
+ffmpeg-python>=0.2.0
+git+https://github.com/facebookresearch/fairseq.git@refs/pull/5359/merge
+gdown
+rarfile
+IPython
+transformers
+accelerate
+optimum
+sentencepiece
+srt
+onnxruntime-gpu
+git+https://github.com/R3gm/openvoice_package.git@lite
+# Documents
+PyPDF2
+python-docx
+
+# after this
+# pip install git+https://github.com/omry/omegaconf.git@refs/pull/1137/merge
+

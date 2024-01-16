@@ -5,6 +5,7 @@ import scipy.signal as signal
 import pyworld, os, traceback, faiss, librosa, torchcrepe
 from scipy import signal
 from functools import lru_cache
+from soni_translate.logging_setup import logger
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
@@ -131,7 +132,7 @@ class VC(object):
             if hasattr(self, "model_rmvpe") == False:
                 from lib.rmvpe import RMVPE
 
-                print("loading rmvpe model")
+                logger.info("Loading rmvpe model")
                 self.model_rmvpe = RMVPE(
                     "rmvpe.pt", is_half=self.is_half, device=self.device
                 )
@@ -301,7 +302,7 @@ class VC(object):
                 index = big_npy = None
         else:
             index = big_npy = None
-            print("File index Not found, set None")
+            logger.warning("File index Not found, set None")
 
         audio = signal.filtfilt(bh, ah, audio)
         audio_pad = np.pad(audio, (self.window // 2, self.window // 2), mode="reflect")
