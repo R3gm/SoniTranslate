@@ -584,6 +584,8 @@ SoniTr = SoniTranslate()
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
 news = """ ## 📖 News
+        🔥 2024/01/16: Expanded language support, the introduction of whisper large v3, configurable GUI options, integration of BARK, Facebook-mms, Coqui XTTS, and Piper-TTS. Additional features included audio separation utilities, XTTS WAV creation,  use an SRT file as a base for translation, document translation, manual speaker editing, and flexible output options (video, audio, subtitles).
+
         🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
 
         🔥 2023/08/03: Changed default options and added directory view of downloads..
