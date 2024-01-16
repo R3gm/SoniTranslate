@@ -86,10 +86,14 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
 
 
 def edge_tts_voices_list():
-    completed_process = subprocess.run(
-        ["edge-tts", "--list-voices"], capture_output=True, text=True
-    )
-    lines = completed_process.stdout.strip().split("\n")
+    try:
+        completed_process = subprocess.run(
+            ["edge-tts", "--list-voices"], capture_output=True, text=True
+        )
+        lines = completed_process.stdout.strip().split("\n")
+    except Exception as error:
+        logger.debug(str(error))
+        lines = []
 
     voices = []
     for line in lines:
