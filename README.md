@@ -44,6 +44,15 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 | ur            | Urdu       |
 | hi            | Hindi      |
 | vi            | Vietnamese |
+| id            | Indonesian |
+| bn            | Bengali    |
+| te            | Telugu     |
+| mr            | Marathi    |
+| ta            | Tamil      |
+| jw (or jv)    | Javanese   |
+| ca            | Catalan    |
+| ne            | Nepali     |
+| th            | Thai       |
 
 ## Example:
 
@@ -59,6 +68,8 @@ https://github.com/R3gm/SoniTranslate/assets/114810545/6a8ddc65-a46f-4653-9726-6
 
 
 ## 📖 News
+
+🔥 2024/01/16: Expanded language support (Thai, Nepali, Catalan, Javanese, Tamil, Marathi, Telugu, Bengali and Indonesian), the introduction of whisper large v3, configurable GUI options, integration of BARK, Facebook-mms, Coqui XTTS, and Piper-TTS. Additional features included audio separation utilities, XTTS WAV creation, use an SRT file as a base for translation, document translation, manual speaker editing, and flexible output options (video, audio, subtitles).
 
 🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
 
