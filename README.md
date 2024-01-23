@@ -140,6 +140,12 @@ To run SoniTranslate locally, make sure the `sonitr` conda environment is active
 conda activate sonitr
 ```
 
+Setting your Hugging Face token as an environment variable in Linux:
+
+```
+export YOUR_HF_TOKEN="<YOUR_HUGGING_FACE_TOKEN>"
+```
+
 Then navigate to the `SoniTranslate` folder and run either the `app_rvc.py`
 
 ```
