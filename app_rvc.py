@@ -157,6 +157,10 @@ def prog_disp(msg, percent, is_gui, progress=None):
     if is_gui:
         progress(percent, desc=msg)
 
+def warn_disp(wrn_lang, is_gui):
+    logger.warning(wrn_lang)
+    if is_gui:
+        gr.Warning(wrn_lang)
 
 class SoniTranslate:
     def __init__(self, dev=True):
@@ -216,11 +220,18 @@ class SoniTranslate:
 
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+
         if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
             wrn_lang = "Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS." # noqa
-            logger.warning(wrn_lang)
-            if is_gui:
-                gr.Warning(wrn_lang)
+            warn_disp(wrn_lang, is_gui)
+
+        if "_XTTS_" in tts_voice00 and voice_imitation:
+            wrn_lang = "When you select XTTS, it is advisable to disable Voice Imitation." # noqa
+            warn_disp(wrn_lang, is_gui)
+
+        if os.getenv("VOICES_MODELS") == "ENABLE" and voice_imitation:
+            wrn_lang = "When you use R.V.C. models, it is advisable to disable Voice Imitation." # noqa
+            warn_disp(wrn_lang, is_gui)
 
         if media_file is None:
             media_file = (
@@ -825,13 +836,21 @@ def create_gui(theme, logs_in_gui=False):
                                     lg_conf["xtts_button"]
                                 )
                                 gr.Markdown(lg_conf["xtts_footer"])
+                    else:
+                        wav_speaker_dereverb = gr.Checkbox(
+                            False,
+                            label=lg_conf["xtts_dereverb_label"],
+                            info=lg_conf["xtts_dereverb_info"],
+                            visible=False
+                        )
+
                     with gr.Column():
                         with gr.Accordion(
                             lg_conf["extra_setting"], open=False
                         ):
                             audio_accelerate = gr.Slider(
                                 label=lg_conf["acc_max_label"],
-                                value=2.1,
+                                value=1.9,
                                 step=0.1,
                                 minimum=1.0,
                                 maximum=2.5,

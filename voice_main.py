@@ -187,9 +187,23 @@ def vc_single(
 
 
 
+BASE_DOWNLOAD_LINK = "https://huggingface.co/r3gm/sonitranslate_voice_models/resolve/main/"
+BASE_MODELS = [
+    "hubert_base.pt",
+    "rmvpe.pt"
+]
+BASE_DIR = "."
+
 # hubert model
 def load_hubert():
     global hubert_model
+
+    from soni_translate.utils import download_manager
+    for id_model in BASE_MODELS:
+        download_manager(
+            os.path.join(BASE_DOWNLOAD_LINK, id_model), BASE_DIR
+        )
+
     models, _, _ = checkpoint_utils.load_model_ensemble_and_task(
         ["hubert_base.pt"],
         suffix="",
