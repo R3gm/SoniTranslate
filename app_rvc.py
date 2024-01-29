@@ -769,7 +769,7 @@ def create_gui(theme, logs_in_gui=False):
                         ):
                             gr.Markdown(lg_conf["vc_subtitle"])
                             voice_imitation_gui = gr.Checkbox(
-                                True,
+                                False,
                                 label=lg_conf["vc_active_label"],
                                 info=lg_conf["vc_active_info"],
                             )
