@@ -207,6 +207,7 @@ class SoniTranslate:
         voice_imitation_max_segments=3,
         voice_imitation_vocals_dereverb=False,
         voice_imitation_remove_previous=True,
+        voice_imitation_method="freevc",
         dereverb_automatic_xtts=True,
         is_gui=False,
         progress=gr.Progress(),
@@ -332,7 +333,7 @@ class SoniTranslate:
             logger.debug("Diarize complete")
             self.result_source_lang = copy.deepcopy(self.result_diarize)
 
-            prog_disp("Translating...", 0.75, is_gui, progress=progress)
+            prog_disp("Translating...", 0.70, is_gui, progress=progress)
             self.result_diarize["segments"] = translate_text(
                 self.result_diarize["segments"],
                 TRANSLATE_AUDIO_TO,
@@ -377,7 +378,7 @@ class SoniTranslate:
         if output_type == "subtitle":
             return sub_file
 
-        prog_disp("Text to speech...", 0.85, is_gui, progress=progress)
+        prog_disp("Text to speech...", 0.80, is_gui, progress=progress)
         audio_files, speakers_list = audio_segmentation_to_voice(
             self.result_diarize,
             TRANSLATE_AUDIO_TO,
@@ -394,6 +395,7 @@ class SoniTranslate:
 
         # Voice Imitation (Tone color converter)
         if voice_imitation:
+            prog_disp("Voice Imitation...", 0.85, is_gui, progress=progress)
             from soni_translate.text_to_speech import toneconverter
 
             toneconverter(
@@ -401,6 +403,7 @@ class SoniTranslate:
                 preprocessor_max_segments=voice_imitation_max_segments,
                 remove_previous_process=voice_imitation_remove_previous,
                 get_vocals_dereverb=voice_imitation_vocals_dereverb,
+                method_vc=voice_imitation_method,
             )
 
         # custom voice
@@ -463,6 +466,8 @@ class SoniTranslate:
         run_command(
             f"ffmpeg -i {base_video_file} -i {mix_audio_file} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output_file}"
         )
+
+        logger.info(f"Done: {video_output_file}")
 
         return video_output_file
 
@@ -773,10 +778,21 @@ def create_gui(theme, logs_in_gui=False):
                                 label=lg_conf["vc_active_label"],
                                 info=lg_conf["vc_active_info"],
                             )
+                            voice_imitation_method_options = (
+                                ["freevc", "openvoice"]
+                                if xtts_enabled
+                                else ["openvoice"]
+                            )
+                            voice_imitation_method_gui = gr.Dropdown(
+                                voice_imitation_method_options,
+                                value=voice_imitation_method_options[0],
+                                label="Method",
+                                info="Select a method for Voice Imitation process",
+                            )
                             voice_imitation_max_segments_gui = gr.Slider(
                                 label=lg_conf["vc_segments_label"],
                                 info=lg_conf["vc_segments_info"],
-                                value=1,
+                                value=3,
                                 step=1,
                                 minimum=1,
                                 maximum=10,
@@ -1741,6 +1757,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_max_segments_gui,
                 voice_imitation_vocals_dereverb_gui,
                 voice_imitation_remove_previous_gui,
+                voice_imitation_method_gui,
                 wav_speaker_dereverb,
                 is_gui_dummy_check,
             ],
@@ -1787,6 +1804,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_max_segments_gui,
                 voice_imitation_vocals_dereverb_gui,
                 voice_imitation_remove_previous_gui,
+                voice_imitation_method_gui,
                 wav_speaker_dereverb,
                 is_gui_dummy_check,
             ],
