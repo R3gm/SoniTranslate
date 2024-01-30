@@ -1198,6 +1198,8 @@ def toneconverter_openvoice(
     tone_color_converter.load_ckpt(checkpoint_path)
 
     logger.info("Openvoice tone color converter:")
+    global_progress_bar = tqdm(total=len(result_diarize["segments"]), desc="Progress")
+
     for source_seg, target_seg, speaker in zip(
         path_source_segments, path_target_segments, valid_speakers
     ):
@@ -1217,7 +1219,7 @@ def toneconverter_openvoice(
             src_path = (
                 save_path
             ) = f"audio2/audio/{str(seg['start'])}.ogg"  # overwrite
-            logger.info(f"{src_path}")
+            logger.debug(f"{src_path}")
 
             tone_color_converter.convert(
                 audio_src_path=src_path,
@@ -1226,6 +1228,11 @@ def toneconverter_openvoice(
                 output_path=save_path,
                 message=encode_message,
             )
+
+            global_progress_bar.update(1)
+
+    global_progress_bar.close()
+
     try:
         del tone_color_converter
         gc.collect()
