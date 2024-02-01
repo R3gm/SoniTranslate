@@ -157,10 +157,12 @@ def prog_disp(msg, percent, is_gui, progress=None):
     if is_gui:
         progress(percent, desc=msg)
 
+
 def warn_disp(wrn_lang, is_gui):
     logger.warning(wrn_lang)
     if is_gui:
         gr.Warning(wrn_lang)
+
 
 class SoniTranslate:
     def __init__(self, dev=True):
@@ -398,13 +400,16 @@ class SoniTranslate:
             prog_disp("Voice Imitation...", 0.85, is_gui, progress=progress)
             from soni_translate.text_to_speech import toneconverter
 
-            toneconverter(
-                copy.deepcopy(self.result_diarize),
-                preprocessor_max_segments=voice_imitation_max_segments,
-                remove_previous_process=voice_imitation_remove_previous,
-                get_vocals_dereverb=voice_imitation_vocals_dereverb,
-                method_vc=voice_imitation_method,
-            )
+            try:
+                toneconverter(
+                    copy.deepcopy(self.result_diarize),
+                    preprocessor_max_segments=voice_imitation_max_segments,
+                    remove_previous_process=voice_imitation_remove_previous,
+                    get_vocals_dereverb=voice_imitation_vocals_dereverb,
+                    method_vc=voice_imitation_method,
+                )
+            except Exception as error:
+                logger.error(str(error))
 
         # custom voice
         if os.getenv("VOICES_MODELS") == "ENABLE":
@@ -434,14 +439,15 @@ class SoniTranslate:
         if voiceless_track:
             from soni_translate.mdx_net import process_uvr_task
 
-            _, base_audio_wav, _, _, _ = process_uvr_task(
-                orig_song_path=base_audio_wav,
-                main_vocals=False,
-                dereverb=False,
-                song_id="voiceless",
-                only_voiceless=True,
-                remove_files_output_dir=False,
-            )
+            try:
+                base_audio_wav, _ = process_uvr_task(
+                    orig_song_path=base_audio_wav,
+                    song_id="voiceless",
+                    only_voiceless=True,
+                    remove_files_output_dir=False,
+                )
+            except Exception as error:
+                logger.error(str(error))
 
         # TYPE MIX AUDIO
         command_volume_mix = f'ffmpeg -y -i {base_audio_wav} -i {dub_audio_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio_file}'
@@ -653,13 +659,13 @@ def create_gui(theme, logs_in_gui=False):
                     video_input = gr.File(label="VIDEO")
                     blink_input = gr.Textbox(
                         visible=False,
-                        label="Media link.",
+                        label=lg_conf["link_label"],
                         info=lg_conf["link_info"],
                         placeholder=lg_conf["link_ph"],
                     )
                     directory_input = gr.Textbox(
                         visible=False,
-                        label="Video Path.",
+                        label=lg_conf["dir_label"],
                         info=lg_conf["dir_info"],
                         placeholder=lg_conf["dir_ph"],
                     )
@@ -786,8 +792,8 @@ def create_gui(theme, logs_in_gui=False):
                             voice_imitation_method_gui = gr.Dropdown(
                                 voice_imitation_method_options,
                                 value=voice_imitation_method_options[0],
-                                label="Method",
-                                info="Select a method for Voice Imitation process",
+                                label=lg_conf["vc_method_label"],
+                                info=lg_conf["vc_method_info"],
                             )
                             voice_imitation_max_segments_gui = gr.Slider(
                                 label=lg_conf["vc_segments_label"],
@@ -905,6 +911,10 @@ def create_gui(theme, logs_in_gui=False):
                                 visible=True,
                                 interactive=True,
                             )
+                            main_voiceless_track = gr.Checkbox(
+                                label=lg_conf["voiceless_tk_label"],
+                                info=lg_conf["voiceless_tk_info"],
+                            )
 
                             gr.HTML("<hr></h2>")
                             sub_type_options = [
@@ -991,10 +1001,6 @@ def create_gui(theme, logs_in_gui=False):
                                 main_output_type_opt,
                                 default=main_output_type_opt[0],
                                 label="Output type",
-                            )
-                            main_voiceless_track = gr.Checkbox(
-                                label=lg_conf["voiceless_tk_label"],
-                                info=lg_conf["voiceless_tk_info"],
                             )
                             VIDEO_OUTPUT_NAME = gr.Textbox(
                                 label=lg_conf["out_name_label"],
