@@ -248,6 +248,8 @@ def break_aling_segments(
         logger.info("No valid break characters were specified.")
         return result
 
+    logger.info(f"Redivide text segments by: {str(break_characters_list)}")
+
     # create new with filters
     normal = []
 

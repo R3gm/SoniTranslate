@@ -50,6 +50,7 @@ from soni_translate.text_multiformat_processor import (
     plain_text_to_segments,
     segments_to_plain_text,
     process_subtitles,
+    break_aling_segments,
 )
 from soni_translate.languages_gui import language_data
 import copy
@@ -211,6 +212,7 @@ class SoniTranslate:
         voice_imitation_remove_previous=True,
         voice_imitation_method="freevc",
         dereverb_automatic_xtts=True,
+        divide_text_segments_by="",
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -322,6 +324,12 @@ class SoniTranslate:
             if result["segments"] == []:
                 raise ValueError("No active speech found in audio")
 
+            if divide_text_segments_by:
+                result = break_aling_segments(
+                    result,
+                    break_characters=divide_text_segments_by,
+                )
+
             prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
             diarize_model_select = diarization_models[diarization_model]
             self.result_diarize = diarize_speech(
@@ -357,6 +365,7 @@ class SoniTranslate:
 
             # Convert the list of dictionaries to a JSON string with indentation
             json_string = json.dumps(json_data, indent=2)
+            logger.info("Done")
             return json_string.encode().decode("unicode_escape")
 
         if get_video_from_text_json:
@@ -971,6 +980,11 @@ def create_gui(theme, logs_in_gui=False):
                                 label=lg_conf["srt_file_label"],
                                 file_types=[".srt", ".ass"],
                                 height=130,
+                            )
+                            divide_text_segments_by_gui = gr.Textbox(
+                                label=lg_conf["divide_text_label"],
+                                value="",
+                                info=lg_conf["divide_text_info"],
                             )
                             pyannote_models_list = list(
                                 diarization_models.keys()
@@ -1765,6 +1779,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_remove_previous_gui,
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
+                divide_text_segments_by_gui,
                 is_gui_dummy_check,
             ],
             outputs=subs_edit_space,
@@ -1812,6 +1827,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_remove_previous_gui,
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
+                divide_text_segments_by_gui,
                 is_gui_dummy_check,
             ],
             outputs=video_output,
