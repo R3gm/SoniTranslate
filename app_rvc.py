@@ -325,10 +325,13 @@ class SoniTranslate:
                 raise ValueError("No active speech found in audio")
 
             if divide_text_segments_by:
-                result = break_aling_segments(
-                    result,
-                    break_characters=divide_text_segments_by,
-                )
+                try:
+                    result = break_aling_segments(
+                        result,
+                        break_characters=divide_text_segments_by,
+                    )
+                except Exception as error:
+                    logger.error(str(error))
 
             prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
             diarize_model_select = diarization_models[diarization_model]
