@@ -1,3 +1,4 @@
+from .logging_setup import logger
 from whisperx.utils import get_writer
 from .utils import remove_files
 import srt
@@ -233,3 +234,127 @@ def process_subtitles(
     )
 
     return name_tra + output_format_subtitle
+
+
+def break_aling_segments(
+    result: dict,
+    break_characters: str = "",  # ":|,|.|"
+):
+    result_align = copy.deepcopy(result)
+
+    break_characters_list = break_characters.split("|")
+
+    if not break_characters_list:
+        logger.info("No valid break characters were specified.")
+        return result
+
+    # create new with filters
+    normal = []
+
+    def process_chars(chars, letter_new_start, num, text):
+        start_key, end_key = "start", "end"
+        start_value = (
+            chars[0].get(start_key)
+            if start_key in chars[0]
+            else chars[1].get("start")
+        )
+        end_value = (
+            chars[-1].get(end_key)
+            if end_key in chars[-1]
+            else chars[-2].get("end")
+        )
+        return {
+            "start": start_value,
+            "end": end_value,
+            "text": text,
+            "words": chars,
+        }
+
+    for i, segment in enumerate(result_align['segments']):
+
+        logger.debug(f"- Process segment: {i}, text: {segment['text']}")
+        # start = segment['start']
+        letter_new_start = 0
+        for num, char in enumerate(segment['chars']):
+
+            if char["char"] is None:
+                continue
+
+            # if "start" in char:
+            #     start = char["start"]
+
+            # if "end" in char:
+            #     end = char["end"]
+
+            # Break by character
+            if char['char'] in break_characters_list:
+
+                text = segment['text'][letter_new_start:num+1]
+
+                logger.debug(
+                    f"Break in: {char['char']}, position: {num}, text: {text}"
+                )
+
+                chars = segment['chars'][letter_new_start:num+1]
+
+                if not text:
+                    logger.debug("No text")
+                    continue
+
+                if len(text) == 1:
+                    logger.debug(f"Short char append, num: {num}")
+                    normal[-1]["text"] += text
+                    normal[-1]["words"].append(chars)
+                    continue
+
+                # logger.debug(chars)
+                normal_dict = process_chars(chars, letter_new_start, num, text)
+
+                letter_new_start = num+1
+
+                normal.append(normal_dict)
+
+            # If we reach the end of the segment, add the last part of chars.
+            if num == len(segment["chars"]) - 1:
+
+                text = segment['text'][letter_new_start:num+1]
+
+                # If remain text len is not default len text
+                if not len(text)-1 == num and text:
+                    logger.debug(f'Remaining text: {text}')
+
+                if not text:
+                    logger.debug("No remaining text.")
+                    continue
+
+                if len(text) == 1:
+                    logger.debug(f"Short char append, num: {num}")
+                    normal[-1]["text"] += text
+                    normal[-1]["words"].append(chars)
+                    continue
+
+                chars = segment['chars'][letter_new_start:num+1]
+
+                normal_dict = process_chars(chars, letter_new_start, num, text)
+
+                letter_new_start = num+1
+
+                normal.append(normal_dict)
+
+    # Rename char to word
+    for item in normal:
+        words_list = item['words']
+        for word_item in words_list:
+            if 'char' in word_item:
+                word_item['word'] = word_item.pop('char')
+
+    # Convert to dict default
+    break_segments = {"segments": normal}
+
+    msg_count = (
+        f"Segment count before: {len(result['segments'])}, "
+        f"after: {len(break_segments['segments'])}."
+    )
+    logger.info(msg_count)
+
+    return break_segments
