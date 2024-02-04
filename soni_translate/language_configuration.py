@@ -17,7 +17,7 @@ LANGUAGES = {
     "Italian (it)": "it",
     "Japanese (ja)": "ja",
     "Korean (ko)": "ko",
-    "Persian (fa)": "fa",
+    "Persian (fa)": "fa",  # no aux gTTS
     "Polish (pl)": "pl",
     "Portuguese (pt)": "pt",
     "Russian (ru)": "ru",
@@ -36,6 +36,31 @@ LANGUAGES = {
     "Catalan (ca)": "ca",
     "Nepali (ne)": "ne",
     "Thai (th)": "th",
+    "Swedish (sv)": "sv",
+    "Amharic (am)": "am",
+    "Welsh (cy)": "cy",  # no aux gTTS
+    "Croatian (hr)": "hr",
+    "Icelandic (is)": "is",
+    "Georgian (ka)": "ka",  # no aux gTTS
+    "Khmer (km)": "km",
+    "Slovak (sk)": "sk",
+    "Albanian (sq)": "sq",
+    "Serbian (sr)": "sr",
+    "Azerbaijani (az)": "az",  # no aux gTTS
+    "Bulgarian (bg)": "bg",
+    "Galician (gl)": "gl",  # no aux gTTS
+    "Gujarati (gu)": "gu",
+    "Kazakh (kk)": "kk",  # no aux gTTS
+    "Kannada (kn)": "kn",
+    "Lithuanian (lt)": "lt",  # no aux gTTS
+    "Latvian (lv)": "lv",
+    # "Macedonian (mk)": "mk",  # no aux gTTS # error get align model
+    "Malayalam (ml)": "ml",
+    # "Malay (ms)": "ms",  # error get align model
+    "Romanian (ro)": "ro",
+    "Sinhala (si)": "si",
+    "Sundanese (su)": "su",
+    # "Swahili (sw)": "sw", # error aling
 }
 LANGUAGES_LIST = list(LANGUAGES.keys())
 
@@ -47,6 +72,32 @@ EXTRA_ALIGN = {
     "jw": "cahya/wav2vec2-large-xlsr-javanese",
     "ne": "shniranjan/wav2vec2-large-xlsr-300m-nepali",
     "th": "sakares/wav2vec2-large-xlsr-thai-demo",
+    "sv": "KBLab/wav2vec2-large-voxrex-swedish",
+    "am": "agkphysics/wav2vec2-large-xlsr-53-amharic",
+    "cy": "Srulikbdd/Wav2Vec2-large-xlsr-welsh",
+    "et": "anton-l/wav2vec2-large-xlsr-53-estonian",
+    "hr": "classla/wav2vec2-xls-r-parlaspeech-hr",
+    "is": "carlosdanielhernandezmena/wav2vec2-large-xlsr-53-icelandic-ep10-1000h",
+    "ka": "MehdiHosseiniMoghadam/wav2vec2-large-xlsr-53-Georgian",
+    "km": "vitouphy/wav2vec2-xls-r-300m-khmer",
+    "sk": "infinitejoy/wav2vec2-large-xls-r-300m-slovak",
+    "sq": "Alimzhan/wav2vec2-large-xls-r-300m-albanian-colab",
+    "sr": "dnikolic/wav2vec2-xlsr-530-serbian-colab",
+    "az": "nijatzeynalov/wav2vec2-large-mms-1b-azerbaijani-common_voice15.0",
+    "bg": "infinitejoy/wav2vec2-large-xls-r-300m-bulgarian",
+    "gl": "ifrz/wav2vec2-large-xlsr-galician",
+    "gu": "Harveenchadha/vakyansh-wav2vec2-gujarati-gnm-100",
+    "kk": "aismlv/wav2vec2-large-xlsr-kazakh",
+    "kn": "Harveenchadha/vakyansh-wav2vec2-kannada-knm-560",
+    "lt": "DeividasM/wav2vec2-large-xlsr-53-lithuanian",
+    "lv": "anton-l/wav2vec2-large-xlsr-53-latvian",
+    "mk": "Konstantin-Bogdanoski/wav2vec2-macedonian-base",
+    "ml": "gvs/wav2vec2-large-xlsr-malayalam",
+    "ms": "Duy/wav2vec2_malay",
+    "ro": "anton-l/wav2vec2-large-xlsr-53-romanian",
+    "si": "IAmNotAnanth/wav2vec2-large-xls-r-300m-sinhala",
+    "su": "cahya/wav2vec2-large-xlsr-sundanese",
+    "sw": "Lians/fine-tune-wav2vec2-large-swahili",
 }
 
 
@@ -239,6 +290,33 @@ vits_voices_list = {
     "ne-facebook-mms VITS": "facebook/mms-tts-nep",
     "th-facebook-mms VITS": "facebook/mms-tts-tha",
     "th_Northern-facebook-mms VITS": "facebook/mms-tts-nod",
+    "sv-facebook-mms VITS": "facebook/mms-tts-swe",
+    "am-facebook-mms VITS": "facebook/mms-tts-amh",
+    "cy-facebook-mms VITS": "facebook/mms-tts-cym",
+    # "et-facebook-mms VITS": "facebook/mms-tts-est",
+    # "ht-facebook-mms VITS": "facebook/mms-tts-hrv",
+    "is-facebook-mms VITS": "facebook/mms-tts-isl",
+    "km-facebook-mms VITS": "facebook/mms-tts-khm",
+    "km_Northern-facebook-mms VITS": "facebook/mms-tts-kxm",
+    # "sk-facebook-mms VITS": "facebook/mms-tts-slk",
+    "sq_Northern-facebook-mms VITS": "facebook/mms-tts-sqi",
+    "az_South-facebook-mms VITS": "facebook/mms-tts-azb",
+    "az_North_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-azj-script_cyrillic",
+    "az_North_script_latin-facebook-mms VITS": "facebook/mms-tts-azj-script_latin",
+    "bg-facebook-mms VITS": "facebook/mms-tts-bul",
+    # "gl-facebook-mms VITS": "facebook/mms-tts-glg",
+    "gu-facebook-mms VITS": "facebook/mms-tts-guj",
+    "kk-facebook-mms VITS": "facebook/mms-tts-kaz",
+    "kn-facebook-mms VITS": "facebook/mms-tts-kan",
+    # "lt-facebook-mms VITS": "facebook/mms-tts-lit",
+    "lv-facebook-mms VITS": "facebook/mms-tts-lav",
+    # "mk-facebook-mms VITS": "facebook/mms-tts-mkd",
+    "ml-facebook-mms VITS": "facebook/mms-tts-mal",
+    "ms-facebook-mms VITS": "facebook/mms-tts-zlm", # add 2 variant
+    "ro-facebook-mms VITS": "facebook/mms-tts-ron",
+    # "si-facebook-mms VITS": "facebook/mms-tts-sin",
+    "sw-facebook-mms VITS": "facebook/mms-tts-swh",
+    
 }
 
 LANGUAGE_CODE_IN_THREE_LETTERS = {
@@ -277,4 +355,14 @@ LANGUAGE_CODE_IN_THREE_LETTERS = {
     "ca": "cat",
     "ne": "nep",
     "th": "tha",
+    "sv": "swe",
+    "am": "amh",
+    "cy": "cym",
+    "et": "est",
+    "hr": "hrv",
+    "is": "isl",
+    "km": "khm",
+    "sk": "slk",
+    "sq": "sqi",
+    "sr": "srp",
 }
