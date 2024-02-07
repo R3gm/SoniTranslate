@@ -45,9 +45,9 @@ language_data = {
         5. Go back to the video translation tab and click on 'Translate' ▶️ Now, the translation will be done applying the R.V.C. 🗣️
 
         Tip: You can use `Test R.V.C.` to experiment and find the best TTS or configurations to apply to the R.V.C. 🧪🔍
-        
+
         ---
-        
+
         """,
     "tab_translate" : "Video translation",
     "video_source": "Choose Video Source",
@@ -168,7 +168,7 @@ language_data = {
         3. 🗣️ Especifica el **número de personas que hablan** en el video y **asigna a cada una una voz de texto a voz** adecuada para el idioma de traducción.
 
         4. 🚀 Presiona el botón '**Traducir**' para obtener los resultados.
-        
+
         ---
 
         # 🧩 **SoniTranslate admite diferentes motores de TTS (Texto a Voz), los cuales son:**
@@ -195,9 +195,9 @@ language_data = {
         5. Vuelve a la pestaña de traducción de video y haz clic en 'Traducir' ▶️ Ahora, la traducción se realizará aplicando el R.V.C. 🗣️
 
         Consejo: Puedes usar `Probar R.V.C.` para experimentar y encontrar el mejor TTS o configuraciones para aplicar al R.V.C. 🧪🔍
-        
+
         ---
-        
+
         """,
     "tab_translate" : "Traducción de video",
     "video_source": "Seleccionar Fuente de Video",
@@ -298,6 +298,2705 @@ language_data = {
     "cv_aux": "- Voz a aplicar en caso de que un hablante no sea detectado correctamente.",
     "cv_button_apply": "APLICAR CONFIGURACIÓN",
     "tab_help": "Ayuda"
-  }
+  },
 
+  "french": {
+    "description": """
+        ### 🎥 **Traduisez facilement les vidéos avec SoniTranslate !** 📽️
+
+        Téléchargez une vidéo, un fichier audio ou fournissez un lien YouTube. 📽️ **Obtenez le notebook mis à jour à partir du référentiel officiel : [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Consultez l'onglet `Aide` pour des instructions sur son utilisation. Amusons-nous à traduire des vidéos ! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Instructions d'utilisation :**
+
+        1. 📤 Téléchargez une **vidéo**, un **fichier audio** ou fournissez un lien 🌐 **YouTube**.
+
+        2. 🌍 Choisissez la langue dans laquelle vous souhaitez **traduire la vidéo**.
+
+        3. 🗣️ Spécifiez le **nombre de personnes parlant** dans la vidéo et **attribuez à chacune une voix de synthèse textuelle** adaptée à la langue de traduction.
+
+        4. 🚀 Appuyez sur le bouton '**Traduire**' pour obtenir les résultats.
+
+        ---
+
+        # 🧩 **SoniTranslate prend en charge différents moteurs TTS (Text-to-Speech), à savoir :**
+        - EDGE-TTS → format `en-AU-WilliamNeural-Male` → Rapide et précis.
+        - FACEBOOK MMS → format `en-facebook-mms VITS` → La voix est plus naturelle ; pour le moment, il utilise uniquement le CPU.
+        - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Identique au précédent, mais optimisé pour le CPU et le GPU.
+        - BARK → format `en_speaker_0-Male BARK` → Bonne qualité mais lent, et sujet aux hallucinations.
+        - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Disponible uniquement pour le chinois (simplifié), l'anglais, le français, l'allemand, l'italien, le portugais, le polonais, le turc, le russe, le néerlandais, le tchèque, l'arabe, l'espagnol, le hongrois, le coréen et le japonais.
+
+        ---
+
+        # 🎤 Comment utiliser les voix R.V.C. et R.V.C.2 (Facultatif) 🎶
+
+        L'objectif est d'appliquer un R.V.C. à la TTS (Text-to-Speech) générée 🎙️
+
+        1. Dans l'onglet `Voix personnalisée R.V.C.`, téléchargez les modèles dont vous avez besoin 📥 Vous pouvez utiliser des liens depuis Hugging Face et Google Drive dans des formats tels que zip, pth, ou index. Vous pouvez également télécharger des dépôts complets de l'espace HF, mais cette option n'est pas très stable 😕
+
+        2. Allez maintenant dans `Remplacer la voix : TTS par R.V.C.` et cochez la case `activer` ✅ Ensuite, vous pouvez choisir les modèles que vous souhaitez appliquer à chaque locuteur TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Ajustez la méthode F0 qui sera appliquée à tous les R.V.C. 🎛️
+
+        4. Appuyez sur `APPLIQUER LA CONFIGURATION` pour appliquer les modifications que vous avez apportées 🔄
+
+        5. Retournez à l'onglet de traduction vidéo et cliquez sur 'Traduire' ▶️ Maintenant, la traduction se fera en appliquant le R.V.C. 🗣️
+
+        Astuce : Vous pouvez utiliser `Test R.V.C.` pour expérimenter et trouver les meilleures TTS ou configurations à appliquer au R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Traduction vidéo",
+    "video_source": "Choisir la source vidéo",
+    "link_label" : "Lien multimédia.",
+    "link_info": "Exemple : www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "L'URL va ici...",
+    "dir_label" : "Chemin de la vidéo.",
+    "dir_info": "Exemple : /usr/home/ma_video.mp4",
+    "dir_ph" : "Le chemin va ici...",
+    "sl_label" : "Langue source",
+    "sl_info": "Il s'agit de la langue d'origine de la vidéo",
+    "tat_label" : "Traduire l'audio en",
+    "tat_info": "Sélectionnez la langue cible et assurez-vous également de choisir le TTS correspondant pour cette langue.",
+    "num_speakers" : "Sélectionnez combien de personnes parlent dans la vidéo.",
+    "min_sk" : "Locuteurs min",
+    "max_sk" : "Locuteurs max",
+    "tts_select" : "Sélectionnez la voix que vous souhaitez pour chaque locuteur.",
+    "sk1" : "Locuteur TTS 1",
+    "sk2" : "Locuteur TTS 2",
+    "sk3" : "Locuteur TTS 3",
+    "sk4" : "Locuteur TTS 4",
+    "sk5" : "Locuteur TTS 5",
+    "sk6" : "Locuteur TTS 6",
+    "vc_title" : "Imitation de voix dans différentes langues",
+    "vc_subtitle" : """
+        ### Répliquez la voix d'une personne dans différentes langues.
+        Bien que efficace avec la plupart des voix lorsqu'il est utilisé correctement, cela peut ne pas atteindre la perfection dans tous les cas.
+        L'imitation de voix ne reproduit que le ton du locuteur de référence, excluant l'accent et l'émotion, qui sont régis par le modèle TTS du locuteur de base et non reproduits par le convertisseur.
+        Cela prendra des échantillons audio de l'audio principal pour chaque locuteur et les traitera.
+        """,
+    "vc_active_label" : "Imitation de voix active",
+    "vc_active_info" : "Imitation de voix active : Reproduit le ton du locuteur original",
+    "vc_method_label" : "Méthode",
+    "vc_method_info" : "Sélectionnez une méthode pour le processus d'imitation de voix",
+    "vc_segments_label" : "Échantillons max",
+    "vc_segments_info" : "Échantillons max : Nombre d'échantillons audio qui seront générés pour le processus, plus il y en a, mieux c'est, mais cela peut ajouter du bruit",
+    "vc_dereverb_label" : "Déréverbération",
+    "vc_dereverb_info" : "Déréverbération : Applique une déréverbération vocale aux échantillons audio.",
+    "vc_remove_label" : "Supprimer les échantillons précédents",
+    "vc_remove_info" : "Supprimer les échantillons précédents : Supprime les échantillons précédents générés, de sorte que de nouveaux doivent être créés.",
+    "xtts_title" : "Créer un TTS basé sur un audio",
+    "xtts_subtitle" : "Téléchargez un fichier audio d'une durée maximale de 10 secondes avec une voix. En utilisant XTTS, un nouveau TTS sera créé avec une voix similaire au fichier audio fourni.",
+    "xtts_file_label" : "Télécharger un court audio avec la voix",
+    "xtts_name_label" : "Nom pour le TTS",
+    "xtts_name_info" : "Utilisez un nom simple",
+    "xtts_dereverb_label" : "Déréverbération de l'audio",
+    "xtts_dereverb_info" : "Déréverbération de l'audio : Applique une déréverbération vocale à l'audio",
+    "xtts_button" : "Traiter l'audio et l'inclure dans le sélecteur TTS",
+    "xtts_footer" : "Générer automatiquement un TTS vocal : Vous pouvez utiliser '_XTTS_/AUTOMATIC.wav' dans le sélecteur TTS pour générer automatiquement des segments pour chaque locuteur lors de la génération de la traduction.",
+    "extra_setting" : "Paramètres avancés",
+    "acc_max_label" : "Accélération audio max",
+    "acc_max_info" : "Accélération maximale pour les segments audio traduits afin d'éviter les chevauchements. Une valeur de 1,0 représente aucune accélération",
+    "aud_mix_label" : "Méthode de mixage audio",
+    "aud_mix_info" : "Mixer les fichiers audio original et traduit pour créer une sortie équilibrée et personnalisée avec deux modes de mixage disponibles.",
+    "vol_ori" : "Volume audio original",
+    "vol_tra" : "Volume audio traduit",
+    "voiceless_tk_label" : "Piste sans voix",
+    "voiceless_tk_info" : "Piste sans voix : Supprime les voix audio originales avant de les combiner avec l'audio traduit.",
+    "sub_type" : "Type de sous-titres",
+    "whisper_title" : "Config transcription.",
+    "srt_file_label" : "Télécharger un fichier de sous-titres SRT (sera utilisé à la place de la transcription de Whisper)",
+    "divide_text_label" : "Rediviser les segments de texte par :",
+    "divide_text_info" : "(Expérimental) Entrez un séparateur pour diviser les segments de texte existants dans la langue source. L'outil identifiera les occurrences et créera de nouveaux segments en conséquence. Spécifiez plusieurs séparateurs en utilisant |, par ex. : !|?|...|。",
+    "out_name_label" : "Nom de fichier",
+    "out_name_info" : "Le nom du fichier de sortie",
+    "preview_info" : "L'aperçu coupe la vidéo à seulement 10 secondes à des fins de test. Veuillez le désactiver pour récupérer la durée complète de la vidéo.",
+    "edit_sub_label" : "Modifier les sous-titres générés",
+    "edit_sub_info" : "Modifier les sous-titres générés : Vous permet d'exécuter la traduction en 2 étapes. Tout d'abord avec le bouton 'OBTENIR LES SOUS-TITRES ET ÉDITER', vous obtenez les sous-titres pour les éditer, puis avec le bouton 'TRADUIRE', vous pouvez générer la vidéo",
+    "button_subs" : "OBTENIR LES SOUS-TITRES ET ÉDITER",
+    "editor_sub_label" : "Sous-titres générés",
+    "editor_sub_info" : "N'hésitez pas à éditer le texte dans les sous-titres générés ici. Vous pouvez apporter des modifications aux options d'interface avant de cliquer sur le bouton 'TRADUIRE', sauf pour 'Langue source', 'Traduire l'audio en' et 'Locuteurs max', pour éviter les erreurs. Une fois terminé, cliquez sur le bouton 'TRADUIRE'.",
+    "editor_sub_ph" : "Appuyez d'abord sur 'OBTENIR LES SOUS-TITRES ET ÉDITER' pour obtenir les sous-titres",
+    "button_translate" : "TRADUIRE",
+    "output_result_label" : "TÉLÉCHARGER LA VIDÉO TRADUITE",
+    "sub_ori" : "Sous-titres",
+    "sub_tra" : "Sous-titres traduits",
+    "ht_token_info" : "Une étape importante est d'accepter l'accord de licence pour utiliser Pyannote. Vous devez avoir un compte sur Hugging Face et accepter la licence pour utiliser les modèles : https://huggingface.co/pyannote/speaker-diarization et https://huggingface.co/pyannote/segmentation. Obtenez votre JETON CLÉ ici : https://hf.co/settings/tokens",
+    "ht_token_ph" : "Le jeton va ici...",
+    "tab_docs" : "Traduction de documents",
+    "docs_input_label" : "Choisir la source du document",
+    "docs_input_info" : "Il peut s'agir de PDF, DOCX, TXT ou texte",
+    "docs_source_info" : "Il s'agit de la langue d'origine du texte",
+    "chunk_size_label" : "Nombre maximal de caractères que le TTS traitera par segment",
+    "chunk_size_info" : "Une valeur de 0 attribue une valeur dynamique et plus compatible pour le TTS.",
+    "docs_button" : "Démarrer le pont de conversion de langue",
+    "cv_url_info" : "Téléchargez automatiquement les modèles R.V.C. depuis l'URL. Vous pouvez utiliser des liens depuis HuggingFace ou Drive, et vous pouvez inclure plusieurs liens, chacun séparé par une virgule. Exemple : https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Remplacer la voix : TTS par R.V.C.",
+    "sec1_title" : "### 1. Pour activer son utilisation, marquez-la comme activée.",
+    "enable_replace" : "Cochez pour activer l'utilisation des modèles.",
+    "sec2_title" : "### 2. Sélectionnez une voix qui sera appliquée à chaque TTS de chaque locuteur correspondant et appliquez les configurations.",
+    "sec2_subtitle" : "En fonction du nombre de <Locuteur TTS> que vous utiliserez, chacun doit avoir son modèle respectif. De plus, il y a un auxiliaire si pour une raison quelconque le locuteur n'est pas détecté correctement.",
+    "cv_tts1" : "Choisissez la voix à appliquer pour le Locuteur 1.",
+    "cv_tts2" : "Choisissez la voix à appliquer pour le Locuteur 2.",
+    "cv_tts3" : "Choisissez la voix à appliquer pour le Locuteur 3.",
+    "cv_tts4" : "Choisissez la voix à appliquer pour le Locuteur 4.",
+    "cv_tts5" : "Choisissez la voix à appliquer pour le Locuteur 5.",
+    "cv_tts6" : "Choisissez la voix à appliquer pour le Locuteur 6.",
+    "cv_aux" : "- Voix à appliquer en cas de détection incorrecte d'un locuteur.",
+    "cv_button_apply" : "APPLIQUER LA CONFIGURATION",
+    "tab_help" : "Aide"
+  },
+
+  "german": {
+    "description": """
+        ### 🎥 **Übersetzen Sie Videos einfach mit SoniTranslate!** 📽️
+
+        Laden Sie ein Video, eine Audiodatei hoch oder geben Sie einen YouTube-Link an. 📽️ **Holen Sie sich das aktualisierte Notizbuch aus dem offiziellen Repository: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Sehen Sie sich den Tab `Hilfe` für Anweisungen zur Verwendung an. Fangen wir an, Spaß beim Übersetzen von Videos zu haben! 🚀🎉
+        """,
+    "tutorial": """
+        # 🔰 **Anleitung zur Verwendung:**
+
+        1. 📤 Laden Sie ein **Video**, eine **Audiodatei** hoch oder geben Sie einen 🌐 **YouTube-Link** an.
+
+        2. 🌍 Wählen Sie die Sprache aus, in die Sie das **Video übersetzen möchten**.
+
+        3. 🗣️ Geben Sie die **Anzahl der Sprecher im Video** an und **weisen Sie jedem einen Text-to-Speech-Stimme** zu, die für die Übersetzungssprache geeignet ist.
+
+        4. 🚀 Drücken Sie die Schaltfläche '**Übersetzen**', um die Ergebnisse zu erhalten.
+
+        ---
+
+        # 🧩 **SoniTranslate unterstützt verschiedene TTS (Text-to-Speech)-Engines, darunter:**
+        - EDGE-TTS → Format `en-AU-WilliamNeural-Male` → Schnell und präzise.
+        - FACEBOOK MMS → Format `en-facebook-mms VITS` → Die Stimme ist natürlicher; derzeit nur CPU.
+        - PIPER TTS → Format `en_US-lessac-high VITS-onnx` → Wie das vorherige, aber optimiert für CPU und GPU.
+        - BARK → Format `en_speaker_0-Male BARK` → Gute Qualität, aber langsam und anfällig für Halluzinationen.
+        - Coqui XTTS → Format `_XTTS_/AUTOMATIC.wav` → Nur verfügbar für Chinesisch (vereinfacht), Englisch, Französisch, Deutsch, Italienisch, Portugiesisch, Polnisch, Türkisch, Russisch, Niederländisch, Tschechisch, Arabisch, Spanisch, Ungarisch, Koreanisch und Japanisch.
+
+        ---
+
+        # 🎤 So verwenden Sie R.V.C. und R.V.C.2 Stimmen (optional) 🎶
+
+        Das Ziel ist es, eine R.V.C. auf das generierte TTS (Text-to-Speech) anzuwenden 🎙️
+
+        1. Laden Sie in der Registerkarte `Benutzerdefinierte Stimme R.V.C.` die Modelle herunter, die Sie benötigen 📥 Sie können Links von Hugging Face und Google Drive in Formaten wie zip, pth oder Index verwenden. Sie können auch komplette HF-Raum-Repositories herunterladen, aber diese Option ist nicht sehr stabil 😕
+
+        2. Gehen Sie nun zu `Stimme ersetzen: TTS zu R.V.C.` und aktivieren Sie das Kontrollkästchen `aktivieren` ✅ Danach können Sie die Modelle auswählen, die Sie auf jeden TTS-Sprecher anwenden möchten 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Passen Sie die F0-Methode an, die auf alle R.V.C. angewendet wird. 🎛️
+
+        4. Drücken Sie `KONFIGURATION ANWENDEN`, um die vorgenommenen Änderungen anzuwenden 🔄
+
+        5. Gehen Sie zurück zum Tab für die Videoübersetzung und klicken Sie auf 'Übersetzen' ▶️ Jetzt wird die Übersetzung mit der R.V.C. angewendet. 🗣️
+
+        Tipp: Sie können `Test R.V.C.` verwenden, um zu experimentieren und die besten TTS oder Konfigurationen zu finden, die auf die R.V.C. angewendet werden sollen. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate": "Videotranslation",
+    "video_source": "Wählen Sie die Videoquelle",
+    "link_label": "Medienlink.",
+    "link_info": "Beispiel: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "URL hier eingeben...",
+    "dir_label": "Videopfad.",
+    "dir_info": "Beispiel: /usr/home/my_video.mp4",
+    "dir_ph": "Pfad hier eingeben...",
+    "sl_label": "Ausgangssprache",
+    "sl_info": "Dies ist die Originalsprache des Videos",
+    "tat_label": "Audio übersetzen nach",
+    "tat_info": "Wählen Sie die Zielsprache aus und stellen Sie sicher, dass Sie die entsprechende TTS für diese Sprache auswählen.",
+    "num_speakers": "Wählen Sie, wie viele Personen im Video sprechen.",
+    "min_sk": "Min Sprecher",
+    "max_sk": "Max Sprecher",
+    "tts_select": "Wählen Sie die Stimme für jeden Sprecher aus.",
+    "sk1": "TTS-Sprecher 1",
+    "sk2": "TTS-Sprecher 2",
+    "sk3": "TTS-Sprecher 3",
+    "sk4": "TTS-Sprecher 4",
+    "sk5": "TTS-Sprecher 5",
+    "sk6": "TTS-Sprecher 6",
+    "vc_title": "Stimmenimitation in verschiedenen Sprachen",
+    "vc_subtitle": """
+        ### Reproduzieren Sie die Stimme einer Person in verschiedenen Sprachen.
+        Obwohl es bei den meisten Stimmen wirksam ist, kann es nicht in jedem Fall perfekt sein.
+        Die Stimmenimitation repliziert ausschließlich den Ton des Referenzsprechers und schließt Akzent und Emotion aus, die durch das TTS-Modell des Basis-Sprechers gesteuert werden und nicht vom Konverter repliziert werden.
+        Es werden Audioaufnahmen aus dem Hauptaudio für jeden Sprecher entnommen und verarbeitet.
+        """,
+    "vc_active_label": "Aktive Stimmenimitation",
+    "vc_active_info": "Aktive Stimmenimitation: Reproduziert den Ton des Originalsprechers",
+    "vc_method_label": "Methode",
+    "vc_method_info": "Wählen Sie eine Methode für den Stimmenimitationsprozess aus",
+    "vc_segments_label": "Max Proben",
+    "vc_segments_info": "Max Proben: Ist die Anzahl der Audioaufnahmen, die für den Prozess generiert werden, mehr ist besser, aber es kann Lärm hinzufügen",
+    "vc_dereverb_label": "Dereverb",
+    "vc_dereverb_info": "Dereverb: Wendet vokalen Dereverb auf die Audioaufnahmen an.",
+    "vc_remove_label": "Vorherige Proben entfernen",
+    "vc_remove_info": "Vorherige Proben entfernen: Entfernt die zuvor generierten Proben, sodass neue erstellt werden müssen.",
+    "xtts_title": "Erstellen Sie ein TTS basierend auf einem Audio",
+    "xtts_subtitle": "Laden Sie eine Audiodatei von maximal 10 Sekunden mit einer Stimme hoch. Mit XTTS wird ein neues TTS mit einer Stimme ähnlich der bereitgestellten Audiodatei erstellt.",
+    "xtts_file_label": "Laden Sie eine kurze Audio mit der Stimme hoch",
+    "xtts_name_label": "Name für das TTS",
+    "xtts_name_info": "Verwenden Sie einen einfachen Namen",
+    "xtts_dereverb_label": "Dereverb-Audio",
+    "xtts_dereverb_info": "Dereverb-Audio: Wendet vokalen Dereverb auf die Audioaufnahme an",
+    "xtts_button": "Verarbeiten Sie das Audio und fügen Sie es dem TTS-Auswähler hinzu",
+    "xtts_footer": "Generieren Sie Stimme xtts automatisch: Sie können '_XTTS_/AUTOMATIC.wav' im TTS-Auswähler verwenden, um automatisch Segmente für jeden Sprecher zu generieren, wenn die Übersetzung generiert wird.",
+    "extra_setting": "Erweiterte Einstellungen",
+    "acc_max_label": "Max Audiobeschleunigung",
+    "acc_max_info": "Maximale Beschleunigung für übersetzte Audiosegmente, um Überlappungen zu vermeiden. Ein Wert von 1,0 repräsentiert keine Beschleunigung",
+    "aud_mix_label": "Audio-Mixing-Methode",
+    "aud_mix_info": "Mischen Sie Original- und übersetzte Audiodateien, um eine individuelle, ausgewogene Ausgabe mit zwei verfügbaren Mischmodi zu erstellen.",
+    "vol_ori": "Lautstärke des Originaltons",
+    "vol_tra": "Lautstärke des übersetzten Tons",
+    "voiceless_tk_label": "Stimmenloses Track",
+    "voiceless_tk_info": "Stimmenloses Track: Entfernen Sie die Original-Audio-Stimmen, bevor Sie sie mit dem übersetzten Audio kombinieren.",
+    "sub_type": "Untertiteltyp",
+    "whisper_title": "Konfiguration Transkription.",
+    "srt_file_label": "Laden Sie eine SRT-Untertiteldatei hoch (wird anstelle der Transkription von Whisper verwendet)",
+    "divide_text_label": "Textsegmente neu aufteilen nach:",
+    "divide_text_info": "(Experimentell) Geben Sie einen Separator ein, um vorhandene Textsegmente in der Ausgangssprache aufzuteilen. Das Tool erkennt Vorkommen und erstellt entsprechend neue Segmente. Geben Sie mehrere Trennzeichen mit | an, z. B.: !|?|...|。",
+    "out_name_label": "Dateiname",
+    "out_name_info": "Der Name der Ausgabedatei",
+    "preview_info": "Die Vorschau schneidet das Video zu Testzwecken auf nur 10 Sekunden. Deaktivieren Sie es bitte, um die volle Videodauer abzurufen.",
+    "edit_sub_label": "Generierte Untertitel bearbeiten",
+    "edit_sub_info": "Generierte Untertitel bearbeiten: Ermöglicht Ihnen, die Übersetzung in 2 Schritten durchzuführen. Zuerst mit der Schaltfläche 'UNTERTEITEL BEKOMMEN UND BEARBEITEN' erhalten Sie die Untertitel, um sie zu bearbeiten, und dann mit der Schaltfläche 'ÜBERSETZEN' können Sie das Video generieren",
+    "button_subs": "UNTERTEITEL BEKOMMEN UND BEARBEITEN",
+    "editor_sub_label": "Generierte Untertitel",
+    "editor_sub_info": "Bearbeiten Sie den Text in den generierten Untertiteln hier. Sie können Änderungen an den Schnittstellenoptionen vornehmen, bevor Sie auf die Schaltfläche 'ÜBERSETZEN' klicken, außer 'Ausgangssprache', 'Audio übersetzen nach' und 'Max Sprecher', um Fehler zu vermeiden. Wenn Sie fertig sind, klicken Sie auf die Schaltfläche 'ÜBERSETZEN'.",
+    "editor_sub_ph": "Drücken Sie zuerst 'UNTERTEITEL BEKOMMEN UND BEARBEITEN', um die Untertitel zu erhalten",
+    "button_translate": "ÜBERSETZEN",
+    "output_result_label": "ÜBERSETZTES VIDEO HERUNTERLADEN",
+    "sub_ori": "Untertitel",
+    "sub_tra": "Übersetzte Untertitel",
+    "ht_token_info": "Ein wichtiger Schritt besteht darin, die Lizenzvereinbarung für die Verwendung von Pyannote zu akzeptieren. Sie müssen ein Konto bei Hugging Face haben und die Lizenz akzeptieren, um die Modelle zu verwenden: https://huggingface.co/pyannote/speaker-diarization und https://huggingface.co/pyannote/segmentation. Holen Sie sich hier Ihren SCHLÜSSELTOKEN: https://hf.co/settings/tokens",
+    "ht_token_ph": "Token hier eingeben...",
+    "tab_docs": "Dokumentübersetzung",
+    "docs_input_label": "Dokumentquelle auswählen",
+    "docs_input_info": "Es kann PDF, DOCX, TXT oder Text sein",
+    "docs_source_info": "Dies ist die Originalsprache des Textes",
+    "chunk_size_label": "Maximale Anzahl von Zeichen, die der TTS pro Segment verarbeiten soll",
+    "chunk_size_info": "Ein Wert von 0 weist einen dynamischen und kompatibleren Wert für den TTS zu.",
+    "docs_button": "Starten Sie die Sprachkonvertierung Bridge",
+    "cv_url_info": "Laden Sie die R.V.C.-Modelle automatisch von der URL herunter. Sie können Links von HuggingFace oder Drive verwenden und mehrere Links, jeweils durch ein Komma getrennt, einfügen. Beispiel: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title": "Stimme ersetzen: TTS zu R.V.C.",
+    "sec1_title": "### 1. Um seine Verwendung zu aktivieren, markieren Sie es als aktiv.",
+    "enable_replace": "Aktivieren Sie dies, um die Verwendung der Modelle zu ermöglichen.",
+    "sec2_title": "### 2. Wählen Sie eine Stimme aus, die auf jeden TTS jedes entsprechenden Sprechers angewendet wird, und wenden Sie die Konfigurationen an.",
+    "sec2_subtitle": "Je nachdem, wie viele <TTS-Sprecher> Sie verwenden werden, benötigt jeder sein entsprechendes Modell. Außerdem gibt es ein Hilfsmodell, falls der Sprecher aus irgendeinem Grund nicht korrekt erkannt wird.",
+    "cv_tts1": "Wählen Sie die Stimme für Sprecher 1 aus.",
+    "cv_tts2": "Wählen Sie die Stimme für Sprecher 2 aus.",
+    "cv_tts3": "Wählen Sie die Stimme für Sprecher 3 aus.",
+    "cv_tts4": "Wählen Sie die Stimme für Sprecher 4 aus.",
+    "cv_tts5": "Wählen Sie die Stimme für Sprecher 5 aus.",
+    "cv_tts6": "Wählen Sie die Stimme für Sprecher 6 aus.",
+    "cv_aux": "- Stimme, die angewendet wird, falls ein Sprecher nicht erfolgreich erkannt wird.",
+    "cv_button_apply": "KONFIGURATION ANWENDEN",
+    "tab_help": "Hilfe"
+  },
+
+  "italian": {
+    "description": """
+        ### 🎥 **Traduci i video facilmente con SoniTranslate!** 📽️
+
+        Carica un video, un file audio o fornisci un link YouTube. 📽️ **Ottieni il notebook aggiornato dal repository ufficiale: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Consulta la scheda `Aiuto` per istruzioni su come utilizzarlo. Iniziamo a divertirci con la traduzione dei video! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Istruzioni per l'uso:**
+
+        1. 📤 Carica un **video**, un **file audio** o fornisci un 🌐 **link YouTube**.
+
+        2. 🌍 Scegli la lingua in cui desideri **tradurre il video**.
+
+        3. 🗣️ Specifica il **numero di persone che parlano** nel video e **assegna a ciascuna una voce di sintesi vocale** adatta alla lingua di traduzione.
+
+        4. 🚀 Premi il pulsante '**Traduci**' per ottenere i risultati.
+
+        ---
+
+        # 🧩 **SoniTranslate supporta diversi motori TTS (Text-to-Speech), tra cui:**
+        - EDGE-TTS → formato `en-AU-WilliamNeural-Male` → Veloce e preciso.
+        - FACEBOOK MMS → formato `en-facebook-mms VITS` → La voce è più naturale; al momento utilizza solo la CPU.
+        - PIPER TTS → formato `en_US-lessac-high VITS-onnx` → Come il precedente, ma ottimizzato sia per CPU che GPU.
+        - BARK → formato `en_speaker_0-Male BARK` → Buona qualità ma lenta e soggetta ad allucinazioni.
+        - Coqui XTTS → formato `_XTTS_/AUTOMATIC.wav` → Disponibile solo per cinese (semplificato), inglese, francese, tedesco, italiano, portoghese, polacco, turco, russo, olandese, ceco, arabo, spagnolo, ungherese, coreano e giapponese.
+
+        ---
+
+        # 🎤 Come utilizzare le voci R.V.C. e R.V.C.2 (Opzionale) 🎶
+
+        L'obiettivo è applicare un R.V.C. al TTS (Text-to-Speech) generato 🎙️
+
+        1. Nella scheda `Custom Voice R.V.C.`, scarica i modelli di cui hai bisogno 📥 Puoi utilizzare link da Hugging Face e Google Drive in formati come zip, pth o indice. Puoi anche scaricare repository completi di spazio HF, ma questa opzione non è molto stabile 😕
+
+        2. Ora, vai su `Sostituisci voce: TTS a R.V.C.` e spunta la casella `abilita` ✅ Dopo questo, puoi scegliere i modelli che desideri applicare a ciascun altoparlante TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Regola il metodo F0 che verrà applicato a tutti i R.V.C. 🎛️
+
+        4. Premi `APPLICA CONFIGURAZIONE` per applicare le modifiche apportate 🔄
+
+        5. Torna alla scheda di traduzione video e clicca su 'Traduci' ▶️ Ora, la traduzione verrà effettuata applicando il R.V.C. 🗣️
+
+        Suggerimento: Puoi utilizzare `Test R.V.C.` per sperimentare e trovare il miglior TTS o configurazioni da applicare al R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Traduzione video",
+    "video_source": "Scegli la fonte video",
+    "link_label" : "Link multimediale.",
+    "link_info": "Esempio: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "Inserisci l'URL qui...",
+    "dir_label" : "Percorso video.",
+    "dir_info": "Esempio: /usr/home/mio_video.mp4",
+    "dir_ph" : "Inserisci il percorso qui...",
+    "sl_label" : "Lingua di origine",
+    "sl_info": "Questa è la lingua originale del video",
+    "tat_label" : "Traduci l'audio in",
+    "tat_info": "Seleziona la lingua di destinazione e assicurati anche di scegliere il TTS corrispondente per quella lingua.",
+    "num_speakers" : "Seleziona quanti parlano nel video.",
+    "min_sk" : "Numero minimo di altoparlanti",
+    "max_sk" : "Numero massimo di altoparlanti",
+    "tts_select" : "Seleziona la voce desiderata per ogni altoparlante.",
+    "sk1" : "Altoparlante TTS 1",
+    "sk2" : "Altoparlante TTS 2",
+    "sk3" : "Altoparlante TTS 3",
+    "sk4" : "Altoparlante TTS 4",
+    "sk5" : "Altoparlante TTS 5",
+    "sk6" : "Altoparlante TTS 6",
+    "vc_title" : "Imitazione della voce in diverse lingue",
+    "vc_subtitle" : """
+        ### Replica la voce di una persona in varie lingue.
+        Sebbene efficace con la maggior parte delle voci quando usato correttamente, potrebbe non raggiungere la perfezione in ogni caso.
+        L'imitazione della voce replica esclusivamente il tono del locutore di riferimento, escludendo accento ed emozione, che sono governati dal modello TTS del locutore di base e non replicati dal convertitore.
+        Questo prenderà campioni audio dall'audio principale per ciascun altoparlante e li elaborerà.
+        """,
+    "vc_active_label" : "Imitazione attiva della voce",
+    "vc_active_info" : "Imitazione attiva della voce: Replica il tono del locutore originale",
+    "vc_method_label" : "Metodo",
+    "vc_method_info" : "Seleziona un metodo per il processo di imitazione della voce",
+    "vc_segments_label" : "Campioni massimi",
+    "vc_segments_info" : "Campioni massimi: è il numero di campioni audio che verranno generati per il processo, più è meglio ma può aggiungere rumore",
+    "vc_dereverb_label" : "Dereverb",
+    "vc_dereverb_info" : "Dereverb: Applica dereverb vocale ai campioni audio.",
+    "vc_remove_label" : "Rimuovi campioni precedenti",
+    "vc_remove_info" : "Rimuovi campioni precedenti: Rimuove i campioni precedenti generati, quindi è necessario crearne di nuovi.",
+    "xtts_title" : "Crea un TTS basato su un audio",
+    "xtts_subtitle" : "Carica un file audio di massimo 10 secondi con una voce. Utilizzando XTTS, verrà creato un nuovo TTS con una voce simile al file audio fornito.",
+    "xtts_file_label" : "Carica un breve audio con la voce",
+    "xtts_name_label" : "Nome per il TTS",
+    "xtts_name_info" : "Utilizza un nome semplice",
+    "xtts_dereverb_label" : "Dereverb audio",
+    "xtts_dereverb_info" : "Dereverb audio: Applica dereverb vocale all'audio",
+    "xtts_button" : "Elabora l'audio e includilo nel selettore TTS",
+    "xtts_footer" : "Genera automaticamente XTTS vocale: Puoi usare '_XTTS_/AUTOMATIC.wav' nel selettore TTS per generare automaticamente segmenti per ciascun altoparlante durante la generazione della traduzione.",
+    "extra_setting" : "Impostazioni avanzate",
+    "acc_max_label" : "Massima accelerazione audio",
+    "acc_max_info" : "Massima accelerazione per i segmenti audio tradotti per evitare sovrapposizioni. Un valore di 1,0 rappresenta nessuna accelerazione",
+    "aud_mix_label" : "Metodo di mixing audio",
+    "aud_mix_info" : "Mixa file audio originali e tradotti per creare un output personalizzato e bilanciato con due modalità di mixing disponibili.",
+    "vol_ori" : "Volume audio originale",
+    "vol_tra" : "Volume audio tradotto",
+    "voiceless_tk_label" : "Traccia senza voce",
+    "voiceless_tk_info" : "Traccia senza voce: Rimuove le voci audio originali prima di combinarle con l'audio tradotto.",
+    "sub_type" : "Tipo di sottotitolo",
+    "whisper_title" : "Configura la trascrizione.",
+    "srt_file_label" : "Carica un file sottotitoli SRT (verrà utilizzato al posto della trascrizione di Whisper)",
+    "divide_text_label" : "Ridividi i segmenti di testo per:",
+    "divide_text_info" : "(Sperimentale) Inserisci un separatore per dividere i segmenti di testo esistenti nella lingua di origine. Lo strumento identificherà le occorrenze e creerà nuovi segmenti di conseguenza. Specifica più separatori usando |, ad esempio: !|?|...|。",
+    "out_name_label" : "Nome del file",
+    "out_name_info" : "Il nome del file di output",
+    "preview_info" : "La preview taglia il video a soli 10 secondi per scopi di test. Disattivala per ripristinare la durata completa del video.",
+    "edit_sub_label" : "Modifica i sottotitoli generati",
+    "edit_sub_info" : "Modifica i sottotitoli generati: Ti consente di eseguire la traduzione in 2 passaggi. Prima con il pulsante 'OTTIENI SOTTOTITOLI E MODIFICA', ottieni i sottotitoli per modificarli, e poi con il pulsante 'TRADUCI', puoi generare il video",
+    "button_subs" : "OTTIENI SOTTOTITOLI E MODIFICA",
+    "editor_sub_label" : "Sottotitoli generati",
+    "editor_sub_info" : "Modifica il testo nei sottotitoli generati qui. Puoi apportare modifiche alle opzioni dell'interfaccia prima di fare clic sul pulsante 'TRADUCI', ad eccezione di 'Lingua di origine', 'Traduci l'audio in' e 'Numero massimo di altoparlanti', per evitare errori. Una volta finito, fai clic sul pulsante 'TRADUCI'.",
+    "editor_sub_ph" : "Prima premi 'OTTIENI SOTTOTITOLI E MODIFICA' per ottenere i sottotitoli",
+    "button_translate" : "TRADUCI",
+    "output_result_label" : "SCARICA VIDEO TRADOTTO",
+    "sub_ori" : "Sottotitoli",
+    "sub_tra" : "Sottotitoli tradotti",
+    "ht_token_info" : "Un passaggio importante è accettare l'accordo di licenza per l'uso di Pyannote. È necessario avere un account su Hugging Face e accettare la licenza per utilizzare i modelli: https://huggingface.co/pyannote/speaker-diarization e https://huggingface.co/pyannote/segmentation. Ottieni il tuo TOKEN CHIAVE qui: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Inserisci il token qui...",
+    "tab_docs" : "Traduzione documenti",
+    "docs_input_label" : "Scegli la fonte del documento",
+    "docs_input_info" : "Può essere PDF, DOCX, TXT o testo",
+    "docs_source_info" : "Questa è la lingua originale del testo",
+    "chunk_size_label" : "Numero massimo di caratteri che il TTS elaborerà per segmento",
+    "chunk_size_info" : "Un valore di 0 assegna un valore dinamico e più compatibile per il TTS.",
+    "docs_button" : "Avvia ponte di conversione linguistica",
+    "cv_url_info" : "Scarica automaticamente i modelli R.V.C. dall'URL. Puoi utilizzare link da HuggingFace o Drive e puoi includere diversi link, ognuno separato da una virgola. Esempio: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Sostituisci voce: TTS a R.V.C.",
+    "sec1_title" : "### 1. Per abilitarne l'uso, contrassegnalo come abilitato.",
+    "enable_replace" : "Seleziona questa opzione per abilitare l'uso dei modelli.",
+    "sec2_title" : "### 2. Seleziona una voce che verrà applicata a ciascun TTS di ciascun altoparlante corrispondente e applica le configurazioni.",
+    "sec2_subtitle" : "A seconda di quanti <Altoparlante TTS> utilizzerai, ognuno avrà bisogno del proprio modello. Inoltre, c'è un modello ausiliario nel caso in cui il parlante non venga rilevato correttamente.",
+    "cv_tts1" : "Scegli la voce da applicare per l'Altoparlante 1.",
+    "cv_tts2" : "Scegli la voce da applicare per l'Altoparlante 2.",
+    "cv_tts3" : "Scegli la voce da applicare per l'Altoparlante 3.",
+    "cv_tts4" : "Scegli la voce da applicare per l'Altoparlante 4.",
+    "cv_tts5" : "Scegli la voce da applicare per l'Altoparlante 5.",
+    "cv_tts6" : "Scegli la voce da applicare per l'Altoparlante 6.",
+    "cv_aux" : "- Voce da applicare nel caso in cui un altoparlante non venga rilevato correttamente.",
+    "cv_button_apply" : "APPLICA CONFIGURAZIONE",
+    "tab_help" : "Aiuto"
+  },
+
+  "japanese": {
+    "description": """
+        ### 🎥 **SoniTranslateで簡単に動画を翻訳しましょう！** 📽️
+
+        動画、音声ファイルをアップロードするか、YouTubeのリンクを提供してください。📽️ **公式リポジトリから最新のノートブックを入手する: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        使用方法についての指示は`ヘルプ`タブを参照してください。動画翻訳を楽しんでみましょう！ 🚀🎉
+        """,
+    "tutorial": """
+        # 🔰 **使用方法:**
+
+        1. 📤 **動画**、**音声ファイル**をアップロードするか、🌐 **YouTubeのリンク**を提供します。
+
+        2. 🌍 **動画を翻訳する言語**を選択します。
+
+        3. 🗣️ **動画内の話者の数**を指定し、それぞれの話者に翻訳言語に適したテキスト読み上げ音声を割り当てます。
+
+        4. 🚀 '**翻訳**'ボタンを押して結果を取得します。
+
+        ---
+
+        # 🧩 **SoniTranslateはさまざまなTTS（テキスト読み上げ）エンジンをサポートしています。これらは次のとおりです:**
+        - EDGE-TTS → 形式 `en-AU-WilliamNeural-Male` → 速く正確です。
+        - FACEBOOK MMS → 形式 `en-facebook-mms VITS` → 音声がより自然です。現時点ではCPUのみを使用します。
+        - PIPER TTS → 形式 `en_US-lessac-high VITS-onnx` → 前述のものと同じですが、CPUとGPUの両方に最適化されています。
+        - BARK → 形式 `en_speaker_0-Male BARK` → 品質は良好ですが、遅く、幻覚に陥りやすいです。
+        - Coqui XTTS → 形式 `_XTTS_/AUTOMATIC.wav` → 中国語（簡体字）、英語、フランス語、ドイツ語、イタリア語、ポルトガル語、ポーランド語、トルコ語、ロシア語、オランダ語、チェコ語、アラビア語、スペイン語、ハンガリー語、韓国語、日本語のみ利用可能です。
+
+        ---
+
+        # 🎤 R.V.C.とR.V.C.2ボイスの使用方法（オプション） 🎶
+
+        目標は、生成されたTTS（テキスト読み上げ）にR.V.C.を適用することです 🎙️
+
+        1. `カスタムボイスR.V.C.`タブで、必要なモデルをダウンロードしてください 📥 Hugging FaceやGoogle Driveからのリンクを使用できます。zip、pth、またはindexなどの形式を使用できます。完全なHFスペースリポジトリをダウンロードすることもできますが、このオプションはあまり安定していません 😕
+
+        2. 今度は、`TTSからR.V.C.への置換`に移動し、`有効`ボックスをチェックします ✅ これ以降、各TTSスピーカーに適用するモデルを選択できます 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. すべてのR.V.C.に適用されるF0メソッドを調整します 🎛️
+
+        4. 変更した設定を適用するには、`設定を適用`を押します 🔄
+
+        5. 動画翻訳タブに戻り、「翻訳」をクリックします ▶️ これで、R.V.C.を適用して翻訳が行われます 🗣️
+
+        ヒント: `テストR.V.C.`を使用して、適用する最適なTTSまたは設定を実験し、見つけることができます 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate": "動画翻訳",
+    "video_source": "動画ソースを選択",
+    "link_label": "メディアリンク。",
+    "link_info": "例: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "URLをここに入力...",
+    "dir_label": "ビデオパス。",
+    "dir_info": "例: /usr/home/my_video.mp4",
+    "dir_ph": "パスをここに入力...",
+    "sl_label": "元の言語",
+    "sl_info": "動画の元の言語です",
+    "tat_label": "翻訳先の言語",
+    "tat_info": "対象言語を選択し、その言語に対応するTTSを選択することも忘れないでください。",
+    "num_speakers": "ビデオ内の話者の数を選択してください。",
+    "min_sk": "最小スピーカー",
+    "max_sk": "最大スピーカー",
+    "tts_select": "各スピーカーに適した音声を選択してください。",
+    "sk1": "TTSスピーカー1",
+    "sk2": "TTSスピーカー2",
+    "sk3": "TTSスピーカー3",
+    "sk4": "TTSスピーカー4",
+    "sk5": "TTSスピーカー5",
+    "sk6": "TTSスピーカー6",
+    "vc_title": "異なる言語での音声模倣",
+    "vc_subtitle": """
+        ### さまざまな言語で人の声を再現します。
+        適切に使用されるとほとんどの声に効果的ですが、すべての場合に完璧な結果が得られるわけではありません。
+        音声模倣は、アクセントや感情を除く参照スピーカーの音色のみを再現し、これらは基本スピーカーTTSモデルによって制御され、変換器によっては再現されません。
+        これにより、各話者のメインオーディオからオーディオサンプルを取得し、処理します。
+        """,
+    "vc_active_label": "アクティブ音声模倣",
+    "vc_active_info": "アクティブ音声模倣：元のスピーカーの音色を再現します",
+    "vc_method_label": "メソッド",
+    "vc_method_info": "音声模倣プロセスのメソッドを選択します",
+    "vc_segments_label": "最大サンプル数",
+    "vc_segments_info": "最大サンプル数：プロセスに使用されるオーディオサンプルの数。より多いほど良いですが、ノイズが発生する可能性があります",
+    "vc_dereverb_label": "リバーブを除去",
+    "vc_dereverb_info": "リバーブを除去：オーディオサンプルにボーカルリバーブを適用します。",
+    "vc_remove_label": "以前のサンプルを削除",
+    "vc_remove_info": "以前のサンプルを削除：以前に生成されたサンプルを削除し、新しいサンプルを作成する必要があります。",
+    "xtts_title": "オーディオを基にTTSを作成する",
+    "xtts_subtitle": "声が入った最大10秒のオーディオファイルをアップロードします。 XTTSを使用すると、提供されたオーディオファイルに似た声で新しいTTSが作成されます。",
+    "xtts_file_label": "声の入った短いオーディオをアップロードしてください",
+    "xtts_name_label": "TTSの名前",
+    "xtts_name_info": "簡単な名前を使用してください",
+    "xtts_dereverb_label": "オーディオのリバーブを除去",
+    "xtts_dereverb_info": "オーディオのリバーブを除去：オーディオにボーカルリバーブを適用します",
+    "xtts_button": "オーディオを処理してTTSセレクタに含めます",
+    "xtts_footer": "音声xttsを自動生成する：翻訳を生成する際に各話者のセグメントを自動生成するために、TTSセレクタで'_XTTS_/AUTOMATIC.wav'を使用できます。",
+    "extra_setting": "高度な設定",
+    "acc_max_label": "最大オーディオ加速度",
+    "acc_max_info": "オーバーラップを回避するための翻訳されたオーディオセグメントの最大加速度。値が1.0の場合、加速度はありません",
+    "aud_mix_label": "オーディオミキシング方法",
+    "aud_mix_info": "オリジナルと翻訳されたオーディオファイルを混合してカスタマイズされたバランスの取れた出力を作成するための2つの利用可能なミキシングモード。",
+    "vol_ori": "元のオーディオの音量",
+    "vol_tra": "翻訳されたオーディオの音量",
+    "voiceless_tk_label": "声なしトラック",
+    "voiceless_tk_info": "声なしトラック：翻訳されたオーディオと組み合わせる前に元のオーディオの音声を削除します。",
+    "sub_type": "字幕タイプ",
+    "whisper_title": "トランスクリプションの構成。",
+    "srt_file_label": "SRT字幕ファイルをアップロードしてください（Whisperのトランスクリプションの代わりに使用されます）",
+    "divide_text_label": "次のようにテキストセグメントを再分割します:",
+    "divide_text_info": "(実験的) ソース言語の既存のテキストセグメントを分割するセパレーターを入力します。ツールは出現を識別し、適切な箇所で新しいセグメントを作成します。複数のセパレーターを | を使用して指定します。例: !|?|...|。",
+    "out_name_label": "ファイル名",
+    "out_name_info": "出力ファイルの名前",
+    "preview_info": "テスト目的でビデオを10秒に切り取ります。完全なビデオの長さを取得するには、これを無効にしてください。",
+    "edit_sub_label": "生成された字幕を編集",
+    "edit_sub_info": "生成された字幕の翻訳を2段階で実行できます。まず、「字幕を取得して編集」ボタンをクリックして字幕を取得して編集し、次に「翻訳」ボタンをクリックしてビデオを生成できます。",
+    "button_subs": "字幕を取得して編集",
+    "editor_sub_label": "生成された字幕",
+    "editor_sub_info": "ここで生成された字幕のテキストを自由に編集してください。エラーを回避するために、インターフェイスのオプションを変更する前に「元の言語」、「翻訳先の言語」、「最大スピーカー」を除く、[翻訳]ボタンをクリックしてください。編集が完了したら、「翻訳」ボタンをクリックします。",
+    "editor_sub_ph": "まず、「字幕を取得して編集」を押して字幕を取得してください",
+    "button_translate": "翻訳",
+    "output_result_label": "翻訳された動画をダウンロード",
+    "sub_ori": "字幕",
+    "sub_tra": "翻訳された字幕",
+    "ht_token_info": "重要なステップの1つは、Pyannoteのライセンス契約を受諾することです。これには、Hugging Faceにアカウントを持ち、モデルの使用許可を受け入れる必要があります: https://huggingface.co/pyannote/speaker-diarization および https://huggingface.co/pyannote/segmentation. ここでキー トークンを取得します: https://hf.co/settings/tokens",
+    "ht_token_ph": "トークンをここに入力...",
+    "tab_docs": "ドキュメント翻訳",
+    "docs_input_label": "ドキュメントソースを選択",
+    "docs_input_info": "PDF、DOCX、TXT、またはテキストである可能性があります",
+    "docs_source_info": "これはテキストの元の言語です",
+    "chunk_size_label": "TTSがセグメントごとに処理する最大文字数",
+    "chunk_size_info": "値が0の場合、TTSに動的で互換性のある値が割り当てられます。",
+    "docs_button": "言語変換ブリッジを開始",
+    "cv_url_info": "URLからR.V.C.モデルを自動的にダウンロードします。HuggingFaceまたはドライブからのリンクを使用でき、各リンクをコンマで区切って複数のリンクを含めることができます。例: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title": "音声を置換: TTSからR.V.C.へ。",
+    "sec1_title": "### 1. 使用を有効にするには、それを有効にします。",
+    "enable_replace": "このオプションをチェックして、モデルの使用を有効にします。",
+    "sec2_title": "### 2. 各対応する話者のTTSに適用される音声を選択し、設定を適用します。",
+    "sec2_subtitle": "使用する<TTSスピーカー>の数に応じて、それぞれに対応するモデルが必要です。また、スピーカーが正しく検出されない場合のために補助的なモデルもあります。",
+    "cv_tts1": "スピーカー1に適用する音声を選択してください。",
+    "cv_tts2": "スピーカー2に適用する音声を選択してください。",
+    "cv_tts3": "スピーカー3に適用する音声を選択してください。",
+    "cv_tts4": "スピーカー4に適用する音声を選択してください。",
+    "cv_tts5": "スピーカー5に適用する音声を選択してください。",
+    "cv_tts6": "スピーカー6に適用する音声を選択してください。",
+    "cv_aux": "- スピーカーが正常に検出されない場合に適用する音声。",
+    "cv_button_apply": "設定を適用",
+    "tab_help": "ヘルプ"
+  },
+
+  "chinese_zh_cn": {
+    "description": """
+          ### 🎥 **使用SoniTranslate轻松翻译视频！** 📽️
+
+          上传视频、音频文件或提供YouTube链接。 📽️ **从官方存储库获取更新的笔记本：[SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+          查看`帮助`标签以获取如何使用的说明。让我们开始享受视频翻译的乐趣吧！ 🚀🎉
+          """,
+    "tutorial" : """
+          # 🔰 **使用说明:**
+
+          1. 📤 上传**视频**、**音频文件**或提供🌐 **YouTube链接**。
+
+          2. 🌍 选择您要**翻译视频**的语言。
+
+          3. 🗣️ 指定视频中**发言人数量**并为每个人分配适合翻译语言的文本到语音（TTS）声音。
+
+          4. 🚀 按下 '**翻译**' 按钮获取结果。
+
+          ---
+
+          # 🧩 **SoniTranslate支持不同的TTS（文本到语音）引擎，包括:**
+          - EDGE-TTS → 格式 `en-AU-WilliamNeural-Male` → 快速而准确。
+          - FACEBOOK MMS → 格式 `en-facebook-mms VITS` → 声音更自然；目前仅使用CPU。
+          - PIPER TTS → 格式 `en_US-lessac-high VITS-onnx` → 与前一款相同，但针对CPU和GPU进行了优化。
+          - BARK → 格式 `en_speaker_0-Male BARK` → 质量良好但速度较慢，易产生幻觉。
+          - Coqui XTTS → 格式 `_XTTS_/AUTOMATIC.wav` → 仅支持简体中文、英文、法文、德文、意大利文、葡萄牙文、波兰文、土耳其文、俄文、荷兰文、捷克文、阿拉伯文、西班牙文、匈牙利文、韩文和日文。
+
+          ---
+
+          # 🎤 如何使用R.V.C.和R.V.C.2语音（可选）🎶
+
+          目标是将R.V.C.应用于生成的TTS（文本到语音）🎙️
+
+          1. 在`自定义语音R.V.C.`标签中，下载您需要的模型📥 您可以使用Hugging Face和Google Drive的链接，格式如zip、pth或index。您还可以下载完整的HF空间存储库，但此选项不太稳定😕
+
+          2. 现在，转到`替换语音：TTS到R.V.C.`并选中`启用`框✅ 然后，您可以选择要应用于每个TTS发言者的模型👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+          3. 调整将应用于所有R.V.C.的F0方法🎛️
+
+          4. 按下`应用配置`以应用所做的更改🔄
+
+          5. 返回视频翻译标签，单击 '翻译' ▶️ 现在，将应用R.V.C.进行翻译。🗣️
+
+          提示：您可以使用`测试R.V.C.`来进行实验，找到要应用于R.V.C.的最佳TTS或配置🧪🔍
+
+          ---
+
+          """,
+    "tab_translate" : "视频翻译",
+    "video_source": "选择视频来源",
+    "link_label" : "媒体链接。",
+    "link_info": "示例：www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "URL放这里...",
+    "dir_label" : "视频路径。",
+    "dir_info": "示例：/usr/home/my_video.mp4",
+    "dir_ph" : "路径放这里...",
+    "sl_label" : "源语言",
+    "sl_info": "这是视频的原始语言",
+    "tat_label" : "翻译成",
+    "tat_info": "选择目标语言，同时确保选择该语言对应的TTS。",
+    "num_speakers" : "选择视频中有多少个人在说话。",
+    "min_sk" : "最少发言者",
+    "max_sk" : "最多发言者",
+    "tts_select" : "为每个发言者选择您想要的语音。",
+    "sk1" : "TTS发言者 1",
+    "sk2" : "TTS发言者 2",
+    "sk3" : "TTS发言者 3",
+    "sk4" : "TTS发言者 4",
+    "sk5" : "TTS发言者 5",
+    "sk6" : "TTS发言者 6",
+    "vc_title" : "不同语言的语音模仿",
+    "vc_subtitle" : """
+          ### 在各种语言中复制一个人的声音。
+          当适当使用时，大多数声音都很有效，但并不是每种情况都能达到完美。
+          语音模仿仅复制参考发言者的音调，不包括口音和情感，这些由基础发言者TTS模型控制，并且不会被转换器复制。
+          这将从主音频中获取每个发言者的音频样本并处理它们。
+          """,
+    "vc_active_label" : "激活语音模仿",
+    "vc_active_info" : "激活语音模仿：复制原始发言者的音调",
+    "vc_method_label" : "方法",
+    "vc_method_info" : "选择语音模仿过程的方法",
+    "vc_segments_label" : "最大样本数",
+    "vc_segments_info" : "最大样本数：是将用于处理的音频样本数量，越多越好，但可能会添加噪音",
+    "vc_dereverb_label" : "去混响",
+    "vc_dereverb_info" : "去混响：将声音去除混响应用于音频样本。",
+    "vc_remove_label" : "删除先前的样本",
+    "vc_remove_info" : "删除先前的样本：删除先前生成的样本，因此需要创建新样本。",
+    "xtts_title" : "基于音频创建TTS",
+    "xtts_subtitle" : "上传最长10秒的带有声音的音频文件。使用XTTS，将创建一个与提供的音频文件类似的新TTS。",
+    "xtts_file_label" : "上传具有声音的短音频",
+    "xtts_name_label" : "TTS的名称",
+    "xtts_name_info" : "使用简单的名称",
+    "xtts_dereverb_label" : "去混响音频",
+    "xtts_dereverb_info" : "去混响音频：将声音去除混响应用于音频",
+    "xtts_button" : "处理音频并将其包含在TTS选择器中",
+    "xtts_footer" : "自动生成语音xtts：您可以在TTS选择器中使用 '_XTTS_/AUTOMATIC.wav' 来为每个发言者自动生成片段，以用于生成翻译时。",
+    "extra_setting" : "高级设置",
+    "acc_max_label" : "最大音频加速度",
+    "acc_max_info" : "翻译音频段的最大加速度，以避免重叠。值为1.0表示无加速度",
+    "aud_mix_label" : "音频混合方法",
+    "aud_mix_info" : "混合原始和翻译音频文件，以创建平衡的定制输出，提供两种可用的混合模式。",
+    "vol_ori" : "原始音频音量",
+    "vol_tra" : "翻译音频音量",
+    "voiceless_tk_label" : "无声音轨",
+    "voiceless_tk_info" : "无声音轨：在将其与翻译音频结合之前删除原始音频声音。",
+    "sub_type" : "字幕类型",
+    "whisper_title" : "配置转录。",
+    "srt_file_label" : "上传SRT字幕文件（将用于替代Whisper的转录）",
+    "divide_text_label" : "通过以下方式重新划分文本段：",
+    "divide_text_info" : "（实验性）输入用于拆分源语言中现有文本段的分隔符。该工具将识别出现并相应地创建新段。使用|指定多个分隔符，例如：!|?|...|。",
+    "out_name_label" : "文件名",
+    "out_name_info" : "输出文件的名称",
+    "preview_info" : "预览将视频裁剪为仅10秒以进行测试。请在检索完整视频持续时间之前停用它。",
+    "edit_sub_label" : "编辑生成的字幕",
+    "edit_sub_info" : "编辑生成的字幕：允许您分两步运行翻译。首先使用 '获取字幕并编辑' 按钮获取字幕以编辑它们，然后使用 '翻译' 按钮生成视频",
+    "button_subs" : "获取字幕并编辑",
+    "editor_sub_label" : "生成的字幕",
+    "editor_sub_info" : "请在此处编辑生成的字幕中的文本。您可以在点击 '翻译' 按钮之前更改界面选项，但不能更改 '源语言'、'翻译成' 和 '最多发言者'，以避免错误。编辑完成后，点击 '翻译' 按钮。",
+    "editor_sub_ph" : "首先点击 '获取字幕并编辑' 获取字幕",
+    "button_translate" : "翻译",
+    "output_result_label" : "下载翻译视频",
+    "sub_ori" : "字幕",
+    "sub_tra" : "翻译字幕",
+    "ht_token_info" : "一个重要步骤是接受使用Pyannote的许可协议。您需要在Hugging Face上拥有一个帐户，并接受使用模型的许可：https://huggingface.co/pyannote/speaker-diarization 和 https://huggingface.co/pyannote/segmentation。在此处获取您的密钥令牌：https://hf.co/settings/tokens",
+    "ht_token_ph" : "令牌放这里...",
+    "tab_docs" : "文档翻译",
+    "docs_input_label" : "选择文档来源",
+    "docs_input_info" : "可以是PDF、DOCX、TXT或文本",
+    "docs_source_info" : "这是文本的原始语言",
+    "chunk_size_label" : "TTS每个段处理的最大字符数",
+    "chunk_size_info" : "值为0分配了一个动态且更兼容的值给TTS。",
+    "docs_button" : "开始语言转换桥",
+    "cv_url_info" : "从URL自动下载R.V.C.模型。您可以使用HuggingFace或Drive的链接，您可以包括多个链接，每个链接用逗号分隔。示例：https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "替换语音：TTS到R.V.C.",
+    "sec1_title" : "### 1. 要启用其使用，请将其标记为启用。",
+    "enable_replace" : "选中此框以启用模型的使用。",
+    "sec2_title" : "### 2. 选择将应用于每个相应发言者的TTS的声音，并应用配置。",
+    "sec2_subtitle" : "根据您将使用的<TTS发言者>的数量，每个都需要其各自的模型。此外，如果某种原因未正确检测到发言者，则还有一个辅助模型。",
+    "cv_tts1" : "选择要为发言者 1 应用的声音。",
+    "cv_tts2" : "选择要为发言者 2 应用的声音。",
+    "cv_tts3" : "选择要为发言者 3 应用的声音。",
+    "cv_tts4" : "选择要为发言者 4 应用的声音。",
+    "cv_tts5" : "选择要为发言者 5 应用的声音。",
+    "cv_tts6" : "选择要为发言者 6 应用的声音。",
+    "cv_aux" : "- 在某种原因下未成功检测到发言者时应用的声音。",
+    "cv_button_apply" : "应用配置",
+    "tab_help" : "帮助"
+  },
+
+  "ukrainian": {
+    "description": """
+        ### 🎥 **Перекладайте відео легко з SoniTranslate!** 📽️
+
+        Завантажте відео, аудіофайл або надайте посилання на YouTube. 📽️ **Отримайте оновлений ноутбук з офіційного репозиторію: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Дивіться вкладку `Довідка` за інструкціями, як цим користуватися. Давайте почнемо веселощі з перекладу відео! 🚀🎉
+        """,
+    "tutorial": """
+        # 🔰 **Інструкції з використання:**
+
+        1. 📤 Завантажте **відео**, **аудіофайл** або надайте 🌐 **посилання на YouTube**.
+
+        2. 🌍 Виберіть мову, на яку ви хочете **перекласти відео**.
+
+        3. 🗣️ Вкажіть **кількість людей, які говорять** у відео і **призначте кожному голосу для синтезу мовлення тексту**, що відповідає мові перекладу.
+
+        4. 🚀 Натисніть кнопку '**Переклад**', щоб отримати результати.
+
+        ---
+
+        # 🧩 **SoniTranslate підтримує різні двигуни TTS (текст-у-мову), які є:**
+        - EDGE-TTS → формат `en-AU-WilliamNeural-Male` → Швидкий та точний.
+        - FACEBOOK MMS → формат `en-facebook-mms VITS` → Голос більш натуральний; наразі використовується лише ЦП.
+        - PIPER TTS → формат `en_US-lessac-high VITS-onnx` → Те ж саме, що й попередній, але оптимізований як для ЦП, так і для ГПУ.
+        - BARK → формат `en_speaker_0-Male BARK` → Хороша якість, але повільна, і вона схильна до галюцинацій.
+        - Coqui XTTS → формат `_XTTS_/AUTOMATIC.wav` → Доступний лише для китайської (спрощеної), англійської, французької, німецької, італійської, португальської, польської, турецької, російської, голландської, чеської, арабської, іспанської, угорської, корейської та японської.
+
+        ---
+
+        # 🎤 Як використовувати голоси R.V.C. та R.V.C.2 (Необов'язково) 🎶
+
+        Мета - застосувати R.V.C. до створеного TTS (текст-у-мову) 🎙️
+
+        1. У вкладці `Корист. голос R.V.C.` завантажте необхідні моделі 📥 Ви можете використовувати посилання з Hugging Face та Google Drive у форматах, таких як zip, pth або index. Ви також можете завантажити повні репозиторії просторів HF, але ця опція не дуже стабільна 😕
+
+        2. Тепер перейдіть до `Заміна голосу: TTS на R.V.C.` та позначте поле `enable` ✅ Після цього ви можете вибрати моделі, які ви хочете застосувати до кожного говорця TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Налаштуйте метод F0, який буде застосовуватися до всіх R.V.C. 🎛️
+
+        4. Натисніть `ЗАСТОСУВАТИ КОНФІГУРАЦІЮ`, щоб застосувати зроблені зміни 🔄
+
+        5. Поверніться до вкладки перекладу відео та натисніть на 'Переклад' ▶️ Тепер переклад буде виконаний з використанням R.V.C. 🗣️
+
+        Порада: Ви можете використовувати `Тест R.V.C.` для експериментування та знаходження найкращих TTS або конфігурацій для застосування до R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate": "Переклад відео",
+    "video_source": "Виберіть джерело відео",
+    "link_label": "Посилання на медіа.",
+    "link_info": "Приклад: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "Тут введіть URL...",
+    "dir_label": "Шлях до відео.",
+    "dir_info": "Приклад: /usr/home/my_video.mp4",
+    "dir_ph": "Тут введіть шлях...",
+    "sl_label": "Мова джерела",
+    "sl_info": "Це оригінальна мова відео",
+    "tat_label": "Переклад аудіо на",
+    "tat_info": "Виберіть цільову мову і також переконайтеся, що вибрали відповідний TTS для цієї мови.",
+    "num_speakers": "Виберіть, скільки людей говорить у відео.",
+    "min_sk": "Мін. говорці",
+    "max_sk": "Макс. говорці",
+    "tts_select": "Виберіть голос для кожного говорця.",
+    "sk1": "Говорець TTS 1",
+    "sk2": "Говорець TTS 2",
+    "sk3": "Говорець TTS 3",
+    "sk4": "Говорець TTS 4",
+    "sk5": "Говорець TTS 5",
+    "sk6": "Говорець TTS 6",
+    "vc_title": "Імітація голосу на різних мовах",
+    "vc_subtitle": """
+        ### Відтворення голосу людини на різних мовах.
+        Хоча це ефективно з більшістю голосів при відповідному використанні, воно може не досягти ідеальності в кожному випадку.
+        Імітація голосу виключно відтворює тон джерела, не включаючи акцент і емоції, які контролюються базовою моделлю TTS говорця і не реплікуються конвертером.
+        Це займе аудіопроби з основного аудіо для кожного говорця та обробить їх.
+        """,
+    "vc_active_label": "Активна імітація голосу",
+    "vc_active_info": "Активна імітація голосу: Відтворює тон оригінального говорця",
+    "vc_method_label": "Метод",
+    "vc_method_info": "Виберіть метод для процесу імітації голосу",
+    "vc_segments_label": "Макс. проби",
+    "vc_segments_info": "Макс. проби: Кількість аудіопроб, які будуть згенеровані для процесу, більше - краще, але це може додати шум",
+    "vc_dereverb_label": "Прибрати реверберацію",
+    "vc_dereverb_info": "Прибрати реверберацію: Застосовує вокальну реверберацію до аудіопроб.",
+    "vc_remove_label": "Видалити попередні проби",
+    "vc_remove_info": "Видалити попередні проби: Видаляє попередні згенеровані проби, тому потрібно створити нові.",
+    "xtts_title": "Створити TTS на основі аудіо",
+    "xtts_subtitle": "Завантажте короткий аудіофайл максимум 10 секунд з голосом. Використовуючи XTTS, буде створений новий TTS з голосом, схожим на вказаний аудіофайл.",
+    "xtts_file_label": "Завантажте короткий аудіофайл з голосом",
+    "xtts_name_label": "Назва для TTS",
+    "xtts_name_info": "Використовуйте просту назву",
+    "xtts_dereverb_label": "Прибрати реверберацію з аудіо",
+    "xtts_dereverb_info": "Прибрати реверберацію з аудіо: Застосовує вокальну реверберацію до аудіо",
+    "xtts_button": "Обробити аудіо та включити його в селектор TTS",
+    "xtts_footer": "Автоматично генеруйте голосовий xtts: Ви можете використовувати '_XTTS_/AUTOMATIC.wav' у селекторі TTS, щоб автоматично генерувати сегменти для кожного говорця при генерації перекладу.",
+    "extra_setting": "Додаткові налаштування",
+    "acc_max_label": "Макс. прискорення аудіо",
+    "acc_max_info": "Максимальне прискорення для перекладених аудіосегментів для уникнення перекриття. Значення 1,0 означає відсутність прискорення",
+    "aud_mix_label": "Метод мікшування аудіо",
+    "aud_mix_info": "Змішуйте оригінальні та перекладені аудіофайли, щоб створити налаштований, збалансований вихід з двома доступними режимами мікшування.",
+    "vol_ori": "Гучність оригінального аудіо",
+    "vol_tra": "Гучність перекладеного аудіо",
+    "voiceless_tk_label": "Безголосий трек",
+    "voiceless_tk_info": "Безголосий трек: Прибрати голоси оригінального аудіо перед його поєднанням з перекладеним аудіо.",
+    "sub_type": "Тип субтитрів",
+    "whisper_title": "Налаштування транскрипції.",
+    "srt_file_label": "Завантажте файл субтитрів SRT (використовуватиметься замість транскрипції Whisper)",
+    "divide_text_label": "Розділити текстові сегменти за допомогою:",
+    "divide_text_info": "(Експериментально) Введіть роздільник для розділення існуючих текстових сегментів на мові джерела. Інструмент ідентифікує випадки та створює нові сегменти відповідно. Вказуйте кілька роздільників, використовуючи |, наприклад: !|?|...|。",
+    "out_name_label": "Ім'я файлу",
+    "out_name_info": "Назва вихідного файлу",
+    "preview_info": "Перегляд обрізає відео лише до 10 секунд для тестування. Будь ласка, деактивуйте його, щоб отримати повну тривалість відео.",
+    "edit_sub_label": "Редагувати згенеровані субтитри",
+    "edit_sub_info": "Редагувати згенеровані субтитри: Дозволяє виконувати переклад у 2 етапи. Спочатку за допомогою кнопки 'ОТРИМАТИ СУБТИТРИ ТА РЕДАГУВАТИ' ви отримуєте субтитри, щоб ви могли їх відредагувати, а потім за допомогою кнопки 'ПЕРЕКЛАСТИ' ви можете створити відео",
+    "button_subs": "ОТРИМАТИ СУБТИТРИ ТА РЕДАГУВАТИ",
+    "editor_sub_label": "Згенеровані субтитри",
+    "editor_sub_info": "Вільно редагуйте текст в згенерованих субтитрах тут. Ви можете вносити зміни в параметри інтерфейсу перед тим, як натиснути кнопку 'ПЕРЕКЛАСТИ', за винятком 'Мови джерела', 'Переклад аудіо на' та 'Макс. говорці', щоб уникнути помилок. Як тільки ви закінчите, натисніть кнопку 'ПЕРЕКЛАСТИ'.",
+    "editor_sub_ph": "Спочатку натисніть 'ОТРИМАТИ СУБТИТРИ ТА РЕДАГУВАТИ', щоб отримати субтитри",
+    "button_translate": "ПЕРЕКЛАСТИ",
+    "output_result_label": "ЗАВАНТАЖИТИ ПЕРЕКЛАДЕНЕ ВІДЕО",
+    "sub_ori": "Субтитри",
+    "sub_tra": "Перекладені субтитри",
+    "ht_token_info": "Один із важливих кроків - прийняти ліцензійну угоду для використання Pyannote. Вам потрібно мати обліковий запис на Hugging Face та прийняти ліцензію для використання моделей: https://huggingface.co/pyannote/speaker-diarization та https://huggingface.co/pyannote/segmentation. Отримайте свій КЛЮЧОВИЙ ТОКЕН тут: https://hf.co/settings/tokens",
+    "ht_token_ph": "Токен вставляється тут...",
+    "tab_docs": "Переклад документів",
+    "docs_input_label": "Виберіть джерело документа",
+    "docs_input_info": "Це може бути PDF, DOCX, TXT або текст",
+    "docs_source_info": "Це початкова мова тексту",
+    "chunk_size_label": "Максимальна кількість символів, яку оброблятиме TTS на кожному сегменті",
+    "chunk_size_info": "Значення 0 призначає динамічне і більш сумісне значення для TTS.",
+    "docs_button": "Почати місткування мови",
+    "cv_url_info": "Автоматично завантажте моделі R.V.C. за URL-адресою. Ви можете використовувати посилання з HuggingFace або Drive, а також включати кілька посилань, кожне з яких відокремлене комою. Приклад: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title": "Замінити голос: TTS на R.V.C.",
+    "sec1_title": "### 1. Для включення його використання відмітьте його як enable.",
+    "enable_replace": "Позначте це, щоб увімкнути використання моделей.",
+    "sec2_title": "### 2. Виберіть голос, який буде застосований до кожного TTS кожного відповідного говорця та застосуйте конфігурації.",
+    "sec2_subtitle": "Залежно від того, скільки <TTS Speaker> ви будете використовувати, кожен з них потребує відповідної моделі. Крім того, є допоміжна, якщо з якихось причин говорець не розпізнається правильно.",
+    "cv_tts1": "Виберіть голос для застосування до говорця 1.",
+    "cv_tts2": "Виберіть голос для застосування до говорця 2.",
+    "cv_tts3": "Виберіть голос для застосування до говорця 3.",
+    "cv_tts4": "Виберіть голос для застосування до говорця 4.",
+    "cv_tts5": "Виберіть голос для застосування до говорця 5.",
+    "cv_tts6": "Виберіть голос для застосування до говорця 6.",
+    "cv_aux": "- Голос, який застосовується у разі невдалого розпізнавання говорця.",
+    "cv_button_apply": "ЗАСТОСУВАТИ КОНФІГУРАЦІЮ",
+    "tab_help": "Довідка"
+  },
+
+  "arabic": {
+    "description": """
+          ### 🎥 **ترجمة مقاطع الفيديو بسهولة مع SoniTranslate!** 📽️
+
+          قم بتحميل ملف فيديو أو صوتي أو قدم رابطًا لفيديو YouTube. 📽️ **احصل على الدفتر المحدث من المستودع الرسمي: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+          انظر إلى علامة التبويب "المساعدة" للحصول على تعليمات حول كيفية استخدامه. لنبدأ بالمرح مع ترجمة الفيديو! 🚀🎉
+          """,
+    "tutorial": """
+          # 🔰 **تعليمات الاستخدام:**
+
+          1. 📤 قم بتحميل **فيديو** أو ملف **صوتي** أو قم بتقديم 🌐 **رابط YouTube.**
+
+          2. 🌍 اختر اللغة التي ترغب في **ترجمة الفيديو** إليها.
+
+          3. 🗣️ حدد **عدد الأشخاص الذين يتحدثون** في الفيديو و **تعيين كل واحد منهم صوتًا للنص إلى الكلام** مناسبًا للغة الترجمة.
+
+          4. 🚀 اضغط على زر '**ترجمة**' للحصول على النتائج.
+
+          ---
+
+          # 🧩 **يدعم SoniTranslate محركات TTS (نص إلى كلام) مختلفة، وهي:**
+          - EDGE-TTS → الصيغة `en-AU-WilliamNeural-Male` → سريع ودقيق.
+          - FACEBOOK MMS → الصيغة `en-facebook-mms VITS` → الصوت أكثر طبيعية؛ في الوقت الحالي، يستخدم فقط وحدة المعالجة المركزية.
+          - PIPER TTS → الصيغة `en_US-lessac-high VITS-onnx` → نفس الشيء كما السابق، ولكنه محسّن لكل من وحدة المعالجة المركزية ووحدة معالجة الرسومات.
+          - BARK → الصيغة `en_speaker_0-Male BARK` → جودة جيدة ولكن بطيء، ويميل إلى التهليل.
+          - Coqui XTTS → الصيغة `_XTTS_/AUTOMATIC.wav` → متاحة فقط للصينية (المبسطة)، الإنجليزية، الفرنسية، الألمانية، الإيطالية، البرتغالية، البولندية، التركية، الروسية، الهولندية، التشيكية، العربية، الإسبانية، الهنغارية، الكورية واليابانية.
+
+          ---
+
+          # 🎤 كيفية استخدام أصوات R.V.C. و R.V.C.2 (اختياري) 🎶
+
+          الهدف هو تطبيق صوت R.V.C. على TTS المولد (نص إلى كلام) 🎙️
+
+          1. في علامة التبويب "الصوت المخصص R.V.C."، قم بتنزيل النماذج التي تحتاجها 📥 يمكنك استخدام روابط من Hugging Face وGoogle Drive بتنسيقات مثل zip أو pth أو index. يمكنك أيضًا تنزيل مستودعات مساحة HF الكاملة، ولكن هذا الخيار غير مستقر جدًا 😕
+
+          2. الآن، انتقل إلى "Replace voice: TTS to R.V.C." وحدد مربع "تمكين" ✅ بعد ذلك، يمكنك اختيار النماذج التي تريد تطبيقها على كل متحدث TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+          3. ضبط طريقة F0 التي ستُطبَّق على جميع R.V.C. 🎛️
+
+          4. اضغط على `APPLY CONFIGURATION` لتطبيق التغييرات التي قمت بها 🔄
+
+          5. ارجع إلى علامة التبويب لترجمة الفيديو وانقر فوق 'ترجمة' ▶️ الآن، سيتم إجراء الترجمة بتطبيق R.V.C. 🗣️
+
+          نصيحة: يمكنك استخدام `Test R.V.C.` لتجربة والعثور على أفضل TTS أو التكوينات لتطبيق R.V.C. 🧪🔍
+
+          ---
+
+          """,
+    "tab_translate": "ترجمة الفيديو",
+    "video_source": "اختر مصدر الفيديو",
+    "link_label": "رابط الوسائط.",
+    "link_info": "مثال: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "يتم إدخال الرابط هنا...",
+    "dir_label": "مسار الفيديو.",
+    "dir_info": "مثال: /usr/home/my_video.mp4",
+    "dir_ph": "يتم إدخال المسار هنا...",
+    "sl_label": "اللغة المصدر",
+    "sl_info": "هذه هي اللغة الأصلية للفيديو",
+    "tat_label": "ترجمة الصوت إلى",
+    "tat_info": "حدد اللغة المستهدفة وتأكد أيضًا من اختيار TTS المقابل لتلك اللغة.",
+    "num_speakers": "حدد كم عدد الأشخاص الذين يتحدثون في الفيديو.",
+    "min_sk": "الحد الأدنى من الأشخاص",
+    "max_sk": "الحد الأقصى من الأشخاص",
+    "tts_select": "اختر الصوت الذي تريده لكل متحدث.",
+    "sk1": "متحدث TTS 1",
+    "sk2": "متحدث TTS 2",
+    "sk3": "متحدث TTS 3",
+    "sk4": "متحدث TTS 4",
+    "sk5": "متحدث TTS 5",
+    "sk6": "متحدث TTS 6",
+    "vc_title": "تقليد صوت في لغات مختلفة",
+    "vc_subtitle": """
+          ### استنساخ صوت الشخص عبر لغات متعددة.
+          على الرغم من كفاءته مع معظم الأصوات عند استخدامه بشكل مناسب، قد لا يتم التمام في كل حالة.
+          يقوم تقليد الصوت بالتمثيل فقط لنغمة المتحدث الأصلي، باستثناء اللكنة والعاطفة، التي تحكمها نموذج TTS الأصلي ولا يقوم المحول بتكرارها.
+          سيتم أخذ عينات الصوت من الصوت الرئيسي لكل متحدث ومعالجتها.
+          """,
+    "vc_active_label": "تقليد صوت نشط",
+    "vc_active_info": "تقليد صوت نشط: يقوم بتمثيل نغمة المتحدث الأصلي",
+    "vc_method_label": "الطريقة",
+    "vc_method_info": "حدد طريقة لعملية تقليد الصوت",
+    "vc_segments_label": "الحد الأقصى للعينات",
+    "vc_segments_info": "الحد الأقصى للعينات: هو عدد عينات الصوت التي سيتم إنشاؤها للعملية، كلما كانت أكثر كانت أفضل ولكن يمكن أن تضيف ضوضاء",
+    "vc_dereverb_label": "إزالة الصدى",
+    "vc_dereverb_info": "إزالة الصدى: يُطبَّق تقنية إزالة الصدى الصوتي على عينات الصوت.",
+    "vc_remove_label": "إزالة العينات السابقة",
+    "vc_remove_info": "إزالة العينات السابقة: قم بإزالة العينات السابقة التي تم إنشاؤها، لذلك يجب إنشاء عينات جديدة.",
+    "xtts_title": "إنشاء TTS استنادًا إلى صوت",
+    "xtts_subtitle": "قم بتحميل ملف صوتي لمدة 10 ثوانٍ كحد أقصى بصوت. باستخدام XTTS، سيتم إنشاء TTS جديد بصوت مشابه للملف الصوتي المقدم.",
+    "xtts_file_label": "قم بتحميل ملف صوتي قصير بالصوت",
+    "xtts_name_label": "اسم لـ TTS",
+    "xtts_name_info": "استخدم اسمًا بسيطًا",
+    "xtts_dereverb_label": "إزالة صدى الصوت",
+    "xtts_dereverb_info": "إزالة صدى الصوت: يُطبَّق تقنية إزالة صدى الصوت على الصوت",
+    "xtts_button": "معالجة الصوت وتضمينه في محدد TTS",
+    "xtts_footer": "توليد صوت xtts تلقائيًا: يمكنك استخدام '_XTTS_/AUTOMATIC.wav' في محدد TTS لتوليد تقاطعات لكل متحدث تلقائيًا عند إنشاء الترجمة.",
+    "extra_setting": "إعدادات متقدمة",
+    "acc_max_label": "التسارع الصوتي الأقصى",
+    "acc_max_info": "التسارع الأقصى لقطع الصوت المترجم لتجنب التداخل. قيمة 1.0 تمثل عدم وجود تسارع",
+    "aud_mix_label": "طريقة مزج الصوت",
+    "aud_mix_info": "مزج ملفات الصوت الأصلية والمترجمة لإنشاء إخراج مخصص ومتوازن بوجود طريقتي مزج متاحتين.",
+    "vol_ori": "مستوى صوت الصوت الأصلي",
+    "vol_tra": "مستوى صوت الصوت المترجم",
+    "voiceless_tk_label": "مسار بدون صوت",
+    "voiceless_tk_info": "مسار بدون صوت: قم بإزالة الأصوات الصوتية الأصلية قبل دمجها مع الصوت المترجم.",
+    "sub_type": "نوع العنوان الفرعي",
+    "whisper_title": "تكوين النص السريع.",
+    "srt_file_label": "قم بتحميل ملف عنوان فرعي SRT (سيُستخدم بدلاً من النص السريع)",
+    "divide_text_label": "إعادة تقسيم شرائح النص بواسطة:",
+    "divide_text_info": "(تجريبي) أدخل فاصل لتقسيم شرائح النص الحالية في اللغة المصدر. ستحدد الأداة حدوث الحالات وإنشاء شرائح جديدة وفقًا لذلك. حدد علامات فاصلة متعددة باستخدام |، على سبيل المثال: !|؟|...|。",
+    "out_name_label": "اسم الملف",
+    "out_name_info": "اسم الملف الناتج",
+    "preview_info": "يقوم المعاينة بتقطيع الفيديو لمدة 10 ثوانٍ فقط لأغراض الاختبار. يرجى إلغاء تنشيطه لاسترداد مدة الفيديو الكاملة.",
+    "edit_sub_label": "تحرير العناوين الفرعية المولدة",
+    "edit_sub_info": "تحرير العناوين الفرعية المولدة: يتيح لك تشغيل الترجمة في 2 خطوة. أولاً بزر 'GET SUBTITLES AND EDIT'، يتم الحصول على العناوين الفرعية لتحريرها، ومن ثم بزر 'TRANSLATE'، يمكنك إنشاء الفيديو",
+    "button_subs": "GET SUBTITLES AND EDIT",
+    "editor_sub_label": "العناوين الفرعية المولدة",
+    "editor_sub_info": "لا تتردد في تحرير النص في العناوين الفرعية المولدة هنا. يمكنك إجراء تغييرات على خيارات الواجهة قبل النقر على زر 'TRANSLATE'، باستثناء 'اللغة المصدر' و 'ترجمة الصوت إلى' و 'الحد الأقصى للأشخاص'، لتجنب الأخطاء. بمجرد الانتهاء، انقر فوق الزر 'TRANSLATE'.",
+    "editor_sub_ph": "اضغط أولاً على 'GET SUBTITLES AND EDIT' للحصول على العناوين الفرعية",
+    "button_translate": "TRANSLATE",
+    "output_result_label": "تنزيل الفيديو المترجم",
+    "sub_ori": "العناوين الفرعية",
+    "sub_tra": "العناوين الفرعية المترجمة",
+    "ht_token_info": "خطوة مهمة هي قبول اتفاقية الترخيص لاستخدام Pyannote. يجب أن تكون لديك حساب على Hugging Face وقبول الترخيص لاستخدام النماذج: https://huggingface.co/pyannote/speaker-diarization و https://huggingface.co/pyannote/segmentation. احصل على مفتاحك الخاص هنا: https://hf.co/settings/tokens",
+    "ht_token_ph": "يتم إدخال المفتاح هنا...",
+    "tab_docs": "ترجمة المستندات",
+    "docs_input_label": "اختر مصدر المستند",
+    "docs_input_info" : "يمكن أن يكون PDF، DOCX، TXT، أو نص",
+    "docs_source_info" : "هذه هي اللغة الأصلية للنص",
+    "chunk_size_label" : "الحد الأقصى لعدد الأحرف التي سيعالجها TTS في كل شريحة",
+    "chunk_size_info" : "تُخصص قيمة 0 قيمة ديناميكية وأكثر توافقًا لـ TTS.",
+    "docs_button" : "بدء جسر تحويل اللغة",
+    "cv_url_info" : "قم بتنزيل نماذج R.V.C. تلقائيًا من الرابط. يمكنك استخدام روابط من HuggingFace أو Drive، ويمكنك تضمين عدة روابط، مفصولة بفاصلة. على سبيل المثال: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth، https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "استبدال الصوت: TTS إلى R.V.C.",
+    "sec1_title" : "### 1. لتمكين استخدامه، ضع علامة على تمكينه.",
+    "enable_replace" : "تحقق من ذلك لتمكين استخدام النماذج.",
+    "sec2_title" : "### 2. اختر صوتًا سيتم تطبيقه على كل TTS لكل متحدث مقابل وطبق التكوينات.",
+    "sec2_subtitle" : "يعتمد ذلك على عدد <متحدث TTS> الذي ستستخدمه، ويحتاج كل منها إلى نموذجه الخاص. بالإضافة إلى ذلك، هناك واحدة مساعدة في حالة عدم اكتشاف المتحدث بشكل صحيح لأي سبب ما.",
+    "cv_tts1" : "اختر الصوت المراد تطبيقه على المتحدث 1.",
+    "cv_tts2" : "اختر الصوت المراد تطبيقه على المتحدث 2.",
+    "cv_tts3" : "اختر الصوت المراد تطبيقه على المتحدث 3.",
+    "cv_tts4" : "اختر الصوت المراد تطبيقه على المتحدث 4.",
+    "cv_tts5" : "اختر الصوت المراد تطبيقه على المتحدث 5.",
+    "cv_tts6" : "اختر الصوت المراد تطبيقه على المتحدث 6.",
+    "cv_aux" : "- الصوت المراد تطبيقه في حالة عدم اكتشاف المتحدث بنجاح.",
+    "cv_button_apply" : "تطبيق التكوين",
+    "tab_help" : "مساعدة"
+  },
+
+  "russian": {
+    "description": """
+        ### 🎥 **Перевод видео легко с SoniTranslate!** 📽️
+
+        Загрузите видео, аудиофайл или предоставьте ссылку на YouTube. 📽️ **Получите обновленный блокнот из официального репозитория.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Посмотрите вкладку `Помощь` для инструкций о том, как это использовать. Давайте начнем веселиться с переводом видео! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Инструкции по использованию:**
+
+        1. 📤 Загрузите **видео**, **аудиофайл** или предоставьте 🌐 **ссылку на YouTube**.
+
+        2. 🌍 Выберите язык, на который вы хотите **перевести видео**.
+
+        3. 🗣️ Укажите **количество говорящих** в видео и **назначьте каждому голос синтеза речи** подходящий для языка перевода.
+
+        4. 🚀 Нажмите кнопку '**Перевести**', чтобы получить результаты.
+
+        ---
+
+        # 🧩 **SoniTranslate поддерживает различные движки TTS (текст в речь), которые включают:**
+        - EDGE-TTS → формат `en-AU-WilliamNeural-Male` → Быстро и точно.
+        - FACEBOOK MMS → формат `en-facebook-mms VITS` → Голос более естественный; на данный момент используется только процессор.
+        - PIPER TTS → формат `en_US-lessac-high VITS-onnx` → То же самое, что и предыдущее, но оптимизировано как для CPU, так и для GPU.
+        - BARK → формат `en_speaker_0-Male BARK` → Хорошее качество, но медленное, и оно подвержено галлюцинациям.
+        - Coqui XTTS → формат `_XTTS_/AUTOMATIC.wav` → Доступен только для китайского (упрощенного), английского, французского, немецкого, итальянского, португальского, польского, турецкого, русского, голландского, чешского, арабского, испанского, венгерского, корейского и японского языков.
+
+        ---
+
+        # 🎤 Как использовать голоса R.V.C. и R.V.C.2 (необязательно) 🎶
+
+        Цель - применить R.V.C. к созданному TTS (текст в речь) 🎙️
+
+        1. На вкладке `Настройка пользовательского голоса R.V.C.` загрузите необходимые модели 📥 Можно использовать ссылки из Hugging Face и Google Drive в форматах zip, pth или index. Вы также можете загрузить полные репозитории HF space, но эта опция не очень стабильна 😕
+
+        2. Теперь перейдите в раздел `Заменить голос: TTS на R.V.C.` и установите флажок `включить` ✅ После этого вы сможете выбрать модели, которые хотите применить к каждому говорителю TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Настройте метод F0, который будет применен ко всем R.V.C. 🎛️
+
+        4. Нажмите `ПРИМЕНИТЬ КОНФИГУРАЦИЮ`, чтобы применить внесенные вами изменения 🔄
+
+        5. Вернитесь на вкладку перевода видео и нажмите 'Перевести' ▶️ Теперь перевод будет выполнен с применением R.V.C. 🗣️
+
+        Совет: Вы можете использовать `Тест R.V.C.` для экспериментов и поиска лучших TTS или конфигураций для применения к R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Перевод видео",
+    "video_source": "Выберите источник видео",
+    "link_label" : "Ссылка на медиа.",
+    "link_info": "Пример: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "Сюда вставьте URL...",
+    "dir_label" : "Путь к видео.",
+    "dir_info": "Пример: /usr/home/my_video.mp4",
+    "dir_ph" : "Сюда вставьте путь...",
+    "sl_label" : "Исходный язык",
+    "sl_info": "Это оригинальный язык видео",
+    "tat_label" : "Перевести аудио на",
+    "tat_info": "Выберите целевой язык и также убедитесь, что выбран соответствующий TTS для этого языка.",
+    "num_speakers" : "Выберите, сколько людей говорят в видео.",
+    "min_sk" : "Мин. количество говорящих",
+    "max_sk" : "Макс. количество говорящих",
+    "tts_select" : "Выберите голос для каждого говорящего.",
+    "sk1" : "Говорящий 1 (TTS)",
+    "sk2" : "Говорящий 2 (TTS)",
+    "sk3" : "Говорящий 3 (TTS)",
+    "sk4" : "Говорящий 4 (TTS)",
+    "sk5" : "Говорящий 5 (TTS)",
+    "sk6" : "Говорящий 6 (TTS)",
+    "vc_title" : "Имитация голоса на разных языках",
+    "vc_subtitle" : """
+        ### Воспроизведение голоса человека на разных языках.
+        Несмотря на то, что оно эффективно с большинством голосов при правильном использовании, в некоторых случаях оно может не достигать идеальности.
+        Имитация голоса полностью воспроизводит тон референсного диктора, исключая акцент и эмоции, которые контролируются базовой моделью TTS диктора и не воспроизводятся конвертером.
+        Это займет аудиосэмплы из основного аудио для каждого говорящего и обработает их.
+        """,
+    "vc_active_label" : "Активировать имитацию голоса",
+    "vc_active_info" : "Активировать имитацию голоса: Воспроизводит тон оригинального говорящего",
+    "vc_method_label" : "Метод",
+    "vc_method_info" : "Выберите метод для процесса имитации голоса",
+    "vc_segments_label" : "Макс. количество сэмплов",
+    "vc_segments_info" : "Максимальное количество сэмплов: это количество аудиосэмплов, которые будут сгенерированы для процесса, чем их больше, тем лучше, но это может добавить шум",
+    "vc_dereverb_label" : "Удалить реверберацию",
+    "vc_dereverb_info" : "Удалить реверберацию: Применяет вокальную реверберацию к аудиосэмплам.",
+    "vc_remove_label" : "Удалить предыдущие сэмплы",
+    "vc_remove_info" : "Удалить предыдущие сэмплы: Удаляет предыдущие сгенерированные сэмплы, поэтому нужно создавать новые.",
+    "xtts_title" : "Создание TTS на основе аудио",
+    "xtts_subtitle" : "Загрузите аудиофайл максимум на 10 секунд с голосом. Используя XTTS, будет создан новый TTS с голосом, аналогичным предоставленному аудиофайлу.",
+    "xtts_file_label" : "Загрузить короткое аудио с голосом",
+    "xtts_name_label" : "Название для TTS",
+    "xtts_name_info" : "Используйте простое название",
+    "xtts_dereverb_label" : "Удалить реверберацию аудио",
+    "xtts_dereverb_info" : "Удалить реверберацию аудио: Применяет вокальную реверберацию к аудио",
+    "xtts_button" : "Обработать аудио и включить его в селектор TTS",
+    "xtts_footer" : "Генерировать голосовой XTTS автоматически: Вы можете использовать '_XTTS_/AUTOMATIC.wav' в селекторе TTS для автоматической генерации сегментов для каждого говорящего при создании перевода.",
+    "extra_setting" : "Дополнительные настройки",
+    "acc_max_label" : "Макс. ускорение аудио",
+    "acc_max_info" : "Максимальное ускорение для переведенных аудиосегментов для избежания их перекрытия. Значение 1.0 означает отсутствие ускорения",
+    "aud_mix_label" : "Метод смешивания аудио",
+    "aud_mix_info" : "Смешивание оригинальных и переведенных аудиофайлов для создания настраиваемого, сбалансированного вывода с двумя доступными режимами смешивания.",
+    "vol_ori" : "Громкость оригинального аудио",
+    "vol_tra" : "Громкость переведенного аудио",
+    "voiceless_tk_label" : "Безголосовая дорожка",
+    "voiceless_tk_info" : "Безголосовая дорожка: Удалить голоса оригинального аудио перед его смешиванием с переведенным аудио.",
+    "sub_type" : "Тип субтитров",
+    "whisper_title" : "Конфигурация транскрипции.",
+    "srt_file_label" : "Загрузить файл субтитров в формате SRT (будет использоваться вместо транскрипции Whisper)",
+    "divide_text_label" : "Разделить текстовые сегменты по:",
+    "divide_text_info" : "(Экспериментально) Введите разделитель для разделения существующих текстовых сегментов на исходном языке. Инструмент определит вхождения и создаст новые сегменты в соответствии с ними. Укажите несколько разделителей, используя |, например: !|?|...|。",
+    "out_name_label" : "Имя файла",
+    "out_name_info" : "Название выходного файла",
+    "preview_info" : "Предпросмотр обрезает видео до 10 секунд только для тестовых целей. Пожалуйста, отключите его, чтобы получить полную продолжительность видео.",
+    "edit_sub_label" : "Редактировать сгенерированные субтитры",
+    "edit_sub_info" : "Редактировать сгенерированные субтитры: Позволяет выполнять перевод в 2 этапа. Сначала нажмите кнопку 'ПОЛУЧИТЬ СУБТИТРЫ И РЕДАКТИРОВАТЬ', чтобы получить субтитры и отредактировать их, а затем с помощью кнопки 'ПЕРЕВЕСТИ' вы можете сгенерировать видео",
+    "button_subs" : "ПОЛУЧИТЬ СУБТИТРЫ И РЕДАКТИРОВАТЬ",
+    "editor_sub_label" : "Сгенерированные субтитры",
+    "editor_sub_info" : "Не стесняйтесь редактировать текст в сгенерированных субтитрах здесь. Вы можете вносить изменения в параметры интерфейса перед нажатием кнопки 'ПЕРЕВЕСТИ', за исключением 'Исходный язык', 'Перевести аудио на' и 'Макс. количество говорящих', чтобы избежать ошибок. Как только закончите, нажмите кнопку 'ПЕРЕВЕСТИ'.",
+    "editor_sub_ph" : "Сначала нажмите 'ПОЛУЧИТЬ СУБТИТРЫ И РЕДАКТИРОВАТЬ', чтобы получить субтитры",
+    "button_translate" : "ПЕРЕВЕСТИ",
+    "output_result_label" : "СКАЧАТЬ ПЕРЕВЕДЕННОЕ ВИДЕО",
+    "sub_ori" : "Субтитры",
+    "sub_tra" : "Переведенные субтитры",
+    "ht_token_info" : "Один из важных шагов - принятие лицензионного соглашения на использование Pyannote. Вам нужно иметь учетную запись на Hugging Face и принять лицензию, чтобы использовать модели: https://huggingface.co/pyannote/speaker-diarization и https://huggingface.co/pyannote/segmentation. Получите свой КЛЮЧ ТОКЕН здесь: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Сюда вставьте токен...",
+    "tab_docs" : "Перевод документов",
+    "docs_input_label" : "Выберите источник документа",
+    "docs_input_info" : "Это может быть PDF, DOCX, TXT или текст",
+    "docs_source_info" : "Это оригинальный язык текста",
+    "chunk_size_label" : "Макс. количество символов, которые будет обрабатывать TTS для каждого сегмента",
+    "chunk_size_info" : "Значение 0 назначает динамическое и более совместимое значение для TTS.",
+    "docs_button" : "Запустить мост перевода языка",
+    "cv_url_info" : "Автоматическая загрузка моделей R.V.C. по URL. Можно использовать ссылки из HuggingFace или Drive, и можно включить несколько ссылок, каждую разделенную запятой. Пример: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Заменить голос: TTS на R.V.C.",
+    "sec1_title" : "### 1. Чтобы активировать его использование, укажите его как включенный.",
+    "enable_replace" : "Установите флажок, чтобы включить использование моделей.",
+    "sec2_title" : "### 2. Выберите голос, который будет применен к каждому TTS каждого соответствующего говорящего и примените конфигурации.",
+    "sec2_subtitle" : "В зависимости от того, сколько <TTS говорящего> вы будете использовать, каждый из них нуждается в своей соответствующей модели. Кроме того, есть вспомогательная, если по какой-то причине говорящий не был определен правильно.",
+    "cv_tts1" : "Выберите голос для применения для Говорящего 1.",
+    "cv_tts2" : "Выберите голос для применения для Говорящего 2.",
+    "cv_tts3" : "Выберите голос для применения для Говорящего 3.",
+    "cv_tts4" : "Выберите голос для применения для Говорящего 4.",
+    "cv_tts5" : "Выберите голос для применения для Говорящего 5.",
+    "cv_tts6" : "Выберите голос для применения для Говорящего 6.",
+    "cv_aux" : "- Голос, который будет применен в случае успешного неопределения говорящего.",
+    "cv_button_apply" : "ПРИМЕНИТЬ КОНФИГУРАЦИЮ",
+    "tab_help" : "Помощь"
+  },
+
+  "turkish": {
+    "description": """
+        ### 🎥 **SoniTranslate ile videoları kolayca çevirin!** 📽️
+
+        Bir video yükleyin, ses dosyası ekleyin veya bir YouTube bağlantısı sağlayın. 📽️ **Güncellenmiş notebook'ı resmi depodan alın: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Kullanım talimatları için 'Yardım' sekmesine bakın. Video çevirisi yapmaya başlayalım! 🚀🎉
+        """,
+    "tutorial": """
+        # 🔰 **Kullanım Talimatları:**
+
+        1. 📤 Bir **video**, **ses dosyası** yükleyin veya bir 🌐 **YouTube bağlantısı sağlayın.**
+
+        2. 🌍 **Videodaki metni çevirmek istediğiniz dili seçin.**
+
+        3. 🗣️ Videodaki **konuşan kişi sayısını belirtin** ve her birine çeviri dili için uygun bir metin-okuma-sesini atayın.
+
+        4. 🚀 Sonuçları elde etmek için '**Çevir**' düğmesine basın.
+
+        ---
+
+        # 🧩 **SoniTranslate, farklı TTS (Metin-okuma-sesi) motorlarını destekler, bunlar:**
+        - EDGE-TTS → biçim `tr-TR-ZeynepNeural-Kadın` → Hızlı ve doğru.
+        - FACEBOOK MMS → biçim `tr-facebook-mms VITS` → Ses daha doğal; şu anda yalnızca CPU kullanıyor.
+        - PIPER TTS → biçim `tr_TR-lessac-high VITS-onnx` → Öncekiyle aynı, ancak hem CPU hem de GPU için optimize edilmiştir.
+        - BARK → biçim `tr_speaker_0-Kadın BARK` → İyi kalite ancak yavaş ve halüsinasyonlara eğilimli.
+        - Coqui XTTS → biçim `_XTTS_/AUTOMATIC.wav` → Sadece Çince (Basitleştirilmiş), İngilizce, Fransızca, Almanca, İtalyanca, Portekizce, Lehçe, Türkçe, Rusça, Hollandaca, Çekçe, Arapça, İspanyolca, Macarca, Korece ve Japonca için mevcut.
+
+        ---
+
+        # 🎤 R.V.C. ve R.V.C.2 Seslerini Nasıl Kullanılır (İsteğe Bağlı) 🎶
+
+        Amaç, oluşturulan TTS'ye bir R.V.C. uygulamaktır (Metin-okuma-sesi) 🎙️
+
+        1. 'Özel Ses R.V.C.' sekmesinde, ihtiyacınız olan modelleri indirin 📥 Hugging Face ve Google Drive gibi bağlantıları, zip, pth veya index gibi formatlarda kullanabilirsiniz. Tam HF alanı depolarını da indirebilirsiniz, ancak bu seçenek çok kararlı değil 😕
+
+        2. Şimdi, 'TTS'den R.V.C.'yi değiştirin' seçeneğini işaretleyin ✅ Bundan sonra, her TTS konuşucusuna uygulamak istediğiniz modelleri seçebilirsiniz 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Tüm R.V.C.'lere uygulanacak F0 yöntemini ayarlayın 🎛️
+
+        4. Yaptığınız değişiklikleri uygulamak için 'YAPILAN AYARLARI UYGULA' düğmesine basın 🔄
+
+        5. Video çevirisi sekmesine geri dönün ve 'Çevir' düğmesine tıklayın ▶️ Artık çeviri, R.V.C. uygulanarak yapılacaktır 🗣️
+
+        İpucu: En iyi TTS'leri veya yapılandırmaları R.V.C.'ye uygulamak için 'Test R.V.C.'yi kullanabilirsiniz 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate": "Video çevirisi",
+    "video_source": "Video Kaynağını Seçin",
+    "link_label": "Medya bağlantısı.",
+    "link_info": "Örnek: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "URL buraya girin...",
+    "dir_label": "Video Yolu.",
+    "dir_info": "Örnek: /usr/home/my_video.mp4",
+    "dir_ph": "Yol buraya girin...",
+    "sl_label": "Kaynak dil",
+    "sl_info": "Videoyun orijinal dilidir",
+    "tat_label": "Şuna çevir",
+    "tat_info": "Hedef dili seçin ve ayrıca o dil için uygun metin-okuma-sesini seçtiğinizden emin olun.",
+    "num_speakers": "Videoda kaç kişi konuşuyor seçin.",
+    "min_sk": "Min konuşmacılar",
+    "max_sk": "Max konuşmacılar",
+    "tts_select": "Her konuşmacı için istediğiniz sesi seçin.",
+    "sk1": "TTS Konuşmacı 1",
+    "sk2": "TTS Konuşmacı 2",
+    "sk3": "TTS Konuşmacı 3",
+    "sk4": "TTS Konuşmacı 4",
+    "sk5": "TTS Konuşmacı 5",
+    "sk6": "TTS Konuşmacı 6",
+    "vc_title": "Farklı Dillerde Ses Taklidi",
+    "vc_subtitle": """
+        ### Bir kişinin sesini çeşitli dillere yayın.
+        Uygun şekilde kullanıldığında çoğu sesle etkili olsa da, her durumda mükemmelliği elde etmeyebilir.
+        Ses Taklidi yalnızca referans konuşucunun tonunu çoğaltır, aksan ve duygu dışında,
+        temel konuşucu TTS modeli tarafından yönetilen ve dönüştürücü tarafından çoğaltılmayanlar hariç.
+        Bu, her konuşmacı için ana ses kaydından ses örnekleri alır ve işler.
+        """,
+    "vc_active_label": "Aktif Ses Taklidi",
+    "vc_active_info": "Aktif Ses Taklidi: Orijinal konuşmacının tonunu çoğaltır",
+    "vc_method_label": "Yöntem",
+    "vc_method_info": "Ses Taklidi işlemi için bir yöntem seçin",
+    "vc_segments_label": "Maksimum örnekler",
+    "vc_segments_info": "Maksimum örnekler: İşlem için üretilecek ses örneklerinin sayısıdır, daha fazlası daha iyidir ancak gürültü ekleyebilir",
+    "vc_dereverb_label": "Yankıyı Azalt",
+    "vc_dereverb_info": "Yankıyı Azalt: Ses örneklerine yankı azaltma uygular.",
+    "vc_remove_label": "Önceki örnekleri Kaldır",
+    "vc_remove_info": "Önceki örnekleri Kaldır: Önceki üretilen örnekleri kaldırır, bu nedenle yeni olanları oluşturmak gerekir.",
+    "xtts_title": "Bir ses tabanlı TTS oluştur",
+    "xtts_subtitle": "Sesli bir sesle en fazla 10 saniyelik bir ses dosyası yükleyin. XTTS kullanarak, sağlanan ses dosyasına benzer bir sesle yeni bir TTS oluşturulur.",
+    "xtts_file_label": "Sesli bir sesle kısa bir ses dosyası yükleyin",
+    "xtts_name_label": "TTS için bir isim belirleyin",
+    "xtts_name_info": "Basit bir isim kullanın",
+    "xtts_dereverb_label": "Sesi Yankıdan Temizle",
+    "xtts_dereverb_info": "Sesi Yankıdan Temizle: Sese yankı azaltma uygular",
+    "xtts_button": "Ses işleme ve TTS seçimine dahil et",
+    "xtts_footer": "Ses xtts otomatik olarak oluştur: TTS seçicisinde '_XTTS_/AUTOMATIC.wav'ı kullanarak, çeviri oluştururken her konuşmacı için otomatik olarak bölümler oluşturabilirsiniz.",
+    "extra_setting": "Gelişmiş Ayarlar",
+    "acc_max_label": "Maksimum Ses Hızlandırması",
+    "acc_max_info": "Çakışmayı önlemek için çevrilen ses segmentlerinin maksimum hızlandırması. 1.0 değeri hiçbir hızlandırmayı temsil eder",
+    "aud_mix_label": "Ses Karıştırma Yöntemi",
+    "aud_mix_info": "Özgün ve çevrilmiş ses dosyalarını karıştırarak iki kullanılabilir karıştırma moduyla özelleştirilmiş, dengeli bir çıkış oluşturun.",
+    "vol_ori": "Özgün ses seviyesi",
+    "vol_tra": "Çevrilmiş ses seviyesi",
+    "voiceless_tk_label": "Sessiz Parça",
+    "voiceless_tk_info": "Sessiz Parça: Çevrilmiş sesle birleştirilmeden önce özgün sesleri kaldırır.",
+    "sub_type": "Altyazı türü",
+    "whisper_title": "Transkripsiyonu yapılandır.",
+    "srt_file_label": "Bir SRT altyazı dosyası yükleyin (Whisper'ın transkripsiyonu yerine kullanılacaktır)",
+    "divide_text_label": "Metin bölümlerini yeniden böl:",
+    "divide_text_info": "(Deneysel) Mevcut metin segmentlerini kaynak dildeki ayraçla bölmek için bir ayraç girin. Aracı, bu ayraçları tanımlayacak ve buna göre yeni segmentler oluşturacaktır. Birden çok ayıraç belirtmek için | kullanın, örn .: !|?|...|。",
+    "out_name_label": "Dosya adı",
+    "out_name_info": "Çıkış dosyasının adı",
+    "preview_info": "Önizleme, test amaçları için videonun sadece 10 saniyelik kısmını keser. Lütfen tam video süresini almak için önizlemeyi devre dışı bırakın.",
+    "edit_sub_label": "Oluşturulan altyazıları düzenleyin",
+    "edit_sub_info": "Oluşturulan altyazıları düzenlemeyi sağlar: Çeviriyi 2 adımda çalıştırmanıza izin verir. İlk olarak 'ALTYAZILARI AL VE DÜZENLE' düğmesiyle altyazıları alır, bunları düzenleyebilir ve ardından 'ÇEVİR' düğmesine tıklayarak videoyu oluşturabilirsiniz",
+    "button_subs": "ALTYAZILARI AL VE DÜZENLE",
+    "editor_sub_label": "Oluşturulan altyazılar",
+    "editor_sub_info": "Burada oluşturulan altyazılardaki metni düzenleyebilirsiniz. Arayüz seçeneklerinde değişiklikler yapabilirsiniz, ancak 'Kaynak dil', 'Şuna çevir' ve 'Max konuşmacılar' dışında hata oluşmaması için 'ÇEVİR' düğmesine basmadan önce. Bitirdiğinizde, 'ÇEVİR' düğmesine tıklayın.",
+    "editor_sub_ph": "Altyazıları almak için önce 'ALTYAZILARI AL VE DÜZENLE'ye basın",
+    "button_translate": "ÇEVİR",
+    "output_result_label": "ÇEVİRİLEN VİDEOYU İNDİR",
+    "sub_ori": "Altyazılar",
+    "sub_tra": "Çevrilmiş altyazılar",
+    "ht_token_info": "Bir önemli adım, Pyannote kullanım lisans anlaşmasını kabul etmektir. Modelleri kullanmak için Hugging Face'de bir hesabınız olması ve lisansı kabul etmeniz gerekir: https://huggingface.co/pyannote/speaker-diarization ve https://huggingface.co/pyannote/segmentation. Anahtar JETONUNUZU buradan alın: https://hf.co/settings/tokens",
+    "ht_token_ph": "Jetona buradan girin...",
+    "tab_docs": "Belge çevirisi",
+    "docs_input_label": "Belge Kaynağını Seçin",
+    "docs_input_info": "PDF, DOCX, TXT veya metin olabilir",
+    "docs_source_info": "Bu, metnin orijinal dilidir",
+    "chunk_size_label": "TTS'nin her segment başına işleyeceği maksimum karakter sayısı",
+    "chunk_size_info": "0 değeri, TTS için dinamik ve daha uyumlu bir değer atar.",
+    "docs_button": "Dil Dönüşüm Köprüsünü Başlat",
+    "cv_url_info": "R.V.C. modellerini otomatik olarak URL'den indirin. HuggingFace veya Drive bağlantılarını kullanabilir ve her birini virgülle ayırarak birden çok bağlantı ekleyebilirsiniz. Örnek: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title": "Ses: TTS'den R.V.C.'ye Değiştir",
+    "sec1_title": "### 1. Kullanımını etkinleştirmek için onu işaretleyin.",
+    "enable_replace": "Modellerin kullanımını etkinleştirmek için bunu işaretleyin.",
+    "sec2_title": "### 2. Her karşılık gelen konuşmacı TTS'sine uygulanacak bir ses seçin ve yapılandırmaları uygulayın.",
+    "sec2_subtitle": "Kullanacağınız <TTS Konuşmacısı> sayısına bağlı olarak, her biri kendi modeline ihtiyaç duyar. Ayrıca, konuşmacı doğru şekilde tespit edilmezse, bir yardımcı model de bulunmaktadır.",
+    "cv_tts1": "Konuşmacı 1 için uygulanacak sesi seçin.",
+    "cv_tts2": "Konuşmacı 2 için uygulanacak sesi seçin.",
+    "cv_tts3": "Konuşmacı 3 için uygulanacak sesi seçin.",
+    "cv_tts4": "Konuşmacı 4 için uygulanacak sesi seçin.",
+    "cv_tts5": "Konuşmacı 5 için uygulanacak sesi seçin.",
+    "cv_tts6": "Konuşmacı 6 için uygulanacak sesi seçin.",
+    "cv_aux": "- Konuşmacı doğru şekilde algılanamadığında uygulanacak ses.",
+    "cv_button_apply": "AYARLARI UYGULA",
+    "tab_help": "Yardım"
+  },
+
+  "indonesian": {
+    "description": """
+        ### 🎥 **Terjemahkan video dengan mudah menggunakan SoniTranslate!** 📽️
+
+        Unggah video, file audio, atau berikan tautan YouTube. 📽️ **Dapatkan buku catatan yang diperbarui dari repositori resmi: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Lihat tab `Bantuan` untuk petunjuk penggunaan. Mari mulai bersenang-senang dengan menerjemahkan video! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Petunjuk penggunaan:**
+
+        1. 📤 Unggah sebuah **video**, **file audio** atau berikan sebuah tautan 🌐 **YouTube.**
+
+        2. 🌍 Pilih bahasa di mana Anda ingin **menerjemahkan video** tersebut.
+
+        3. 🗣️ Tentukan **jumlah orang yang berbicara** dalam video dan **berikan masing-masing suara teks-ke-suara yang sesuai** untuk bahasa terjemahan.
+
+        4. 🚀 Tekan tombol '**Terjemahkan**' untuk mendapatkan hasilnya.
+
+        ---
+
+        # 🧩 **SoniTranslate mendukung berbagai mesin TTS (Teks-ke-Suara), yaitu:**
+        - EDGE-TTS → format `en-AU-WilliamNeural-Male` → Cepat dan akurat.
+        - FACEBOOK MMS → format `en-facebook-mms VITS` → Suara lebih alami; saat ini, hanya menggunakan CPU.
+        - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Sama seperti sebelumnya, tetapi dioptimalkan untuk CPU dan GPU.
+        - BARK → format `en_speaker_0-Male BARK` → Kualitas bagus tetapi lambat, dan rentan terhadap halusinasi.
+        - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Hanya tersedia untuk Cina (Sederhana), Inggris, Prancis, Jerman, Italia, Portugis, Polandia, Turki, Rusia, Belanda, Ceko, Arab, Spanyol, Hungaria, Korea, dan Jepang.
+
+        ---
+
+        # 🎤 Cara Menggunakan Suara R.V.C. dan R.V.C.2 (Opsional) 🎶
+
+        Tujuannya adalah menerapkan R.V.C. pada TTS yang dihasilkan (Teks-ke-Suara) 🎙️
+
+        1. Di tab `Suara Kustom R.V.C.`, unduh model-model yang Anda butuhkan 📥 Anda dapat menggunakan tautan dari Hugging Face dan Google Drive dalam format zip, pth, atau index. Anda juga dapat mengunduh repositori ruang HF lengkap, tetapi opsi ini tidak sangat stabil 😕
+
+        2. Sekarang, pergi ke `Ganti suara: TTS ke R.V.C.` dan centang kotak `aktifkan` ✅ Setelah ini, Anda dapat memilih model yang ingin Anda terapkan pada setiap pembicara TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Sesuaikan metode F0 yang akan diterapkan pada semua R.V.C. 🎛️
+
+        4. Tekan `TERAPKAN KONFIGURASI` untuk menerapkan perubahan yang Anda buat 🔄
+
+        5. Kembali ke tab terjemahan video dan klik 'Terjemahkan' ▶️ Sekarang, terjemahan akan dilakukan dengan menerapkan R.V.C. 🗣️
+
+        Tip: Anda dapat menggunakan `Uji R.V.C.` untuk bereksperimen dan menemukan TTS atau konfigurasi terbaik untuk diterapkan pada R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Terjemahan Video",
+    "video_source": "Pilih Sumber Video",
+    "link_label" : "Tautan Media.",
+    "link_info": "Contoh: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "URL masukkan di sini...",
+    "dir_label" : "Path Video.",
+    "dir_info": "Contoh: /usr/home/my_video.mp4",
+    "dir_ph" : "Path masukkan di sini...",
+    "sl_label" : "Bahasa Sumber",
+    "sl_info": "Ini adalah bahasa asli video",
+    "tat_label" : "Terjemahkan audio ke",
+    "tat_info": "Pilih bahasa target dan pastikan juga memilih TTS yang sesuai untuk bahasa tersebut.",
+    "num_speakers" : "Pilih berapa banyak orang yang berbicara dalam video.",
+    "min_sk" : "Pembicara minimum",
+    "max_sk" : "Pembicara maksimum",
+    "tts_select" : "Pilih suara yang Anda inginkan untuk setiap pembicara.",
+    "sk1" : "Pembicara TTS 1",
+    "sk2" : "Pembicara TTS 2",
+    "sk3" : "Pembicara TTS 3",
+    "sk4" : "Pembicara TTS 4",
+    "sk5" : "Pembicara TTS 5",
+    "sk6" : "Pembicara TTS 6",
+    "vc_title" : "Imitasi Suara dalam Berbagai Bahasa",
+    "vc_subtitle" : """
+        ### Reproduksi suara seseorang di berbagai bahasa.
+        Meskipun efektif dengan kebanyakan suara ketika digunakan dengan tepat, mungkin tidak mencapai kesempurnaan dalam setiap kasus.
+        Imitasi Suara hanya mereproduksi nada pembicara referensi, mengecualikan aksen dan emosi, yang dikendalikan oleh model TTS pembicara dasar dan tidak direplikasi oleh konverter.
+        Ini akan mengambil sampel audio dari audio utama untuk setiap pembicara dan memprosesnya.
+        """,
+    "vc_active_label" : "Imitasi Suara Aktif",
+    "vc_active_info" : "Imitasi Suara Aktif: Mereplikasi nada pembicara asli",
+    "vc_method_label" : "Metode",
+    "vc_method_info" : "Pilih metode untuk proses Imitasi Suara",
+    "vc_segments_label" : "Sampel maksimum",
+    "vc_segments_info" : "Sampel maksimum: Jumlah sampel audio yang akan dihasilkan untuk proses, semakin banyak lebih baik tetapi dapat menambah noise",
+    "vc_dereverb_label" : "Dereverb",
+    "vc_dereverb_info" : "Dereverb: Menyertakan dereverb vokal ke sampel audio.",
+    "vc_remove_label" : "Hapus sampel sebelumnya",
+    "vc_remove_info" : "Hapus sampel sebelumnya: Menghapus sampel sebelumnya yang dihasilkan, sehingga yang baru perlu dibuat.",
+    "xtts_title" : "Buat TTS berdasarkan audio",
+    "xtts_subtitle" : "Unggah file audio dengan durasi maksimal 10 detik dengan suara. Dengan menggunakan XTTS, TTS baru akan dibuat dengan suara mirip dengan file audio yang diberikan.",
+    "xtts_file_label" : "Unggah audio pendek dengan suara",
+    "xtts_name_label" : "Nama untuk TTS",
+    "xtts_name_info" : "Gunakan nama sederhana",
+    "xtts_dereverb_label" : "Dereverb audio",
+    "xtts_dereverb_info" : "Dereverb audio: Menyertakan dereverb vokal ke audio",
+    "xtts_button" : "Proses audio dan masukkan ke dalam pemilih TTS",
+    "xtts_footer" : "Hasilkan xtts suara secara otomatis: Anda dapat menggunakan '_XTTS_/AUTOMATIC.wav' di pemilih TTS untuk secara otomatis menghasilkan segmen untuk setiap pembicara saat menghasilkan terjemahan.",
+    "extra_setting" : "Pengaturan Lanjutan",
+    "acc_max_label" : "Akselerasi Audio maksimum",
+    "acc_max_info" : "Akselerasi maksimum untuk segmen audio yang diterjemahkan untuk menghindari tumpang tindih. Nilai 1.0 mewakili tidak ada akselerasi",
+    "aud_mix_label" : "Metode Penggabungan Audio",
+    "aud_mix_info" : "Gabungkan file audio asli dan diterjemahkan untuk membuat output yang seimbang dengan dua mode pencampuran yang tersedia.",
+    "vol_ori" : "Volume audio asli",
+    "vol_tra" : "Volume audio yang diterjemahkan",
+    "voiceless_tk_label" : "Track Tanpa Suara",
+    "voiceless_tk_info" : "Track Tanpa Suara: Hapus suara audio asli sebelum menggabungkannya dengan audio yang diterjemahkan.",
+    "sub_type" : "Tipe Subtitle",
+    "whisper_title" : "Konfigurasi transkripsi.",
+    "srt_file_label" : "Unggah file subtitle SRT (akan digunakan sebagai gantinya dari transkripsi Whisper)",
+    "divide_text_label" : "Bagi ulang segmen teks dengan:",
+    "divide_text_info" : "(Eksperimental) Masukkan pemisah untuk membagi segmen teks yang ada dalam bahasa sumber. Alat ini akan mengidentifikasi kejadian dan membuat segmen baru sesuai. Tentukan beberapa pemisah menggunakan |, misalnya: !|?|...|。",
+    "out_name_label" : "Nama file",
+    "out_name_info" : "Nama file output",
+    "preview_info" : "Pratinjau memotong video menjadi hanya 10 detik untuk tujuan pengujian. Harap nonaktifkan untuk mendapatkan durasi video penuh.",
+    "edit_sub_label" : "Edit subtitle yang dihasilkan",
+    "edit_sub_info" : "Edit subtitle yang dihasilkan: Memungkinkan Anda menjalankan terjemahan dalam 2 langkah. Pertama dengan tombol 'DAPATKAN SUBTITLES DAN EDIT', Anda mendapatkan subtitle untuk diedit, dan kemudian dengan tombol 'TERJEMAHKAN', Anda dapat menghasilkan video",
+    "button_subs" : "DAPATKAN SUBTITLES DAN EDIT",
+    "editor_sub_label" : "Subtitle yang dihasilkan",
+    "editor_sub_info" : "Silakan sunting teks dalam subtitle yang dihasilkan di sini. Anda dapat membuat perubahan pada opsi antarmuka sebelum mengklik tombol 'TERJEMAHKAN', kecuali untuk 'Bahasa Sumber', 'Terjemahkan audio ke', dan 'Pembicara maksimum', untuk menghindari kesalahan. Setelah selesai, klik tombol 'TERJEMAHKAN'.",
+    "editor_sub_ph" : "Pertama tekan 'DAPATKAN SUBTITLES DAN EDIT' untuk mendapatkan subtitle",
+    "button_translate" : "TERJEMAHKAN",
+    "output_result_label" : "UNDUH VIDEO TERJEMAHAN",
+    "sub_ori" : "Subtitle",
+    "sub_tra" : "Subtitle Terjemahan",
+    "ht_token_info" : "Langkah penting adalah menerima perjanjian lisensi untuk menggunakan Pyannote. Anda perlu memiliki akun di Hugging Face dan menerima lisensi untuk menggunakan model: https://huggingface.co/pyannote/speaker-diarization dan https://huggingface.co/pyannote/segmentation. Dapatkan TOKEN KUNCI Anda di sini: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Token masukkan di sini...",
+    "tab_docs" : "Terjemahan Dokumen",
+    "docs_input_label" : "Pilih Sumber Dokumen",
+    "docs_input_info" : "Ini bisa berupa PDF, DOCX, TXT, atau teks",
+    "docs_source_info" : "Ini adalah bahasa asli teks",
+    "chunk_size_label" : "Jumlah maksimum karakter yang akan diproses oleh TTS per segmen",
+    "chunk_size_info" : "Nilai 0 menetapkan nilai dinamis dan lebih kompatibel untuk TTS.",
+    "docs_button" : "Mulai Jembatan Konversi Bahasa",
+    "cv_url_info" : "Unduh model R.V.C. secara otomatis dari URL. Anda dapat menggunakan tautan dari HuggingFace atau Drive, dan Anda dapat menyertakan beberapa tautan, masing-masing dipisahkan oleh koma. Contoh: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Ganti suara: TTS ke R.V.C.",
+    "sec1_title" : "### 1. Untuk mengaktifkan penggunaannya, tandai sebagai aktif.",
+    "enable_replace" : "Centang ini untuk mengaktifkan penggunaan model.",
+    "sec2_title" : "### 2. Pilih suara yang akan diterapkan untuk setiap TTS dari setiap pembicara yang sesuai dan terapkan konfigurasinya.",
+    "sec2_subtitle" : "Tergantung pada berapa banyak <Pembicara TTS> yang akan Anda gunakan, masing-masing memerlukan model yang sesuai. Selain itu, ada satu tambahan jika dengan beberapa alasan pembicara tidak terdeteksi dengan benar.",
+    "cv_tts1" : "Pilih suara yang akan diterapkan untuk Pembicara 1.",
+    "cv_tts2" : "Pilih suara yang akan diterapkan untuk Pembicara 2.",
+    "cv_tts3" : "Pilih suara yang akan diterapkan untuk Pembicara 3.",
+    "cv_tts4" : "Pilih suara yang akan diterapkan untuk Pembicara 4.",
+    "cv_tts5" : "Pilih suara yang akan diterapkan untuk Pembicara 5.",
+    "cv_tts6" : "Pilih suara yang akan diterapkan untuk Pembicara 6.",
+    "cv_aux" : "- Suara yang akan diterapkan jika Pembicara tidak terdeteksi dengan sukses.",
+    "cv_button_apply" : "TERAPKAN KONFIGURASI",
+    "tab_help" : "Bantuan"
+  },
+
+  "portuguese": {
+    "description": """
+        ### 🎥 **Traduza vídeos facilmente com o SoniTranslate!** 📽️
+
+        Carregue um vídeo, arquivo de áudio ou forneça um link do YouTube. 📽️ **Obtenha o caderno atualizado do repositório oficial: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Consulte a guia `Ajuda` para instruções sobre como usá-lo. Vamos começar a nos divertir com a tradução de vídeos! 🚀🎉
+        """,
+    "tutorial": """
+        # 🔰 **Instruções de uso:**
+
+        1. 📤 Carregue um **vídeo**, **arquivo de áudio** ou forneça um 🌐 **link do YouTube**.
+
+        2. 🌍 Escolha o idioma para o qual você deseja **traduzir o vídeo**.
+
+        3. 🗣️ Especifique o **número de pessoas falando** no vídeo e **atribua a cada uma uma voz de texto para fala** adequada ao idioma da tradução.
+
+        4. 🚀 Pressione o botão '**Traduzir**' para obter os resultados.
+
+        ---
+
+        # 🧩 **SoniTranslate suporta diferentes motores TTS (Texto para Fala), que são:**
+        - EDGE-TTS → formato `en-AU-WilliamNeural-Male` → Rápido e preciso.
+        - FACEBOOK MMS → formato `en-facebook-mms VITS` → A voz é mais natural; no momento, usa apenas CPU.
+        - PIPER TTS → formato `en_US-lessac-high VITS-onnx` → O mesmo que o anterior, mas é otimizado para CPU e GPU.
+        - BARK → formato `en_speaker_0-Male BARK` → Boa qualidade, mas lento e propenso a alucinações.
+        - Coqui XTTS → formato `_XTTS_/AUTOMATIC.wav` → Disponível apenas para Chinês (Simplificado), Inglês, Francês, Alemão, Italiano, Português, Polonês, Turco, Russo, Holandês, Tcheco, Árabe, Espanhol, Húngaro, Coreano e Japonês.
+
+        ---
+
+        # 🎤 Como Usar Vozes R.V.C. e R.V.C.2 (Opcional) 🎶
+
+        O objetivo é aplicar um R.V.C. ao TTS (Texto para Fala) gerado 🎙️
+
+        1. Na aba `Voz Personalizada R.V.C.`, baixe os modelos que você precisa 📥 Você pode usar links do Hugging Face e Google Drive em formatos como zip, pth ou índice. Você também pode baixar repositórios completos do espaço HF, mas essa opção não é muito estável 😕
+
+        2. Agora, vá para `Substituir voz: TTS para R.V.C.` e marque a caixa de seleção `habilitar` ✅ Após isso, você pode escolher os modelos que deseja aplicar a cada falante TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Ajuste o método F0 que será aplicado a todos os R.V.C. 🎛️
+
+        4. Pressione `APLICAR CONFIGURAÇÃO` para aplicar as alterações feitas 🔄
+
+        5. Volte para a aba de tradução de vídeo e clique em 'Traduzir' ▶️ Agora, a tradução será feita aplicando o R.V.C. 🗣️
+
+        Dica: Você pode usar `Testar R.V.C.` para experimentar e encontrar o melhor TTS ou configurações para aplicar ao R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate": "Tradução de Vídeo",
+    "video_source": "Escolha a Fonte do Vídeo",
+    "link_label": "Link do Mídia.",
+    "link_info": "Exemplo: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "URL aqui...",
+    "dir_label": "Caminho do Vídeo.",
+    "dir_info": "Exemplo: /usr/home/meu_video.mp4",
+    "dir_ph": "Caminho aqui...",
+    "sl_label": "Idioma de Origem",
+    "sl_info": "Este é o idioma original do vídeo",
+    "tat_label": "Traduzir áudio para",
+    "tat_info": "Selecione o idioma de destino e também certifique-se de escolher o TTS correspondente para esse idioma.",
+    "num_speakers": "Selecione quantas pessoas estão falando no vídeo.",
+    "min_sk": "Mín. falantes",
+    "max_sk": "Máx. falantes",
+    "tts_select": "Selecione a voz desejada para cada falante.",
+    "sk1": "Falante TTS 1",
+    "sk2": "Falante TTS 2",
+    "sk3": "Falante TTS 3",
+    "sk4": "Falante TTS 4",
+    "sk5": "Falante TTS 5",
+    "sk6": "Falante TTS 6",
+    "vc_title": "Imitação de Voz em Diferentes Idiomas",
+    "vc_subtitle": """
+        ### Reproduza a voz de uma pessoa em vários idiomas.
+        Embora eficaz com a maioria das vozes quando usada adequadamente, pode não alcançar a perfeição em todos os casos.
+        A Imitação de Voz replica apenas o tom do falante de referência, excluindo sotaque e emoção, que são governados pelo modelo TTS do falante base e não replicados pelo conversor.
+        Isso pegará amostras de áudio do áudio principal para cada falante e as processará.
+        """,
+    "vc_active_label": "Ativar Imitação de Voz",
+    "vc_active_info": "Ativar Imitação de Voz: Replica o tom do falante original",
+    "vc_method_label": "Método",
+    "vc_method_info": "Selecione um método para o processo de Imitação de Voz",
+    "vc_segments_label": "Máx. amostras",
+    "vc_segments_info": "Máx. amostras: É o número de amostras de áudio que serão geradas para o processo, mais é melhor, mas pode adicionar ruído",
+    "vc_dereverb_label": "Dereverb",
+    "vc_dereverb_info": "Dereverb: Aplica dereverb vocal às amostras de áudio.",
+    "vc_remove_label": "Remover amostras anteriores",
+    "vc_remove_info": "Remover amostras anteriores: Remove as amostras geradas anteriormente, então novas precisam ser criadas.",
+    "xtts_title": "Criar um TTS baseado em um áudio",
+    "xtts_subtitle": "Carregue um arquivo de áudio de no máximo 10 segundos com uma voz. Usando o XTTS, um novo TTS será criado com uma voz semelhante ao arquivo de áudio fornecido.",
+    "xtts_file_label": "Carregar um áudio curto com a voz",
+    "xtts_name_label": "Nome para o TTS",
+    "xtts_name_info": "Use um nome simples",
+    "xtts_dereverb_label": "Dereverb do áudio",
+    "xtts_dereverb_info": "Dereverb do áudio: Aplica dereverb vocal ao áudio",
+    "xtts_button": "Processar o áudio e incluí-lo no seletor de TTS",
+    "xtts_footer": "Gerar voz xtts automaticamente: Você pode usar '_XTTS_/AUTOMATIC.wav' no seletor de TTS para gerar automaticamente segmentos para cada falante ao gerar a tradução.",
+    "extra_setting": "Configurações Avançadas",
+    "acc_max_label": "Máx. Aceleração de Áudio",
+    "acc_max_info": "Aceleração máxima para segmentos de áudio traduzidos para evitar sobreposições. Um valor de 1.0 representa nenhuma aceleração",
+    "aud_mix_label": "Método de Mistura de Áudio",
+    "aud_mix_info": "Misture arquivos de áudio original e traduzido para criar uma saída personalizada e equilibrada com dois modos de mistura disponíveis.",
+    "vol_ori": "Volume do áudio original",
+    "vol_tra": "Volume do áudio traduzido",
+    "voiceless_tk_label": "Faixa sem Voz",
+    "voiceless_tk_info": "Faixa sem Voz: Remova as vozes de áudio originais antes de combiná-las com o áudio traduzido.",
+    "sub_type": "Tipo de Legenda",
+    "whisper_title": "Configurar transcrição.",
+    "srt_file_label": "Carregar um arquivo de legenda SRT (será usado em vez da transcrição de Whisper)",
+    "divide_text_label": "Redividir segmentos de texto por:",
+    "divide_text_info": "(Experimental) Insira um separador para dividir os segmentos de texto existentes no idioma de origem. A ferramenta identificará as ocorrências e criará novos segmentos conforme necessário. Especifique vários separadores usando |, por exemplo: !|?|...|。",
+    "out_name_label": "Nome do Arquivo",
+    "out_name_info": "O nome do arquivo de saída",
+    "preview_info": "A prévia corta o vídeo para apenas 10 segundos para fins de teste. Por favor, desative para recuperar a duração completa do vídeo.",
+    "edit_sub_label": "Editar legendas geradas",
+    "edit_sub_info": "Editar legendas geradas: Permite executar a tradução em 2 etapas. Primeiro, com o botão 'OBTER LEGENDAS E EDITAR', você obtém as legendas para editá-las, e depois, com o botão 'TRADUZIR', você pode gerar o vídeo",
+    "button_subs": "OBTER LEGENDAS E EDITAR",
+    "editor_sub_label": "Legendas geradas",
+    "editor_sub_info": "Sinta-se à vontade para editar o texto nas legendas geradas aqui. Você pode fazer alterações nas opções de interface antes de clicar no botão 'TRADUZIR', exceto para 'Idioma de Origem', 'Traduzir áudio para' e 'Max. falantes', para evitar erros. Quando terminar, clique no botão 'TRADUZIR'.",
+    "editor_sub_ph": "Primeiro pressione 'OBTER LEGENDAS E EDITAR' para obter as legendas",
+    "button_translate": "TRADUZIR",
+    "output_result_label": "BAIXAR VÍDEO TRADUZIDO",
+    "sub_ori": "Legendas Originais",
+    "sub_tra": "Legendas Traduzidas",
+    "ht_token_info": "Um passo importante é aceitar o acordo de licença para usar o Pyannote. Você precisa ter uma conta no Hugging Face e aceitar a licença para usar os modelos: https://huggingface.co/pyannote/speaker-diarization e https://huggingface.co/pyannote/segmentation. Obtenha seu TOKEN CHAVE aqui: https://hf.co/settings/tokens",
+    "ht_token_ph": "Token aqui...",
+    "tab_docs": "Tradução de Documentos",
+    "docs_input_label": "Escolha a Fonte do Documento",
+    "docs_input_info": "Pode ser PDF, DOCX, TXT ou texto",
+    "docs_source_info": "Este é o idioma original do texto",
+    "chunk_size_label": "Máx. número de caracteres que o TTS processará por segmento",
+    "chunk_size_info": "Um valor de 0 atribui um valor dinâmico e mais compatível para o TTS.",
+    "docs_button": "Iniciar Ponte de Conversão de Idioma",
+    "cv_url_info": "Baixe automaticamente os modelos R.V.C. do URL. Você pode usar links do HuggingFace ou Drive, e pode incluir vários links, cada um separado por uma vírgula. Exemplo: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title": "Substituir voz: TTS para R.V.C.",
+    "sec1_title": "### 1. Para habilitar seu uso, marque como habilitado.",
+    "enable_replace": "Marque isso para habilitar o uso dos modelos.",
+    "sec2_title": "### 2. Selecione uma voz que será aplicada a cada TTS de cada falante correspondente e aplique as configurações.",
+    "sec2_subtitle": "Dependendo de quantos <Falante TTS> você usará, cada um precisa do seu respectivo modelo. Além disso, há um auxiliar se, por algum motivo, o falante não for detectado corretamente.",
+    "cv_tts1": "Escolha a voz para aplicar ao Falante 1.",
+    "cv_tts2": "Escolha a voz para aplicar ao Falante 2.",
+    "cv_tts3": "Escolha a voz para aplicar ao Falante 3.",
+    "cv_tts4": "Escolha a voz para aplicar ao Falante 4.",
+    "cv_tts5": "Escolha a voz para aplicar ao Falante 5.",
+    "cv_tts6": "Escolha a voz para aplicar ao Falante 6.",
+    "cv_aux": "- Voz para aplicar caso um Falante não seja detectado com sucesso.",
+    "cv_button_apply": "APLICAR CONFIGURAÇÃO",
+    "tab_help": "Ajuda"
+  },
+
+  "hindi": {
+    "description": """
+          ### 🎥 **SoniTranslate के साथ वीडियो को आसानी से अनुवादित करें!** 📽️
+
+          एक वीडियो, ऑडियो फ़ाइल अपलोड करें या एक YouTube लिंक प्रदान करें। 📽️ **आधिकारिक भंडार से अपडेटेड नोटबुक प्राप्त करें: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+          उसे 'मदद' टैब देखें इसका उपयोग कैसे करना है के निर्देशों के लिए। वीडियो अनुवाद के साथ मज़े करना शुरू करें! 🚀🎉
+          """,
+    "tutorial": """
+          # 🔰 **उपयोग के लिए निर्देश:**
+
+          1. 📤 **वीडियो**, **ऑडियो फ़ाइल** अपलोड करें या एक 🌐 **YouTube लिंक** प्रदान करें।
+
+          2. 🌍 चुनें कि आप किस भाषा में **वीडियो को अनुवादित** करना चाहते हैं।
+
+          3. 🗣️ वीडियो में **बोलने वाले लोगों की संख्या** और **प्रत्येक को टेक्स्ट-टू-स्पीच आवाज** देने का निर्देश दें, जो अनुवाद भाषा के लिए उपयुक्त है।
+
+          4. 🚀 '**अनुवाद**' बटन दबाएं और परिणाम प्राप्त करें।
+
+          ---
+
+          # 🧩 **SoniTranslate विभिन्न TTS (टेक्स्ट-टू-स्पीच) इंजनों का समर्थन करता है, जो हैं:**
+          - EDGE-TTS → प्रारूप `en-AU-WilliamNeural-Male` → तेज़ और सटीक।
+          - FACEBOOK MMS → प्रारूप `en-facebook-mms VITS` → आवाज अधिक प्राकृतिक है; वर्तमान में, यह केवल CPU का उपयोग करता है।
+          - PIPER TTS → प्रारूप `en_US-lessac-high VITS-onnx` → पिछले वाले के समान, लेकिन यह CPU और GPU दोनों के लिए अनुकूलित है।
+          - BARK → प्रारूप `en_speaker_0-Male BARK` → अच्छी गुणवत्ता है लेकिन धीमी, और यह हैलुसिनेशन के लिए प्रवृत्त है।
+          - Coqui XTTS → प्रारूप `_XTTS_/AUTOMATIC.wav` → केवल चीनी (सरलीकृत), अंग्रेजी, फ्रेंच, जर्मन, इतालवी, पुर्तगाली, पोलिश, तुर्की, रूसी, डच, चेक, अरबी, स्पैनिश, हंगेरियन, कोरियाई और जापानी के लिए ही उपलब्ध है।
+
+          ---
+
+          # 🎤 R.V.C. और R.V.C.2 आवाज़ों का उपयोग कैसे करें (वैकल्पिक) 🎶
+
+          लक्ष्य है कि जेनेरेटेड TTS (टेक्स्ट-टू-स्पीच) पर एक R.V.C. लागू करें 🎙️
+
+          1. `कस्टम आवाज़ आर.वी.सी.` टैब में, आपको आवश्यक मॉडल डाउनलोड करने की आवश्यकता है 📥 आप हग्गिंग फेस और गूगल ड्राइव से लिंक्स का उपयोग कर सकते हैं जैसे zip, pth, या इंडेक्स के प्रारूप में। आप पूरे एचएफ स्पेस रिपॉज़िटरी को भी डाउनलोड कर सकते हैं, लेकिन यह विकल्प बहुत ही अस्थिर है 😕
+
+          2. अब, `आवाज़ बदलें: TTS से R.V.C.` पर जाएं और `सक्रिय` बॉक्स को चेक करें ✅ इसके बाद, आप प्रत्येक TTS बोलने वाले को लागू करने के लिए जो आप चाहते हैं उसे चुन सकते हैं 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+          3. सभी R.V.C. पर लागू किया जाने वाला F0 विधि समायोजित करें 🎛️
+
+          4. आपके द्वारा किए गए परिवर्तनों को लागू करने के लिए `आवेदन को लागू करें` दबाएं 🔄
+
+          5. वीडियो अनुवाद टैब पर वापस जाएं और 'अनुवाद करें' पर क्लिक करें ▶️ अब, अनुवाद R.V.C. को लागू करते हुए किया जाएगा। 🗣️
+
+          सुझाव: आप `टेस्ट R.V.C.` का उपयोग करके प्रयोग कर सकते हैं और R.V.C. को लागू करने के लिए सर्वोत्तम TTS या कॉन्फ़िगरेशन खोज सकते हैं। 🧪🔍
+
+          ---
+
+          """,
+    "tab_translate": "वीडियो अनुवाद",
+    "video_source": "वीडियो स्रोत चुनें",
+    "link_label": "मीडिया लिंक।",
+    "link_info": "उदाहरण: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph": "URL यहाँ डालें...",
+    "dir_label": "वीडियो पथ।",
+    "dir_info": "उदाहरण: /usr/home/my_video.mp4",
+    "dir_ph": "पथ यहाँ डालें...",
+    "sl_label": "स्रोत भाषा",
+    "sl_info": "यह वीडियो की मूल भाषा है",
+    "tat_label": "ऑडियो को अनुवाद करें",
+    "tat_info": "लक्ष्य भाषा का चयन करें और सुनिश्चित करें कि उस भाषा के लिए संबंधित TTS चुना गया है।",
+    "num_speakers": "वीडियो में कितने लोग बोल रहे हैं, उन्हें चुनें।",
+    "min_sk": "न्यूनतम बोलने वाले",
+    "max_sk": "अधिकतम बोलने वाले",
+    "tts_select": "प्रत्येक बोलने वाले के लिए आप जो आवाज़ चाहते हैं, उसे चुनें।",
+    "sk1": "TTS बोलने वाला 1",
+    "sk2": "TTS बोलने वाला 2",
+    "sk3": "TTS बोलने वाला 3",
+    "sk4": "TTS बोलने वाला 4",
+    "sk5": "TTS बोलने वाला 5",
+    "sk6": "TTS बोलने वाला 6",
+    "vc_title": "विभिन्न भाषाओं में आवाज़ का नकल",
+    "vc_subtitle": """
+          ### विभिन्न भाषाओं में एक व्यक्ति की आवाज़ का नकल।
+          जब सही ढंग से प्रयोग किया जाता है, तो अधिकांश आवाज़ों के साथ प्रभावी है, लेकिन हर मामले में पूर्णता को हासिल नहीं कर सकता है।
+          आवाज़ का नकल केवल संदर्भ वक्ता के टोन को प्रतिलिपि करता है, एक्सेंट और भावना को बाहर करता है, जो आधार वक्ता TTS मॉडल द्वारा नियंत्रित होता है और कनवर्टर द्वारा प्रतिलिपि नहीं किया जाता है।
+          यह मुख्य ऑडियो के लिए ऑडियो नमूने लेता है और प्रसंस्करण करता है।
+          """,
+    "vc_active_label": "सक्रिय आवाज़ का नकल",
+    "vc_active_info": "सक्रिय आवाज़ का नकल: मूल बोलने वाले के टोन को प्रतिलिपि करता है",
+    "vc_method_label": "विधि",
+    "vc_method_info": "आवाज़ का नकल प्रक्रिया के लिए एक विधि का चयन करें",
+    "vc_segments_label": "अधिकतम सैंपल",
+    "vc_segments_info": "अधिकतम सैंपल: प्रक्रिया के लिए ऑडियो सैंपलों की संख्या है, अधिक बेहतर है, लेकिन यह शोर जोड़ सकता है",
+    "vc_dereverb_label": "Dereverb",
+    "vc_dereverb_info": "Dereverb: ऑडियो सैंपलों पर ध्वनि dereverb लागू करता है।",
+    "vc_remove_label": "पिछले सैंपल हटाएं",
+    "vc_remove_info": "पिछले सैंपल हटाएं: पिछले सैंपल हटा देता है: ताकि नए सैंपल उत्पन्न किए जाने की आवश्यकता हो।",
+    "xtts_title": "ऑडियो पर आधारित TTS बनाएं",
+    "xtts_subtitle": "एक ऑडियो फ़ाइल को अधिकतम 10 सेकंड के साथ एक आवाज़ के साथ अपलोड करें। XTTS का उपयोग करके, एक नया TTS बनाया जाएगा जो प्रदान की गई ऑडियो फ़ाइल के समान होगा।",
+    "xtts_file_label": "आवाज़ के साथ एक छोटा ऑडियो अपलोड करें",
+    "xtts_name_label": "TTS के लिए नाम",
+    "xtts_name_info": "एक सरल नाम का उपयोग करें",
+    "xtts_dereverb_label": "Dereverb ऑडियो",
+    "xtts_dereverb_info": "Dereverb ऑडियो: ऑडियो पर ध्वनि dereverb लागू करें",
+    "xtts_button": "ऑडियो प्रक्रिया करें और इसे TTS सेलेक्टर में शामिल करें",
+    "xtts_footer": "स्वचालित रूप से आवाज़ xtts उत्पन्न करें: अनुवाद उत्पन्न करते समय प्रत्येक बोलने वाले के लिए सेगमेंट ऑटोमेटिकली उत्पन्न करने के लिए आप '_XTTS_/AUTOMATIC.wav' का उपयोग कर सकते हैं।",
+    "extra_setting" : "उन्नत सेटिंग्स",
+    "acc_max_label" : "अधिकतम ऑडियो त्वरण",
+    "acc_max_info" : "ओवरलैपिंग से बचने के लिए अनुवादित ऑडियो सेगमेंटों के लिए अधिकतम त्वरण। 1.0 का मान कोई त्वरण नहीं दर्शाता है।",
+    "aud_mix_label" : "ऑडियो मिश्रण विधि",
+    "aud_mix_info" : "मूल और अनुवादित ऑडियो फ़ाइलों को मिश्रित करें और दो उपलब्ध मिश्रण मोड के साथ एक अनुकूलित, संतुलित उत्पादन बनाएं।",
+    "vol_ori" : "मूल ऑडियो ध्वनि",
+    "vol_tra" : "अनुवादित ऑडियो ध्वनि",
+    "voiceless_tk_label" : "वॉइसलेस ट्रैक",
+    "voiceless_tk_info" : "अनुवादित ऑडियो के साथ इसे मिलाने से पहले मूल ऑडियो ध्वनियों को हटाएं।",
+    "sub_type" : "उपशीर्षक प्रकार",
+    "whisper_title" : "कॉन्फ़िगर ट्रांस्क्रिप्शन।",
+    "srt_file_label" : "एक SRT उपशीर्षक फ़ाइल अपलोड करें (विस्पर की प्रतिलिपि के बजाय इस्तेमाल की जाएगी)",
+    "divide_text_label" : "पुनः विभाजित करें टेक्स्ट सेगमेंट द्वारा:",
+    "divide_text_info" : "(प्रयोगात्मक) मौजूदा पाठ सेगमेंट को विभाजित करने के लिए एक विभाजक दर्ज करें। उपकरण को घटनाओं को पहचानने और उन्हें अनुसार नए सेगमेंट बनाने के लिए। | का उपयोग करके एक से अधिक विभाजक निर्दिष्ट करें, उदा।: !|?|...|。",
+    "out_name_label" : "फ़ाइल का नाम",
+    "out_name_info" : "आउटपुट फ़ाइल का नाम",
+    "preview_info" : "पूर्णत: अधिकतम 10 सेकंड के लिए वीडियो काटता है परीक्षण के उद्देश्यों के लिए। कृपया इसे निष्क्रिय करें ताकि पूरा वीडियो अवधि प्राप्त की जा सके।",
+    "edit_sub_label" : "उत्पन्न उपशीर्षक संपादित करें",
+    "edit_sub_info" : "उत्पन्न उपशीर्षक संपादित करें: आपको 2 चरणों में अनुवाद चलाने की अनुमति देता है। पहले 'GET SUBTITLES AND EDIT' बटन के साथ, आप उन्हें संपादित करने के लिए उपशीर्षक प्राप्त करते हैं, और फिर 'TRANSLATE' बटन के साथ, आप वीडियो उत्पन्न कर सकते हैं",
+    "button_subs" : "GET SUBTITLES AND EDIT",
+    "editor_sub_label" : "उत्पन्न उपशीर्षक",
+    "editor_sub_info" : "यहाँ उत्पन्न उपशीर्षक में पाठ संपादित करने के लिए स्वतंत्र महसूस करें। आप इंटरफ़ेस विकल्पों में परिवर्तन कर सकते हैं, 'TRANSLATE' बटन पर क्लिक करने से पहले, 'Source language', 'Translate audio to' और 'Max speakers', त्रुटियों से बचने के लिए, 'TRANSLATE' बटन पर क्लिक करें। जब आप समाप्त हो जाएं, 'TRANSLATE' बटन पर क्लिक करें।",
+    "editor_sub_ph" : "पहले 'GET SUBTITLES AND EDIT' दबाएं ताकि उपशीर्षक प्राप्त हो",
+    "button_translate" : "TRANSLATE",
+    "output_result_label" : "अनुवादित वीडियो डाउनलोड करें",
+    "sub_ori" : "उपशीर्षक",
+    "sub_tra" : "अनुवादित उपशीर्षक",
+    "ht_token_info" : "एक महत्वपूर्ण कदम है प्यानोट का उपयोग करने के लिए लाइसेंस समझ। आपको Hugging Face पर एक खाता होना चाहिए और मॉडल का उपयोग करने के लिए लाइसेंस स्वीकार करने की आवश्यकता है: https://huggingface.co/pyannote/speaker-diarization और https://huggingface.co/pyannote/segmentation। अपना KEY TOKEN यहाँ प्राप्त करें: https://hf.co/settings/tokens",
+    "ht_token_ph" : "टोकन यहाँ जाता है...",
+    "tab_docs": "दस्तावेज़ अनुवाद",
+    "docs_input_label": "दस्तावेज़ स्रोत चुनें",
+    "docs_input_info": "यह PDF, DOCX, TXT, या पाठ हो सकता है",
+    "docs_source_info": "यह पाठ की मूल भाषा है",
+    "chunk_size_label": "प्रति सेगमेंट TTS द्वारा प्रसंस्कृत किए जाने वाले अधिकतम अक्षरों की संख्या",
+    "chunk_size_info": "0 का मान एक गतिशील और और संगतिपूर्ण मान को TTS के लिए सौंपता है।",
+    "docs_button": "भाषा परिवर्तन सेतु शुरू करें",
+    "cv_url_info": "URL से R.V.C. मॉडल आपमूर्त डाउनलोड करें। आप HuggingFace या Drive से लिंक का उपयोग कर सकते हैं, और आप कई लिंक शामिल कर सकते हैं, प्रत्येक को अल्पविराम द्वारा अलग किया जा सकता है। उदाहरण: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title": "आवाज़ को बदलें: TTS से R.V.C.",
+    "sec1_title": "### 1. इसका उपयोग सक्षम करने के लिए, इसे सक्षम करें के रूप में चिह्नित करें।",
+    "enable_replace": "मॉडल का उपयोग सक्षम करने के लिए इसे चेक करें।",
+    "sec2_title": "### 2. प्रत्येक संबंधित बोलने वाले के प्रत्येक TTS को लागू करने के लिए एक आवाज़ का चयन करें और विन्यास लागू करें।",
+    "sec2_subtitle": "आपके पास कितने <TTS बोलने वाले> हैं, इस पर निर्भर करता है, प्रत्येक को उसका संबंधित मॉडल चाहिए। विशेषज्ञ नहीं पाया गया है।",
+    "cv_tts1": "बोलने वाले 1 के लिए लागू करने के लिए आवाज़ चुनें।",
+    "cv_tts2": "बोलने वाले 2 के लिए लागू करने के लिए आवाज़ चुनें।",
+    "cv_tts3": "बोलने वाले 3 के लिए लागू करने के लिए आवाज़ चुनें।",
+    "cv_tts4": "बोलने वाले 4 के लिए लागू करने के लिए आवाज़ चुनें।",
+    "cv_tts5": "बोलने वाले 5 के लिए लागू करने के लिए आवाज़ चुनें।",
+    "cv_tts6": "बोलने वाले 6 के लिए लागू करने के लिए आवाज़ चुनें।",
+    "cv_aux": "- यदि किसी कारणवश स्पीकर सही ढंग से पहचाना नहीं गया है, तो लागू करने के लिए आवाज़।",
+    "cv_button_apply": "आवेदन को लागू करें",
+    "tab_help": "सहायता"
+  },
+
+  "vietnamese": {
+    "description": """
+        ### 🎥 **Dịch video dễ dàng với SoniTranslate!** 📽️
+
+        Tải lên một video, tập tin âm thanh hoặc cung cấp một liên kết YouTube. 📽️ **Nhận sổ tay cập nhật từ kho chính thức: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Xem tab `Trợ giúp` để biết hướng dẫn cách sử dụng. Hãy bắt đầu vui vẻ với việc dịch video! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Hướng dẫn sử dụng:**
+
+        1. 📤 Tải lên một **video**, **tập tin âm thanh** hoặc cung cấp một 🌐 **liên kết YouTube**.
+
+        2. 🌍 Chọn ngôn ngữ bạn muốn **dịch video** sang.
+
+        3. 🗣️ Chỉ định **số người nói** trong video và **gán mỗi người một giọng nói chuyển văn bản** phù hợp cho ngôn ngữ dịch.
+
+        4. 🚀 Nhấn nút '**Dịch**' để nhận kết quả.
+
+        ---
+
+        # 🧩 **SoniTranslate hỗ trợ các công cụ TTS (Text-to-Speech) khác nhau, bao gồm:**
+        - EDGE-TTS → định dạng `en-AU-WilliamNeural-Male` → Nhanh và chính xác.
+        - FACEBOOK MMS → định dạng `en-facebook-mms VITS` → Giọng nói tự nhiên hơn; hiện tại chỉ sử dụng CPU.
+        - PIPER TTS → định dạng `en_US-lessac-high VITS-onnx` → Giống như cái trước, nhưng được tối ưu hóa cho cả CPU và GPU.
+        - BARK → định dạng `en_speaker_0-Male BARK` → Chất lượng tốt nhưng chậm, và dễ bị ảo giác.
+        - Coqui XTTS → định dạng `_XTTS_/AUTOMATIC.wav` → Chỉ có sẵn cho tiếng Trung (Giản thể), tiếng Anh, tiếng Pháp, tiếng Đức, tiếng Ý, tiếng Bồ Đào Nha, tiếng Ba Lan, tiếng Thổ Nhĩ Kỳ, tiếng Nga, tiếng Hà Lan, tiếng Séc, tiếng Ả Rập, tiếng Tây Ban Nha, tiếng Hungary, tiếng Hàn và tiếng Nhật.
+
+        ---
+
+        # 🎤 Cách Sử Dụng Giọng R.V.C. và R.V.C.2 (Tùy chọn) 🎶
+
+        Mục tiêu là áp dụng một R.V.C. vào TTS (Text-to-Speech) được tạo ra 🎙️
+
+        1. Trong tab `Giọng Tùy chỉnh R.V.C.`, tải xuống các mô hình bạn cần 📥 Bạn có thể sử dụng các liên kết từ Hugging Face và Google Drive ở các định dạng như zip, pth, hoặc index. Bạn cũng có thể tải xuống các kho HF hoàn chỉnh, nhưng tùy chọn này không ổn định lắm 😕
+
+        2. Bây giờ, đi đến `Thay thế giọng: TTS thành R.V.C.` và đánh dấu vào hộp `enable` ✅ Sau đó, bạn có thể chọn các mô hình bạn muốn áp dụng cho mỗi người nói TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Điều chỉnh phương pháp F0 sẽ được áp dụng cho tất cả R.V.C. 🎛️
+
+        4. Nhấn `APPLY CONFIGURATION` để áp dụng các thay đổi bạn đã thực hiện 🔄
+
+        5. Quay lại tab dịch video và nhấp vào 'Dịch' ▶️ Bây giờ, dịch sẽ được thực hiện áp dụng R.V.C. 🗣️
+
+        Mẹo: Bạn có thể sử dụng `Kiểm tra R.V.C.` để thử nghiệm và tìm ra các TTS hoặc cấu hình tốt nhất để áp dụng vào R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Dịch video",
+    "video_source": "Chọn Nguồn Video",
+    "link_label" : "Liên kết truyền thông.",
+    "link_info": "Ví dụ: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "Đường dẫn URL vào đây...",
+    "dir_label" : "Đường dẫn Video.",
+    "dir_info": "Ví dụ: /usr/home/my_video.mp4",
+    "dir_ph" : "Đường dẫn vào đây...",
+    "sl_label" : "Ngôn ngữ nguồn",
+    "sl_info": "Đây là ngôn ngữ gốc của video",
+    "tat_label" : "Dịch âm thanh thành",
+    "tat_info": "Chọn ngôn ngữ đích và đồng thời đảm bảo chọn TTS tương ứng cho ngôn ngữ đó.",
+    "num_speakers" : "Chọn số người nói trong video.",
+    "min_sk" : "Ít người nói",
+    "max_sk" : "Nhiều người nói",
+    "tts_select" : "Chọn giọng bạn muốn cho mỗi người nói.",
+    "sk1" : "Người Nói TTS 1",
+    "sk2" : "Người Nói TTS 2",
+    "sk3" : "Người Nói TTS 3",
+    "sk4" : "Người Nói TTS 4",
+    "sk5" : "Người Nói TTS 5",
+    "sk6" : "Người Nói TTS 6",
+    "vc_title" : "Sao chép giọng nói trong các ngôn ngữ khác nhau",
+    "vc_subtitle" : """
+        ### Sao chép giọng nói của một người qua các ngôn ngữ khác nhau.
+        Mặc dù hiệu quả với hầu hết các giọng nói khi sử dụng một cách phù hợp, nhưng không phải lúc nào cũng đạt được sự hoàn hảo trong mọi trường hợp.
+        Sao chép giọng nói chỉ sao chép âm sắc của người tham chiếu, loại bỏ giọng địa phương và cảm xúc, được quản lý bởi mô hình TTS cơ bản và không được sao chép bởi bộ chuyển đổi.
+        Điều này sẽ lấy mẫu âm thanh từ âm thanh chính cho mỗi người nói và xử lý chúng.
+        """,
+    "vc_active_label" : "Kích hoạt Sao chép Giọng nói",
+    "vc_active_info" : "Kích hoạt Sao chép Giọng nói: Sao chép âm sắc của người nói gốc",
+    "vc_method_label" : "Phương pháp",
+    "vc_method_info" : "Chọn một phương pháp cho quá trình Sao chép Giọng nói",
+    "vc_segments_label" : "Mẫu tối đa",
+    "vc_segments_info" : "Mẫu tối đa: Là số lượng mẫu âm thanh sẽ được tạo ra cho quá trình, càng nhiều càng tốt nhưng có thể thêm tiếng ồn",
+    "vc_dereverb_label" : "Loại bỏ tiếng vang",
+    "vc_dereverb_info" : "Loại bỏ tiếng vang: Áp dụng loại bỏ tiếng vang vào các mẫu âm thanh.",
+    "vc_remove_label" : "Loại bỏ các mẫu trước",
+    "vc_remove_info" : "Loại bỏ các mẫu trước: Loại bỏ các mẫu đã tạo trước đó, vì vậy cần tạo mới.",
+    "xtts_title" : "Tạo TTS dựa trên một âm thanh",
+    "xtts_subtitle" : "Tải lên một tập tin âm thanh tối đa 10 giây với một giọng nói. Sử dụng XTTS, một TTS mới sẽ được tạo ra với một giọng nói tương tự như tập tin âm thanh được cung cấp.",
+    "xtts_file_label" : "Tải lên một âm thanh ngắn với giọng nói",
+    "xtts_name_label" : "Tên cho TTS",
+    "xtts_name_info" : "Sử dụng một tên đơn giản",
+    "xtts_dereverb_label" : "Loại bỏ tiếng vang âm thanh",
+    "xtts_dereverb_info" : "Loại bỏ tiếng vang âm thanh: Áp dụng loại bỏ tiếng vang âm thanh",
+    "xtts_button" : "Xử lý âm thanh và bao gồm nó trong trình chọn TTS",
+    "xtts_footer" : "Tạo TTS giọng nói tự động: Bạn có thể sử dụng '_XTTS_/AUTOMATIC.wav' trong trình chọn TTS để tự động tạo các đoạn cho mỗi người nói khi tạo dịch.",
+    "extra_setting" : "Cài Đặt Nâng Cao",
+    "acc_max_label" : "Tăng tốc âm thanh tối đa",
+    "acc_max_info" : "Tăng tốc tối đa cho các đoạn âm thanh dịch để tránh chồng chéo. Giá trị 1.0 đại diện cho không tăng tốc",
+    "aud_mix_label" : "Phương pháp Trộn Âm thanh",
+    "aud_mix_info" : "Trộn các tập tin âm thanh gốc và dịch để tạo ra một đầu ra cân bằng tùy chỉnh với hai chế độ trộn có sẵn.",
+    "vol_ori" : "Âm lượng âm thanh gốc",
+    "vol_tra" : "Âm lượng âm thanh dịch",
+    "voiceless_tk_label" : "Dạng Dữ liệu Không Có Giọng Nói",
+    "voiceless_tk_info" : "Dạng Dữ liệu Không Có Giọng Nói: Loại bỏ các giọng nói âm thanh gốc trước khi kết hợp nó với âm thanh dịch.",
+    "sub_type" : "Loại Phụ Đề",
+    "whisper_title" : "Cấu hình chuyển đổi.",
+    "srt_file_label" : "Tải lên một tập tin phụ đề SRT (sẽ được sử dụng thay vì việc chuyển đổi của Whisper)",
+    "divide_text_label" : "Chia lại đoạn văn bản bằng:",
+    "divide_text_info" : "(Thử nghiệm) Nhập một bộ phân cách để chia các đoạn văn bản hiện có trong ngôn ngữ nguồn. Công cụ sẽ nhận dạng các xuất hiện và tạo ra các đoạn mới tương ứng. Chỉ định nhiều bộ phân cách bằng |, ví dụ: !|?|...|。",
+    "out_name_label" : "Tên tập tin",
+    "out_name_info" : "Tên của tập tin đầu ra",
+    "preview_info" : "Xem trước cắt video chỉ 10 giây cho mục đích kiểm tra. Vui lòng tắt nó để lấy lại độ dài video đầy đủ.",
+    "edit_sub_label" : "Chỉnh sửa phụ đề đã tạo",
+    "edit_sub_info" : "Chỉnh sửa phụ đề đã tạo: Cho phép bạn chạy dịch trong 2 bước. Đầu tiên với nút 'NHẬN PHỤ ĐỀ VÀ CHỈNH SỬA', bạn nhận được phụ đề để chỉnh sửa chúng, và sau đó với nút 'DỊCH', bạn có thể tạo ra video",
+    "button_subs" : "NHẬN PHỤ ĐỀ VÀ CHỈNH SỬA",
+    "editor_sub_label" : "Phụ đề đã tạo",
+    "editor_sub_info" : "Hãy tự do chỉnh sửa văn bản trong phụ đề đã tạo ở đây. Bạn có thể thay đổi các tùy chọn giao diện trước khi nhấn nút 'DỊCH', ngoại trừ 'Ngôn ngữ nguồn', 'Dịch âm thanh thành', và 'Số người nói tối đa', để tránh lỗi. Khi bạn hoàn thành, nhấn nút 'DỊCH'.",
+    "editor_sub_ph" : "Đầu tiên nhấn 'NHẬN PHỤ ĐỀ VÀ CHỈNH SỬA' để nhận phụ đề",
+    "button_translate" : "DỊCH",
+    "output_result_label" : "TẢI VỀ VIDEO DỊCH",
+    "sub_ori" : "Phụ đề",
+    "sub_tra" : "Phụ đề dịch",
+    "ht_token_info" : "Một bước quan trọng là chấp nhận thỏa thuận giấy phép để sử dụng Pyannote. Bạn cần có một tài khoản trên Hugging Face và chấp nhận thỏa thuận giấy phép để sử dụng các mô hình: https://huggingface.co/pyannote/speaker-diarization và https://huggingface.co/pyannote/segmentation. Lấy KEY TOKEN của bạn tại đây: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Token vào đây...",
+    "tab_docs" : "Dịch tài liệu",
+    "docs_input_label" : "Chọn Nguồn Tài Liệu",
+    "docs_input_info" : "Có thể là PDF, DOCX, TXT, hoặc văn bản",
+    "docs_source_info" : "Đây là ngôn ngữ gốc của văn bản",
+    "chunk_size_label" : "Số ký tự tối đa mà TTS sẽ xử lý cho mỗi đoạn",
+    "chunk_size_info" : "Giá trị 0 gán một giá trị động và tương thích hơn cho TTS.",
+    "docs_button" : "Bắt đầu Cầu Nối Chuyển Đổi Ngôn Ngữ",
+    "cv_url_info" : "Tự động tải xuống các mô hình R.V.C. từ URL. Bạn có thể sử dụng các liên kết từ HuggingFace hoặc Drive, và bạn có thể bao gồm nhiều liên kết, mỗi liên kết cách nhau bằng dấu phẩy. Ví dụ: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Thay thế giọng: TTS thành R.V.C.",
+    "sec1_title" : "### 1. Để kích hoạt việc sử dụng, đánh dấu nó như là kích hoạt.",
+    "enable_replace" : "Kiểm tra điều này để kích hoạt việc sử dụng các mô hình.",
+    "sec2_title" : "### 2. Chọn một giọng nói sẽ được áp dụng cho mỗi TTS của mỗi người nói tương ứng và áp dụng các cấu hình.",
+    "sec2_subtitle" : "Tùy thuộc vào số lượng <Người Nói TTS> bạn sẽ sử dụng, mỗi người cần một mô hình tương ứng của mình. Ngoài ra, còn có một mô hình phụ trợ nếu vì một lý do nào đó không nhận diện được người nói đúng cách.",
+    "cv_tts1" : "Chọn giọng nói áp dụng cho Người Nói 1.",
+    "cv_tts2" : "Chọn giọng nói áp dụng cho Người Nói 2.",
+    "cv_tts3" : "Chọn giọng nói áp dụng cho Người Nói 3.",
+    "cv_tts4" : "Chọn giọng nói áp dụng cho Người Nói 4.",
+    "cv_tts5" : "Chọn giọng nói áp dụng cho Người Nói 5.",
+    "cv_tts6" : "Chọn giọng nói áp dụng cho Người Nói 6.",
+    "cv_aux" : "- Giọng nói được áp dụng trong trường hợp không nhận diện được người nói thành công.",
+    "cv_button_apply" : "ÁP DỤNG CẤU HÌNH",
+    "tab_help" : "Trợ giúp"
+  },
+
+  "polish": {
+    "description": """
+        ### 🎥 **Łatwe tłumaczenie filmów dzięki SoniTranslate!** 📽️
+
+        Prześlij film, plik dźwiękowy lub podaj link do YouTube. 📽️ **Pobierz aktualny notatnik ze strony oficjalnego repozytorium: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Zobacz zakładkę `Pomoc` w celu uzyskania instrukcji dotyczących korzystania z aplikacji. Zaczynajmy zabawę z tłumaczeniem filmów! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Instrukcje dotyczące użytkowania:**
+
+        1. 📤 Prześlij **film**, **plik dźwiękowy** lub podaj 🌐 **link do YouTube**.
+
+        2. 🌍 Wybierz język, na który chcesz **przetłumaczyć film**.
+
+        3. 🗣️ Określ **liczbę osób mówiących** w filmie i **przypisz każdej z nich odpowiednią syntezę mowy tekstowej (TTS)** odpowiednią dla języka tłumaczenia.
+
+        4. 🚀 Naciśnij przycisk '**Tłumacz**', aby uzyskać wyniki.
+
+        ---
+
+        # 🧩 **SoniTranslate obsługuje różne silniki TTS (tekst do mowy), które to:**
+        - EDGE-TTS → format `en-AU-WilliamNeural-Male` → Szybki i dokładny.
+        - FACEBOOK MMS → format `en-facebook-mms VITS` → Głos jest bardziej naturalny; obecnie wykorzystuje tylko CPU.
+        - PIPER TTS → format `en_US-lessac-high VITS-onnx` → To samo co poprzednie, ale zoptymalizowane zarówno pod CPU, jak i GPU.
+        - BARK → format `en_speaker_0-Male BARK` → Dobra jakość, ale wolne działanie, podatne na halucynacje.
+        - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Dostępne tylko dla języka chińskiego (uproszczonego), angielskiego, francuskiego, niemieckiego, włoskiego, portugalskiego, polskiego, tureckiego, rosyjskiego, niderlandzkiego, czeskiego, arabskiego, hiszpańskiego, węgierskiego, koreańskiego i japońskiego.
+
+        ---
+
+        # 🎤 Jak używać głosów R.V.C. i R.V.C.2 (opcjonalnie) 🎶
+
+        Celem jest zastosowanie R.V.C. do wygenerowanego TTS (tekst do mowy) 🎙️
+
+        1. W zakładce `Custom Voice R.V.C.` pobierz potrzebne modele 📥 Możesz użyć linków z Hugging Face i Google Drive w formatach takich jak zip, pth lub index. Możesz również pobrać pełne repozytoria HF Space, ale ta opcja nie jest bardzo stabilna 😕
+
+        2. Teraz przejdź do `Zamień głos: TTS na R.V.C.` i zaznacz pole `włącz` ✅ Następnie możesz wybrać modele, które chcesz zastosować do każdego mówcy TTS 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Dostosuj metodę F0, która zostanie zastosowana do wszystkich R.V.C. 🎛️
+
+        4. Naciśnij przycisk `ZASTOSUJ KONFIGURACJĘ`, aby zastosować wprowadzone zmiany 🔄
+
+        5. Wróć do zakładki tłumaczenia filmu i kliknij 'Tłumacz' ▶️ Teraz tłumaczenie zostanie wykonane, zastosowując R.V.C. 🗣️
+
+        Wskazówka: Możesz użyć `Test R.V.C.` do eksperymentowania i znalezienia najlepszego TTS lub konfiguracji do zastosowania w R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Tłumaczenie filmu",
+    "video_source": "Wybierz Źródło Wideo",
+    "link_label" : "Link do multimediów.",
+    "link_info": "Przykład: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "Wklej tutaj URL...",
+    "dir_label" : "Ścieżka do Wideo.",
+    "dir_info": "Przykład: /usr/home/my_video.mp4",
+    "dir_ph" : "Wklej tutaj ścieżkę...",
+    "sl_label" : "Język źródłowy",
+    "sl_info": "To jest oryginalny język filmu",
+    "tat_label" : "Przetłumacz audio na",
+    "tat_info": "Wybierz język docelowy i upewnij się, że wybierzesz odpowiednią syntezę mowy tekstowej (TTS) dla tego języka.",
+    "num_speakers" : "Wybierz, ile osób mówi w filmie.",
+    "min_sk" : "Min. mówców",
+    "max_sk" : "Maks. mówców",
+    "tts_select" : "Wybierz głos dla każdego mówcy.",
+    "sk1" : "Głos TTS Mówca 1",
+    "sk2" : "Głos TTS Mówca 2",
+    "sk3" : "Głos TTS Mówca 3",
+    "sk4" : "Głos TTS Mówca 4",
+    "sk5" : "Głos TTS Mówca 5",
+    "sk6" : "Głos TTS Mówca 6",
+    "vc_title" : "Imitacja głosu w różnych językach",
+    "vc_subtitle" : """
+        ### Odtwórz głos osoby w różnych językach.
+        Mimo że jest skuteczny w większości przypadków, nie zawsze osiąga doskonałość.
+        Imitacja głosu odtwarza tylko ton osoby referencyjnej, wykluczając akcent i emocje, które są kontrolowane przez model TTS podstawowego mówcy i nie są replikowane przez konwerter.
+        Będzie pobierać próbki dźwiękowe z głównego dźwięku dla każdego mówcy i je przetwarzać.
+        """,
+    "vc_active_label" : "Aktywna Imitacja Głosu",
+    "vc_active_info" : "Aktywna Imitacja Głosu: Odtwarza ton oryginalnego mówcy",
+    "vc_method_label" : "Metoda",
+    "vc_method_info" : "Wybierz metodę procesu imitacji głosu",
+    "vc_segments_label" : "Maks. liczba próbek",
+    "vc_segments_info" : "Maks. liczba próbek: To jest liczba próbek dźwiękowych, które zostaną wygenerowane w procesie, więcej to lepiej, ale może to wprowadzić hałas",
+    "vc_dereverb_label" : "Usuń pogłos",
+    "vc_dereverb_info" : "Usuń pogłos: Zastosuj usuwanie pogłosu do próbek dźwiękowych.",
+    "vc_remove_label" : "Usuń poprzednie próbki",
+    "vc_remove_info" : "Usuń poprzednie próbki: Usuń wcześniej wygenerowane próbki, więc trzeba będzie wygenerować nowe.",
+    "xtts_title" : "Utwórz TTS na podstawie dźwięku",
+    "xtts_subtitle" : "Prześlij krótki plik dźwiękowy o maksymalnej długości 10 sekund z głosem. Korzystając z XTTS, zostanie utworzony nowy TTS z głosem podobnym do dostarczonego pliku dźwiękowego.",
+    "xtts_file_label" : "Prześlij krótki dźwięk z głosem",
+    "xtts_name_label" : "Nazwa dla TTS",
+    "xtts_name_info" : "Użyj prostej nazwy",
+    "xtts_dereverb_label" : "Usuń pogłos dźwięku",
+    "xtts_dereverb_info" : "Usuń pogłos dźwięku: Zastosuj usuwanie pogłosu do dźwięku",
+    "xtts_button" : "Przetwórz dźwięk i dodaj go do selektora TTS",
+    "xtts_footer" : "Automatycznie generuj głos XTTS: Możesz użyć '_XTTS_/AUTOMATIC.wav' w selektorze TTS, aby automatycznie generować segmenty dla każdego mówcy podczas generowania tłumaczenia.",
+    "extra_setting" : "Ustawienia Zaawansowane",
+    "acc_max_label" : "Maks. przyspieszenie dźwięku",
+    "acc_max_info" : "Maksymalne przyspieszenie dla przetłumaczonych segmentów dźwiękowych, aby uniknąć nakładania się. Wartość 1.0 oznacza brak przyspieszenia",
+    "aud_mix_label" : "Metoda Mieszania Audio",
+    "aud_mix_info" : "Mieszaj pliki audio oryginalne i przetłumaczone, aby utworzyć spersonalizowane, zrównoważone wyjście z dwoma dostępnymi trybami mieszania.",
+    "vol_ori" : "Głośność oryginalnego dźwięku",
+    "vol_tra" : "Głośność przetłumaczonego dźwięku",
+    "voiceless_tk_label" : "Ścieżka bezgłosowa",
+    "voiceless_tk_info" : "Ścieżka bezgłosowa: Usuń głosy oryginalne przed połączeniem ich z przetłumaczonym dźwiękiem.",
+    "sub_type" : "Typ Napisów",
+    "whisper_title" : "Konfiguracja transkrypcji.",
+    "srt_file_label" : "Prześlij plik napisów SRT (będzie używany zamiast transkrypcji Whisper)",
+    "divide_text_label" : "Podziel segmenty tekstu przez:",
+    "divide_text_info" : "(Eksperymentalne) Wprowadź separator do podziału istniejących segmentów tekstu w języku źródłowym. Narzędzie zidentyfikuje wystąpienia i utworzy nowe segmenty zgodnie z nimi. Wprowadź kilka separatorów, używając |, np.: !|?|...|。",
+    "out_name_label" : "Nazwa pliku",
+    "out_name_info" : "Nazwa pliku wyjściowego",
+    "preview_info" : "Podgląd przycina wideo do 10 sekund tylko do celów testowych. Proszę wyłączyć go, aby pobrać pełną długość wideo.",
+    "edit_sub_label" : "Edytuj wygenerowane napisy",
+    "edit_sub_info" : "Edytuj wygenerowane napisy: Pozwala uruchomić tłumaczenie w 2 krokach. Najpierw za pomocą przycisku 'POBIERZ NAPISY I EDYTUJ' pobierz napisy, aby je edytować, a następnie za pomocą przycisku 'TRANSLATE' możesz wygenerować wideo",
+    "button_subs" : "POBIERZ NAPISY I EDYTUJ",
+    "editor_sub_label" : "Wygenerowane napisy",
+    "editor_sub_info" : "Zapraszamy do edycji tekstu w wygenerowanych napisach tutaj. Możesz wprowadzić zmiany w opcjach interfejsu przed kliknięciem przycisku 'TRANSLATE', oprócz 'Języka źródłowego', 'Przetłumacz audio na' i 'Maks. mówców', aby uniknąć błędów. Po zakończeniu kliknij przycisk 'TRANSLATE'.",
+    "editor_sub_ph" : "Najpierw naciśnij 'POBIERZ NAPISY I EDYTUJ', aby pobrać napisy",
+    "button_translate" : "TRANSLATE",
+    "output_result_label" : "POBIERZ PRZETŁUMACZONE WIDEO",
+    "sub_ori" : "Napisy oryginalne",
+    "sub_tra" : "Przetłumaczone napisy",
+    "ht_token_info" : "Jednym ważnym krokiem jest zaakceptowanie umowy licencyjnej dotyczącej korzystania z Pyannote. Musisz mieć konto na Hugging Face i zaakceptować licencję do użytkowania modeli: https://huggingface.co/pyannote/speaker-diarization oraz https://huggingface.co/pyannote/segmentation. Pobierz swój KLUCZ TOKEN tutaj: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Wklej tutaj Token...",
+    "tab_docs" : "Tłumaczenie dokumentu",
+    "docs_input_label" : "Wybierz Źródło Dokumentu",
+    "docs_input_info" : "To może być plik PDF, DOCX, TXT lub tekst",
+    "docs_source_info" : "To jest oryginalny język tekstu",
+    "chunk_size_label" : "Maks. liczba znaków, które TTS będzie przetwarzał na segment",
+    "chunk_size_info" : "Wartość 0 przypisuje dynamiczną i bardziej kompatybilną wartość dla TTS.",
+    "docs_button" : "Rozpocznij most konwersji językowej",
+    "cv_url_info" : "Automatycznie pobierz modele R.V.C. z adresu URL. Możesz użyć linków z HuggingFace lub Drive, i możesz dołączyć kilka linków, każdy oddzielony przecinkiem. Przykład: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Zamień głos: TTS na R.V.C.",
+    "sec1_title" : "### 1. Aby włączyć jego użycie, zaznacz go jako aktywny.",
+    "enable_replace" : "Zaznacz to, aby włączyć używanie modeli.",
+    "sec2_title" : "### 2. Wybierz głos, który zostanie zastosowany do każdego TTS każdego odpowiedniego mówcy i zastosuj konfiguracje.",
+    "sec2_subtitle" : "W zależności od liczby <TTS Speaker>, którą będziesz używać, każdy potrzebuje odpowiedniego modelu. Dodatkowo, jest jeden pomocniczy, jeśli z jakiegoś powodu mówca nie zostanie poprawnie wykryty.",
+    "cv_tts1" : "Wybierz głos, który ma być stosowany dla Mówcy 1.",
+    "cv_tts2" : "Wybierz głos, który ma być stosowany dla Mówcy 2.",
+    "cv_tts3" : "Wybierz głos, który ma być stosowany dla Mówcy 3.",
+    "cv_tts4" : "Wybierz głos, który ma być stosowany dla Mówcy 4.",
+    "cv_tts5" : "Wybierz głos, który ma być stosowany dla Mówcy 5.",
+    "cv_tts6" : "Wybierz głos, który ma być stosowany dla Mówcy 6.",
+    "cv_aux" : "- Głos do zastosowania w przypadku niepowodzenia wykrycia Mówcy.",
+    "cv_button_apply" : "ZASTOSUJ KONFIGURACJĘ",
+    "tab_help" : "Pomoc"
+  },
+
+  "swedish": {
+    "description": """
+        ### 🎥 **Översätt videor enkelt med SoniTranslate!** 📽️
+
+        Ladda upp en video, ljudfil eller ange en YouTube-länk. 📽️ **Få den uppdaterade anteckningsboken från det officiella arkivet: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Se fliken `Hjälp` för instruktioner om hur du använder det. Nu ska vi ha roligt med videöversättning! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **Instruktioner för användning:**
+
+        1. 📤 Ladda upp en **video**, **ljudfil** eller ange en 🌐 **YouTube-länk.**
+
+        2. 🌍 Välj det språk du vill **översätta videon till**.
+
+        3. 🗣️ Ange **antalet personer som talar** i videon och **tilldela var och en en text-till-tal-röst** lämplig för översättningsspråket.
+
+        4. 🚀 Tryck på knappen '**Översätt**' för att få resultatet.
+
+        ---
+
+        # 🧩 **SoniTranslate stöder olika TTS (Text-to-Speech) motorer, vilka är:**
+        - EDGE-TTS → format `en-AU-WilliamNeural-Male` → Snabbt och noggrant.
+        - FACEBOOK MMS → format `en-facebook-mms VITS` → Rösten är mer naturlig; för tillfället använder den endast CPU.
+        - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Samma som den föregående, men den är optimerad för både CPU och GPU.
+        - BARK → format `en_speaker_0-Male BARK` → Bra kvalitet men långsam och benägen för hallucinationer.
+        - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Endast tillgängligt för kinesiska (förenklad), engelska, franska, tyska, italienska, portugisiska, polska, turkiska, ryska, nederländska, tjeckiska, arabiska, spanska, ungerska, koreanska och japanska.
+
+        ---
+
+        # 🎤 Hur man använder R.V.C. och R.V.C.2-röster (Valfritt) 🎶
+
+        Målet är att tillämpa en R.V.C. på den genererade TTS (Text-to-Speech) 🎙️
+
+        1. I fliken `Anpassad röst R.V.C.`, ladda ner de modeller du behöver 📥 Du kan använda länkar från Hugging Face och Google Drive i format som zip, pth eller index. Du kan också ladda ner kompletta HF-utrymmen, men den här alternativet är inte särskilt stabilt 😕
+
+        2. Gå nu till `Ersätt röst: TTS till R.V.C.` och markera rutan `aktivera` ✅ Efter det kan du välja de modeller du vill tillämpa på varje TTS-högtalare 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Justera F0-metoden som kommer att tillämpas på alla R.V.C. 🎛️
+
+        4. Tryck på `TILLÄMPA KONFIGURATION` för att tillämpa de ändringar du gjorde 🔄
+
+        5. Gå tillbaka till fliken för videöversättning och klicka på 'Översätt' ▶️ Nu kommer översättningen att göras med tillämpning av R.V.C. 🗣️
+
+        Tips: Du kan använda `Test R.V.C.` för att experimentera och hitta de bästa TTS eller konfigurationer att tillämpa på R.V.C. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Videöversättning",
+    "video_source": "Välj Videokälla",
+    "link_label" : "Medialänk.",
+    "link_info": "Exempel: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "URL går här...",
+    "dir_label" : "Videostig.",
+    "dir_info": "Exempel: /usr/home/min_video.mp4",
+    "dir_ph" : "Sökväg går här...",
+    "sl_label" : "Källspråk",
+    "sl_info": "Detta är det ursprungliga språket för videon",
+    "tat_label" : "Översätt ljud till",
+    "tat_info": "Välj målspråket och se också till att välja den motsvarande TTS för det språket.",
+    "num_speakers" : "Välj hur många personer som talar i videon.",
+    "min_sk" : "Min högtalare",
+    "max_sk" : "Max högtalare",
+    "tts_select" : "Välj röst för varje högtalare.",
+    "sk1" : "TTS Högtalare 1",
+    "sk2" : "TTS Högtalare 2",
+    "sk3" : "TTS Högtalare 3",
+    "sk4" : "TTS Högtalare 4",
+    "sk5" : "TTS Högtalare 5",
+    "sk6" : "TTS Högtalare 6",
+    "vc_title" : "Röstimitation på olika språk",
+    "vc_subtitle" : """
+        ### Replicera en persons röst över olika språk.
+        Effektiv med de flesta röster när den används på rätt sätt, men den kan inte uppnå perfektion i varje fall.
+        Röstimitation reproducerar endast referenshögtalarens ton, exklusive accent och känslor, som styrs av basens högtalar-TTS-modell och inte reproduceras av omvandlaren.
+        Detta kommer att ta ljudprover från huvudljudet för varje högtalare och bearbeta dem.
+        """,
+    "vc_active_label" : "Aktiv Röstimitation",
+    "vc_active_info" : "Aktiv Röstimitation: Reproducerar den ursprungliga högtalarens ton",
+    "vc_method_label" : "Metod",
+    "vc_method_info" : "Välj en metod för Röstimitationsprocessen",
+    "vc_segments_label" : "Maxprover",
+    "vc_segments_info" : "Maxprover: Är antalet ljudprover som kommer att genereras för processen, fler är bättre men det kan lägga till brus",
+    "vc_dereverb_label" : "Dereverb",
+    "vc_dereverb_info" : "Dereverb: Tillämpar vokal dereverb på ljudproverna.",
+    "vc_remove_label" : "Ta bort tidigare prover",
+    "vc_remove_info" : "Ta bort tidigare prover: Ta bort de tidigare genererade proven, så nya måste skapas.",
+    "xtts_title" : "Skapa en TTS baserad på ett ljud",
+    "xtts_subtitle" : "Ladda upp en ljudfil på maximalt 10 sekunder med en röst. Genom att använda XTTS kommer en ny TTS att skapas med en röst liknande den tillhandahållna ljudfilen.",
+    "xtts_file_label" : "Ladda upp ett kort ljud med rösten",
+    "xtts_name_label" : "Namn för TTS",
+    "xtts_name_info" : "Använd ett enkelt namn",
+    "xtts_dereverb_label" : "Dereverb ljud",
+    "xtts_dereverb_info" : "Dereverb ljud: Tillämpar vokal dereverb på ljudet",
+    "xtts_button" : "Bearbeta ljudet och inkludera det i TTS-väljaren",
+    "xtts_footer" : "Generera röst xtts automatiskt: Du kan använda '_XTTS_/AUTOMATIC.wav' i TTS-väljaren för att automatiskt generera segment för varje högtalare vid generering av översättningen.",
+    "extra_setting" : "Avancerade Inställningar",
+    "acc_max_label" : "Max Ljudacceleration",
+    "acc_max_info" : "Maximal acceleration för översatta ljudsegment för att undvika överlappning. En värde på 1,0 representerar ingen acceleration",
+    "aud_mix_label" : "Ljudmixningsmetod",
+    "aud_mix_info" : "Blanda original- och översatta ljudfiler för att skapa en anpassad, balanserad utdata med två tillgängliga blandningslägen.",
+    "vol_ori" : "Volym ursprungligt ljud",
+    "vol_tra" : "Volym översatt ljud",
+    "voiceless_tk_label" : "Röstlös spår",
+    "voiceless_tk_info" : "Röstlös spår: Ta bort de ursprungliga ljudrösterna innan de kombineras med det översatta ljudet.",
+    "sub_type" : "Undertexttyp",
+    "whisper_title" : "Konfigurera transkription.",
+    "srt_file_label" : "Ladda upp en SRT-undertextsfil (kommer att användas istället för Whisper-transkriptionen)",
+    "divide_text_label" : "Dela upp textsegment med:",
+    "divide_text_info" : "(Experimentell) Ange en avgränsare för att dela upp befintliga textsegment på källspråket. Verktyget kommer att identifiera förekomster och skapa nya segment därefter. Ange flera avgränsare med |, t.ex.: !|?|...|。",
+    "out_name_label" : "Filnamn",
+    "out_name_info" : "Namnet på utdatafilen",
+    "preview_info" : "Förhandsgranskning klipper videon till endast 10 sekunder för teständamål. Avaktivera det för att hämta full videolängd.",
+    "edit_sub_label" : "Redigera genererade undertexter",
+    "edit_sub_info" : "Redigera genererade undertexter: Tillåter dig att köra översättningen i 2 steg. Först med knappen 'FÅ UNDERSKRIFTER OCH REDIGERA', får du undertexterna för att redigera dem, och sedan med knappen 'ÖVERFÖRA', kan du generera videon",
+    "button_subs" : "FÅ UNDERSKRIFTER OCH REDIGERA",
+    "editor_sub_label" : "Genererade undertexter",
+    "editor_sub_info" : "Du kan redigera texten i de genererade undertexterna här. Du kan göra ändringar i gränssnittsalternativen innan du klickar på knappen 'ÖVERFÖRA', förutom 'Källspråk', 'Översätt ljud till' och 'Max högtalare', för att undvika fel. När du är klar, klicka på knappen 'ÖVERFÖRA'.",
+    "editor_sub_ph" : "Tryck först på 'FÅ UNDERSKRIFTER OCH REDIGERA' för att hämta undertexterna",
+    "button_translate" : "ÖVERFÖRA",
+    "output_result_label" : "LADDA NER ÖVERSATT VIDEO",
+    "sub_ori" : "Undertexter",
+    "sub_tra" : "Översatta undertexter",
+    "ht_token_info" : "Ett viktigt steg är att godkänna licensavtalet för att använda Pyannote. Du behöver ha ett konto på Hugging Face och acceptera licensen för att använda modellerna: https://huggingface.co/pyannote/speaker-diarization och https://huggingface.co/pyannote/segmentation. Hämta din NYCKELTOKEN här: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Token går här...",
+    "tab_docs" : "Dokumentöversättning",
+    "docs_input_label" : "Välj Dokumentkälla",
+    "docs_input_info" : "Det kan vara PDF, DOCX, TXT eller text",
+    "docs_source_info" : "Detta är det ursprungliga språket för texten",
+    "chunk_size_label" : "Max antal tecken som TTS kommer att behandla per segment",
+    "chunk_size_info" : "Ett värde på 0 tilldelar ett dynamiskt och mer kompatibelt värde för TTS.",
+    "docs_button" : "Starta Språkomvandlingsbryggan",
+    "cv_url_info" : "Ladda automatiskt ner R.V.C.-modellerna från URL:en. Du kan använda länkar från HuggingFace eller Drive, och du kan inkludera flera länkar, var och en separerad med ett komma. Exempel: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Ersätt röst: TTS till R.V.C.",
+    "sec1_title" : "### 1. För att aktivera dess användning, markera den som aktiverad.",
+    "enable_replace" : "Markera detta för att aktivera användningen av modellerna.",
+    "sec2_title" : "### 2. Välj en röst som ska tillämpas på varje TTS för varje motsvarande högtalare och tillämpa konfigurationerna.",
+    "sec2_subtitle" : "Beroende på hur många <TTS Speaker> du kommer att använda, behöver var och en sin respektive modell. Dessutom finns det en hjälpmodell om högtalaren av någon anledning inte upptäcks korrekt.",
+    "cv_tts1" : "Välj röst att tillämpa för Högtalare 1.",
+    "cv_tts2" : "Välj röst att tillämpa för Högtalare 2.",
+    "cv_tts3" : "Välj röst att tillämpa för Högtalare 3.",
+    "cv_tts4" : "Välj röst att tillämpa för Högtalare 4.",
+    "cv_tts5" : "Välj röst att tillämpa för Högtalare 5.",
+    "cv_tts6" : "Välj röst att tillämpa för Högtalare 6.",
+    "cv_aux" : "- Röst att tillämpa om en högtalare inte upptäcks framgångsrikt.",
+    "cv_button_apply" : "TILLÄMPA KONFIGURATION",
+    "tab_help" : "Hjälp"
+  },
+
+  "korean": {
+    "description": """
+        ### 🎥 **SoniTranslate를 사용하여 비디오를 쉽게 번역하세요!** 📽️
+
+        비디오, 오디오 파일을 업로드하거나 YouTube 링크를 제공하세요. 📽️ **공식 저장소에서 최신 노트북을 받으세요.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        사용 방법에 대한 지침은 `도움말` 탭을 참조하세요. 비디오 번역으로 즐거운 시간을 보내세요! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **사용 방법:**
+
+        1. 📤 **비디오**, **오디오 파일**을 업로드하거나 🌐 **YouTube 링크**를 제공하세요.
+
+        2. 🌍 **비디오를 번역할 언어**를 선택하세요.
+
+        3. 🗣️ 비디오에서 **말하는 사람 수**를 지정하고 각각을 번역 언어에 적합한 텍스트 음성으로 할당하세요.
+
+        4. 🚀 '**번역**' 버튼을 눌러 결과를 얻으세요.
+
+        ---
+
+        # 🧩 **SoniTranslate는 다양한 TTS (텍스트 음성 변환) 엔진을 지원합니다. 이는 다음과 같습니다:**
+        - EDGE-TTS → 형식 `en-AU-WilliamNeural-Male` → 빠르고 정확합니다.
+        - FACEBOOK MMS → 형식 `en-facebook-mms VITS` → 음성이 더 자연스럽지만 현재 CPU만 사용됩니다.
+        - PIPER TTS → 형식 `en_US-lessac-high VITS-onnx` → 이전 것과 동일하지만 CPU와 GPU 모두 최적화되었습니다.
+        - BARK → 형식 `en_speaker_0-Male BARK` → 품질은 좋지만 느리고 환각에 취약합니다.
+        - Coqui XTTS → 형식 `_XTTS_/AUTOMATIC.wav` → 중국어 (간체), 영어, 프랑스어, 독일어, 이탈리아어, 포르투갈어, 폴란드어, 터키어, 러시아어, 네덜란드어, 체코어, 아랍어, 스페인어, 헝가리어, 한국어 및 일본어만 사용할 수 있습니다.
+
+        ---
+
+        # 🎤 R.V.C. 및 R.V.C.2 음성 사용 방법 (선택 사항) 🎶
+
+        목표는 생성된 TTS (텍스트 음성 변환)에 R.V.C.를 적용하는 것입니다. 🎙️
+
+        1. `Custom Voice R.V.C.` 탭에서 필요한 모델을 다운로드하세요. 📥 Hugging Face 및 Google Drive에서 zip, pth 또는 index와 같은 형식의 링크를 사용할 수 있습니다. HF 공간 저장소 전체를 다운로드할 수도 있지만 이 옵션은 안정성이 떨어집니다 😕
+
+        2. 이제 `Replace voice: TTS to R.V.C.`로 이동하여 `enable` 상자를 확인하세요 ✅ 이후 각 TTS 스피커에 적용할 모델을 선택할 수 있습니다 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. 모든 R.V.C.에 적용할 F0 방법을 조정하세요. 🎛️
+
+        4. 변경한 사항을 적용하려면 `APPLY CONFIGURATION`을 누르세요. 🔄
+
+        5. 비디오 번역 탭으로 돌아가 'Translate'를 클릭하세요 ▶️ 이제 번역은 R.V.C.를 적용하여 수행됩니다. 🗣️
+
+        팁: `Test R.V.C.`를 사용하여 실험하고 R.V.C.에 적용할 최상의 TTS 또는 구성을 찾을 수 있습니다. 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "비디오 번역",
+    "video_source": "비디오 소스 선택",
+    "link_label" : "미디어 링크.",
+    "link_info": "예시: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "URL을 입력하세요...",
+    "dir_label" : "비디오 경로.",
+    "dir_info": "예시: /usr/home/my_video.mp4",
+    "dir_ph" : "경로를 입력하세요...",
+    "sl_label" : "원본 언어",
+    "sl_info": "비디오의 원래 언어입니다",
+    "tat_label" : "번역할 언어 선택",
+    "tat_info": "대상 언어를 선택하고 해당 언어에 대한 TTS도 선택하세요.",
+    "num_speakers" : "비디오에서 몇 명이 말하고 있는지 선택하세요.",
+    "min_sk" : "최소 스피커",
+    "max_sk" : "최대 스피커",
+    "tts_select" : "각 스피커에 원하는 음성 선택",
+    "sk1" : "TTS 스피커 1",
+    "sk2" : "TTS 스피커 2",
+    "sk3" : "TTS 스피커 3",
+    "sk4" : "TTS 스피커 4",
+    "sk5" : "TTS 스피커 5",
+    "sk6" : "TTS 스피커 6",
+    "vc_title" : "다른 언어에서 음성 모방",
+    "vc_subtitle" : """
+        ### 여러 언어로 사람의 음성을 복제합니다.
+        대부분의 경우 적절하게 사용되면 효과적이지만 모든 경우에 완벽한 결과를 보장하지는 않을 수 있습니다.
+        음성 모방은 기본 스피커 TTS 모델에 의해 지배되는 악센트 및 감정을 제외한 참조 스피커의 음조만 복제합니다.
+        이는 각 스피커의 주요 오디오에서 오디오 샘플을 가져와 처리합니다.
+        """,
+    "vc_active_label" : "활성화된 음성 모방",
+    "vc_active_info" : "활성화된 음성 모방: 원래 스피커의 음조를 복제합니다",
+    "vc_method_label" : "방법",
+    "vc_method_info" : "음성 모방 프로세스에 사용할 방법 선택",
+    "vc_segments_label" : "최대 샘플 수",
+    "vc_segments_info" : "최대 샘플 수: 프로세스에 생성될 오디오 샘플 수입니다. 더 많으면 더 좋지만 노이즈가 추가될 수 있습니다",
+    "vc_dereverb_label" : "소음 제거",
+    "vc_dereverb_info" : "소음 제거: 오디오 샘플에 음성 소음 제거를 적용합니다.",
+    "vc_remove_label" : "이전 샘플 제거",
+    "vc_remove_info" : "이전 샘플 제거: 생성된 이전 샘플을 제거하므로 새로 생성해야 합니다.",
+    "xtts_title" : "오디오 기반 TTS 생성",
+    "xtts_subtitle" : "음성을 포함한 최대 10초의 짧은 오디오 파일을 업로드하세요. XTTS를 사용하여 제공된 오디오 파일과 유사한 음성을 가진 새 TTS가 생성됩니다.",
+    "xtts_file_label" : "음성을 포함한 짧은 오디오를 업로드하세요",
+    "xtts_name_label" : "TTS에 대한 이름",
+    "xtts_name_info" : "간단한 이름을 사용하세요",
+    "xtts_dereverb_label" : "음성 소음 제거",
+    "xtts_dereverb_info" : "음성 소음 제거: 오디오에 음성 소음 제거를 적용합니다",
+    "xtts_button" : "오디오를 처리하고 TTS 선택기에 포함시킵니다",
+    "xtts_footer" : "음성 xtts 자동 생성: 번역 생성 시 각 스피커에 대해 세그먼트를 자동으로 생성하려면 TTS 선택기에서 '_XTTS_/AUTOMATIC.wav'를 사용할 수 있습니다.",
+    "extra_setting" : "고급 설정",
+    "acc_max_label" : "최대 오디오 가속도",
+    "acc_max_info" : "중첩을 피하기 위해 번역된 오디오 세그먼트에 대한 최대 가속도. 값이 1.0이면 가속도가 없음을 의미합니다",
+    "aud_mix_label" : "오디오 혼합 방법",
+    "aud_mix_info" : "원본 및 번역된 오디오 파일을 혼합하여 두 가지 사용 가능한 혼합 모드로 사용자 정의된 균형 잡힌 출력을 만듭니다.",
+    "vol_ori" : "원본 오디오 볼륨",
+    "vol_tra" : "번역된 오디오 볼륨",
+    "voiceless_tk_label" : "음성 제거 트랙",
+    "voiceless_tk_info" : "음성 제거 트랙: 번역된 오디오와 결합하기 전에 원본 오디오 음성을 제거합니다.",
+    "sub_type" : "자막 유형",
+    "whisper_title" : "전사 구성.",
+    "srt_file_label" : "SRT 자막 파일 업로드(전사 대신 사용됨)",
+    "divide_text_label" : "다음에 따라 텍스트 세그먼트를 분할:",
+    "divide_text_info" : "(실험적) 기존 텍스트 세그먼트를 분할하기 위해 구분 기호를 입력하세요. 도구는 발생한 사례를 식별하고 그에 따라 새 세그먼트를 생성합니다. |를 사용하여 여러 구분 기호를 지정하세요. 예: !|?|...|。",
+    "out_name_label" : "파일 이름",
+    "out_name_info" : "출력 파일의 이름",
+    "preview_info" : "미리 보기는 테스트 목적으로 비디오를 10초로 자릅니다. 전체 비디오 지속 시간을 검색하려면 비활성화하세요.",
+    "edit_sub_label" : "생성된 자막 편집",
+    "edit_sub_info" : "생성된 자막을 편집할 수 있습니다: '자막 가져오기 및 편집' 버튼을 사용하여 먼저 자막을 가져와 편집한 후, '번역' 버튼을 사용하여 비디오를 생성할 수 있습니다",
+    "button_subs" : "자막 가져오기 및 편집",
+    "editor_sub_label" : "생성된 자막",
+    "editor_sub_info" : "여기에서 생성된 자막의 텍스트를 자유롭게 편집할 수 있습니다. '번역할 언어', '번역할 언어' 및 '최대 스피커'를 제외한 인터페이스 옵션을 변경한 후 '번역' 버튼을 클릭하여 오류를 방지하세요. 작업을 마치면 '번역' 버튼을 클릭하세요.",
+    "editor_sub_ph" : "먼저 '자막 가져오기 및 편집'를 눌러 자막을 가져옵니다",
+    "button_translate" : "번역",
+    "output_result_label" : "번역된 비디오 다운로드",
+    "sub_ori" : "자막",
+    "sub_tra" : "번역된 자막",
+    "ht_token_info" : "중요한 단계 중 하나는 Pyannote 사용에 대한 라이선스 동의를 받는 것입니다. Hugging Face에서 계정을 가져야하며 다음 모델을 사용하기 위해 라이선스를 수락해야합니다: https://huggingface.co/pyannote/speaker-diarization 및 https://huggingface.co/pyannote/segmentation. 여기에서 키 토큰을 가져옵니다: https://hf.co/settings/tokens",
+    "ht_token_ph" : "토큰을 입력하세요...",
+    "tab_docs" : "문서 번역",
+    "docs_input_label" : "문서 소스 선택",
+    "docs_input_info" : "PDF, DOCX, TXT 또는 텍스트가 될 수 있습니다",
+    "docs_source_info" : "텍스트의 원래 언어입니다",
+    "chunk_size_label" : "TTS가 세그먼트 당 처리할 최대 문자 수",
+    "chunk_size_info" : "값이 0이면 TTS에 대해 동적이고 더 호환 가능한 값이 할당됩니다.",
+    "docs_button" : "언어 변환 브릿지 시작",
+    "cv_url_info" : "URL에서 R.V.C. 모델을 자동으로 다운로드합니다. HuggingFace 또는 드라이브에서 링크를 사용할 수 있으며 각각을 쉼표로 구분하여 여러 링크를 포함할 수 있습니다. 예: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "음성 교체: TTS에서 R.V.C.로",
+    "sec1_title" : "### 1. 사용하도록 설정하려면 활성화로 표시합니다.",
+    "enable_replace" : "모델 사용을 활성화하려면 이를 확인합니다.",
+    "sec2_title" : "### 2. 각 해당하는 스피커의 TTS에 적용할 음성을 선택하고 구성을 적용합니다.",
+    "sec2_subtitle" : "사용할 <TTS 스피커> 수에 따라 각각에 해당하는 모델이 필요합니다. 추가적으로 스피커가 올바르게 감지되지 않은 경우 보조 모델이 있습니다.",
+    "cv_tts1" : "스피커 1에 적용할 음성을 선택하세요.",
+    "cv_tts2" : "스피커 2에 적용할 음성을 선택하세요.",
+    "cv_tts3" : "스피커 3에 적용할 음성을 선택하세요.",
+    "cv_tts4" : "스피커 4에 적용할 음성을 선택하세요.",
+    "cv_tts5" : "스피커 5에 적용할 음성을 선택하세요.",
+    "cv_tts6" : "스피커 6에 적용할 음성을 선택하세요.",
+    "cv_aux" : "- 스피커가 올바르게 감지되지 않은 경우 적용할 음성.",
+    "cv_button_apply" : "구성 적용",
+    "tab_help" : "도움말"
+  },
+
+  "marathi": {
+    "description": """
+        ### 🎥 **आसानीसोबत SoniTranslate द्वारे व्हिडिओ अनुवाद करा!** 📽️
+
+        एक व्हिडिओ, ऑडिओ फाईल अपलोड करा किंवा एक YouTube लिंक प्रदान करा. 📽️ **अद्यतनित नोटबुक घ्या आधिकृत भंडारात।: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        तपशील देखण्यासाठी 'मदत' टॅब पहा. व्हिडिओ अनुवादासोबत मजा करण्याची सुरवात करूया! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **वापरायला निर्देशिका:**
+
+        1. 📤 **व्हिडिओ**, **ऑडिओ फाईल** अपलोड करा किंवा 🌐 **YouTube लिंक प्रदान करा.**
+
+        2. 🌍 व्हिडिओ **अनुवाद** करण्यासाठी कोणत्या **भाषेत निवडा.**
+
+        3. 🗣️ व्हिडिओमध्ये **किती लोक बोलत आहेत** ते स्पष्ट करा आणि प्रत्येकाला अनुवाद भाषेसाठी उपयुक्त TTS द्या.
+
+        4. 🚀 '**अनुवाद**' बटण दाबा निकाल मिळवण्यासाठी.
+
+        ---
+
+        # 🧩 **SoniTranslate विविध TTS (पाठ-टू-स्पीच) इंजिनसाठी समर्थन करते, ज्या म्हणजे:**
+        - EDGE-TTS → स्वरूप `en-AU-WilliamNeural-Male` → जलद आणि खात्रीशील.
+        - FACEBOOK MMS → स्वरूप `en-facebook-mms VITS` → ध्वनी अधिक प्राकृतिक आहे; ह्या क्षणी, हे केवळ CPU वापरते.
+        - PIPER TTS → स्वरूप `en_US-lessac-high VITS-onnx` → म्हणजे अखेरचा, परंतु ह्यात CPU आणि GPU दोन्हीत अनुकूलित केले आहे.
+        - BARK → स्वरूप `en_speaker_0-Male BARK` → चांगली गुणवत्ता परंतु मंद, आणि हे हल्ल्यांसाठी आदर्श आहे.
+        - Coqui XTTS → स्वरूप `_XTTS_/AUTOMATIC.wav` → केवळ उपलब्ध आहे: चिनी (सरलीकृत), इंग्रजी, फ्रेंच, जर्मन, इटालियन, पोर्तुगीज, पोलिश, तुर्की, रशियन, डच, चेक, अरबी, स्पॅनिश, हंगेरियन, कोरियन आणि जपानी.
+
+        ---
+
+        # 🎤 कसे वापरावे आर.व्ही.सी. आणि आर.व्ही.सी.2 आवाज (पर्वतीय) 🎶
+
+        उद्दिष्ट म्हणजे उत्पन्न केलेल्या TTS (पाठ-टू-स्पीच) वर एक आर.व्ही.सी. लागू करा 🎙️
+
+        1. `कस्टम व्हॉईस आर.व्ही.सी.` टॅबमध्ये, आपल्याला आवश्यक असलेल्या मॉडेल्स डाउनलोड करा 📥 आपण Hugging Face आणि Google Drive यांच्या लिंक्सचा वापर करू शकता, जसे की zip, pth किंवा इंडेक्स. आपण पूर्ण HF स्पेस भंडारांचा डाउनलोड करू शकता, परंतु ह्या पर्यायाचा स्थिरपणा काही कमी आहे 😕
+
+        2. आता, `आर.व्ही.सी. च्या आवाजाच्या TTS ला बदला: टीटीएस ते आर.व्ही.सी.` आणि `सक्षम` बॉक्स तपासा ✅ यानंतर, आपण प्रत्येक TTS वक्त्याला लागणारा मॉडेल निवडू शकता 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. सर्व आर.व्ही.सी. ला लागू केलेला F0 विधान अनुकूलीत करा 🎛️
+
+        4. आपल्याने केलेल्या बदल लागू करण्यासाठी `अनुप्रयोग बदल` दाबा 🔄
+
+        5. व्हिडिओ अनुवाद टॅबमध्ये परत जा आणि 'अनुवाद' वर क्लिक करा ▶️ आता, अनुवाद R.V.C. लागू करत आहे 🗣️
+
+        सूचना: आपण `टेस्ट आर.व्ही.सी.` वापरू शकता व सर्वोत्तम TTS किंवा आर.व्ही.सी. लागू करण्यासाठी गुणवत्ता शोधण्यासाठी वापरू शकता 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "व्हिडिओ अनुवाद",
+    "video_source": "व्हिडिओ स्रोत निवडा",
+    "link_label" : "मीडिया लिंक.",
+    "link_info": "उदाहरण: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "URL येथे जातो...",
+    "dir_label" : "व्हिडिओ मार्ग.",
+    "dir_info": "उदाहरण: /usr/home/my_video.mp4",
+    "dir_ph" : "मार्ग येथे जातो...",
+    "sl_label" : "मूळ भाषा",
+    "sl_info": "हे व्हिडिओची मूळ भाषा आहे",
+    "tat_label" : "ऑडिओ अनुवाद करा",
+    "tat_info": "लक्ष्य भाषा निवडा आणि त्या भाषेसाठी संबद्ध TTS निवडण्यास सुनिश्चित करा.",
+    "num_speakers" : "व्हिडिओमध्ये किती लोक बोलत आहेत हे निवडा.",
+    "min_sk" : "किमान बोलताही",
+    "max_sk" : "किमान बोलताही",
+    "tts_select" : "प्रत्येक वक्त्यासाठी आपल्याला कसा आवाज आवडतो ते निवडा.",
+    "sk1" : "TTS वक्त्य 1",
+    "sk2" : "TTS वक्त्य 2",
+    "sk3" : "TTS वक्त्य 3",
+    "sk4" : "TTS वक्त्य 4",
+    "sk5" : "TTS वक्त्य 5",
+    "sk6" : "TTS वक्त्य 6",
+    "vc_title" : "विविध भाषांमध्ये आवाज नक्कल",
+    "vc_subtitle" : """
+        ### विविध भाषांमध्ये व्यक्तीचा आवाज पुनर्निर्मित करा.
+        अनुकूलप्रद केल्यास अधिकांश आवाजांसह अद्याप अव्याप्ती न मिळताना, प्रत्येक गोष्टीत उपयोगी आहे. आवाज पुनर्निर्मित केवळ संदर्भ वक्त्याच्या टोन अधिल्यास आहे, ज्याची मूळ वक्त्य TTS मॉडेल द्वारे नियंत्रित केली जाते आणि नक्कल करणारी नाही. या विधानाने एका प्रमुख व्हिडिओतील प्रत्येक वक्त्याचे ऑडियो संच घेऊन ते प्रक्रिया करेल.
+        """,
+    "vc_active_label" : "सक्रिय आवाज नक्कल",
+    "vc_active_info" : "सक्रिय आवाज नक्कल: मूळ वक्त्याचा आवाज पुनर्निर्मित करते",
+    "vc_method_label" : "पद्धत",
+    "vc_method_info" : "आवाज नक्कल प्रक्रियेसाठी एक पद्धत निवडा",
+    "vc_segments_label" : "कमाल सॅम्पल्स",
+    "vc_segments_info" : "कमाल सॅम्पल्स: प्रक्रियेसाठी ऑडियो सॅम्पल्सची संख्या आहे, अधिक चांगलं आहे परंतु ते आवाज जोडणारं करू शकतात",
+    "vc_dereverb_label" : "Dereverb",
+    "vc_dereverb_info" : "Dereverb: ऑडियो सॅम्पल्सवर ध्वनीक सांकेतिक दिवस लागू करते.",
+    "vc_remove_label" : "आधीचे सॅम्पल्स काढा",
+    "vc_remove_info" : "आधीचे सॅम्पल्स काढा: मागील सॅम्पल्स काढा: मागील सॅम्पल्स काढा, म्हणजे नवीन सामग्री करण्यासाठी त्या नवीन सॅम्पल्स बनवणे आवश्यक आहे.",
+    "xtts_title" : "ऑडियोवर आधारित TTS तयार करा",
+    "xtts_subtitle" : "आवाजासह 10 सेकंदांचा मोठा ऑडियो फाईल अपलोड करा. XTTS वापरून, दिलेल्या ऑडियो फाईलसोबत समान आवाजासह नवीन TTS तयार केला जाईल.",
+    "xtts_file_label" : "आवाजासह एक क्षिप्र ऑडियो अपलोड करा",
+    "xtts_name_label" : "TTS साठी नाव",
+    "xtts_name_info" : "एक साधा नाव वापरा",
+    "xtts_dereverb_label" : "ऑडियोवर ध्वनीक सांकेतिक दिवस लागू करा",
+    "xtts_dereverb_info" : "ऑडियोवर ध्वनीक सांकेतिक दिवस लागू करा: ऑडियोवर ध्वनीक सांकेतिक दिवस लागू करते",
+    "xtts_button" : "ऑडियो प्रक्रिया करा आणि त्यामध्ये समाविष्ट करा",
+    "xtts_footer" : "स्वयंचली आवाज XTTS उत्पादित करा: आपण TTS निवडकासाठी '_XTTS_/AUTOMATIC.wav' वापरू शकता, प्रत्येक वक्त्यासाठी नवीन सेगमेंट उत्पन्न करण्यासाठी आणि अनुवाद वापरताना एकत्रित करण्यासाठी।",
+    "extra_setting" : "उन्नत सेटिंग्ज",
+    "acc_max_label" : "ऑडियो अधिकतम एक्सेलरेशन",
+    "acc_max_info" : "ओव्हरलॅपिंग टाळण्यासाठी अनुवादित ऑडियो सेगमेंटसाठी अधिकतम एक्सेलरेशन. 1.0 ची एक मूल्य अधिकतम एक्सेलरेशन प्रतिनिधित्व करते",
+    "aud_mix_label" : "ऑडियो मिक्सिंग पद्धत",
+    "aud_mix_info" : "स्वच्छ आणि संतुलित आउटपुट सादर करण्यासाठी मूळ आणि अनुवादित ऑडियो फाईल्स एकत्रित करण्यासाठी आवश्यक दोन मिक्सिंग मोड्युल्या सोडल्या आहेत.",
+    "vol_ori" : "मूळ ऑडियोची व्हॉल्यूम",
+    "vol_tra" : "अनुवादित ऑडियोची व्हॉल्यूम",
+    "voiceless_tk_label" : "आवाजरहित ट्रॅक",
+    "voiceless_tk_info" : "आवाजरहित ट्रॅक: अनुवादित ऑडियोसोबत संयुक्त करण्यापूर्वी मूळ ऑडियोची आवाजे काढा.",
+    "sub_type" : "उपशीर्षक प्रकार",
+    "whisper_title" : "वाचन विक्रमण संरचना.",
+    "srt_file_label" : "एसआरटी उपशीर्षक फाईल अपलोड करा (व्हिस्परच्या विवेचनाच्या विरोधात वापरली जाईल)",
+    "divide_text_label" : "टेक्स्ट सेगमेंट्स पुनर्विभाजित करा:",
+    "divide_text_info" : "(प्रयोगशील) स्रोत भाषेतील विद्यमान टेक्स्ट सेगमेंट्सचा विभाग करण्यासाठी एक विभाजक प्रविष्ट करा. टूलला उपलब्धींना ओळखण्यासाठी आणि नुकसानकर्ता करण्यासाठी त्यामुळे नवीन सेगमेंट्स निर्मित करते. | चा वापर करून अनेक विभाजक स्पष्ट करा, उदा.: !|?|...|।",
+    "out_name_label" : "फाईलचं नाव",
+    "out_name_info" : "आउटपुट फाईलचं नाव",
+    "preview_info" : "परीक्षणासाठी व्हिडिओला केवळ 10 सेकंदांसाठी कट्टा करते. कृपया पूर्ण व्हिडिओ अवधी प्राप्त करण्यासाठी हे निष्क्रिय करा.",
+    "edit_sub_label" : "तयार केलेले उपशीर्षक संपादित करा",
+    "edit_sub_info" : "तयार केलेले उपशीर्षक संपादित करा: अनुवाद करण्यासाठी 2 चरणांमध्ये अनुवाद चालवण्याची परवानगी देते. पहिल्यांदा 'उपशीर्षक मिळवा आणि संपादित करा' बटणावर क्लिक करून तुम्हाला उपशीर्षक मिळेल आणि त्या संपादित करण्यासाठी, आणि त्यानंतर 'अनुवाद' बटणावर क्लिक करून, आपण व्हिडिओ तयार करू शकता",
+    "button_subs" : "उपशीर्षक मिळवा आणि संपादित करा",
+    "editor_sub_label" : "तयार केलेले उपशीर्षक",
+    "editor_sub_info" : "येथील तयार केलेल्या उपशीर्षकांमध्ये टेक्स्ट संपादित करण्यासाठी मनःपूर्वक वापरा. आपण 'अनुवाद' बटणावर क्लिक करण्यापूर्वी, संवादीचे निवडणे, 'मूळ भाषा', 'ऑडियोचे अनुवाद करा', आणि 'अधिक स्पीकर्स' या अनुक्रमात किंवा संरचना विकल्प बदलू शकता, त्यांचा अशा चुकांवर टाकण्यासाठी. एकदा तुम्ही संपू नेल, 'अनुवाद' बटणावर क्लिक करा.",
+    "editor_sub_ph" : "प्रथम 'उपशीर्षक मिळवा आणि संपादित करा' बटणावर क्लिक करण्यात येतो",
+    "button_translate" : "अनुवाद करा",
+    "output_result_label" : "अनुवादित व्हिडिओ डाउनलोड करा",
+    "sub_ori" : "उपशीर्षक",
+    "sub_tra" : "अनुवादित उपशीर्षक",
+    "ht_token_info" : "एक महत्त्वाचं कार्य म्हणजे Pyannote वापरासाठी लायसेंस समजून घेणे. आपल्याला Hugging Face वर एक खाते असावी लागते आणि मॉडेल्स वापरण्यासाठी लायसेंस स्वीकारा लागते: https://huggingface.co/pyannote/speaker-diarization आणि https://huggingface.co/pyannote/segmentation. आपल्याला येथे आपला की टोकन मिळेल: https://hf.co/settings/tokens",
+    "ht_token_ph" : "टोकन येथे जाते...",
+    "tab_docs" : "कागदपत्र अनुवाद",
+    "docs_input_label" : "कागदपत्र स्रोत निवडा",
+    "docs_input_info" : "ते पीडीएफ, डॉक्स, टीएक्सट किंवा मजकूर होऊ शकते",
+    "docs_source_info" : "हे मजकूरची मूळ भाषा आहे",
+    "chunk_size_label" : "प्रत्येक सेगमेंट प्रत्येक करकटाने TTS ला प्रक्रिया करण्यासाठी अधिकतम अक्षरांची संख्या",
+    "chunk_size_info" : "0 चा मूल्य एक विनामूल्य आणि अधिक संगणकांसाठी संगणकात अधिक संगणकांसाठी अनुकूलित मूल्य नेमल्याची अर्थी होतो.",
+    "docs_button" : "भाषा कन्वर्ट ब्रिज सुरू करा",
+    "cv_url_info" : "यूआरएलपासून ऑटोमॅटिक रॉकी मॉडेल्स डाउनलोड करा. तुम्ही HuggingFace किंवा Drive ची लिंक वापरू शकता, आणि तुम्हाला किंवा तुम्हाला प्रत्येक लिंक, प्रत्येक लिंक समाविष्ट करण्यासाठी प्रत्येक लिंक वापरू शकता, प्रत्येक लिंक वापरू शकता. उदाहरण: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "आवाज बदला: TTS ते R.V.C.",
+    "sec1_title" : "### 1. त्याचा वापर सक्षम करण्यासाठी, ते सक्षम जाहीर करा.",
+    "enable_replace" : "मॉडेल्सचा वापर सक्षम करण्यासाठी हे तपासा.",
+    "sec2_title" : "### 2. प्रत्येक TTS च्या प्रत्येक प्रतिनिधीत्व करण्यासाठी आवाज निवडा आणि सेटिंग्ज लागू करा.",
+    "sec2_subtitle" : "आपण किती <TTS Speaker> वापरणार आहात यानुसार, प्रत्येकाने स्वत: च्या मॉडेलची आवश्यकता आहे. अधिक केल्यासाठी, अधिक स्पेकरच्या उपयोगासाठी एक सहाय्यक असते जर कारणाने वक्ता सही रिकामे ओळखले जात नाहीत.",
+    "cv_tts1" : "स्पीकर 1 साठी लागू करण्यासाठी आवाज निवडा.",
+    "cv_tts2" : "स्पीकर 2 साठी लागू करण्यासाठी आवाज निवडा.",
+    "cv_tts3" : "स्पीकर 3 साठी लागू करण्यासाठी आवाज निवडा.",
+    "cv_tts4" : "स्पीकर 4 साठी लागू करण्यासाठी आवाज निवडा.",
+    "cv_tts5" : "स्पीकर 5 साठी लागू करण्यासाठी आवाज निवडा.",
+    "cv_tts6" : "स्पीकर 6 साठी लागू करण्यासाठी आवाज निवडा.",
+    "cv_aux" : "- जर कारणाने वक्ता सही ओळखले जात नाही तर लागू करण्यासाठी आवाज.",
+    "cv_button_apply" : "सेटिंग्ज लागू करा",
+    "tab_help" : "मदत"
+  },
+
+  "azerbaijani": {
+    "description": """
+        ### 🎥 **SoniTranslate ilə videoları asanlıqla tərcümə edin!** 📽️
+
+        Video, səs faylı yükləyin və ya YouTube bağlantısı təqdim edin. 📽️ **SoniTranslate-in rəsmi repositoriyasından yenilənmiş qeydləri alın: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        İstifadəsi üçün təlimatlar üçün `Kömək` sekmesinə baxın. Video tərcüməsi ilə əyləncəyə başlayaq! 🚀🎉
+        """,
+    "tutorial" : """
+        # 🔰 **İstifadə təlimatları:**
+
+        1. 📤 **Video**, **səs faylı** yükləyin və ya 🌐 **YouTube bağlantısı** təqdim edin.
+
+        2. 🌍 **Videonu tərcümə etmək istədiyiniz dilə** seçin.
+
+        3. 🗣️ **Videoda danışan insanların sayını** göstərin və **hər birinə uyğun tərcümə dilində məsələlərin səsləndirilməsi üçün tələb edilən səsləndirməni təyin edin.**
+
+        4. 🚀 '**Tərcümə et**' düyməsini basın və nəticələri əldə edin.
+
+        ---
+
+        # 🧩 **SoniTranslate, fərqli TTS (Mətnə Səsləndirmə) mühərriklərini dəstəkləyir ki, onlar:**
+        - EDGE-TTS → format `en-AU-WilliamNeural-Male` → Sürətli və dəqiqdir.
+        - FACEBOOK MMS → format `en-facebook-mms VITS` → Səsi daha doğaldır; ancaq ancaq CPU istifadə edir.
+        - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Əvvəlki ilə eynidir, ancaq hem CPU, hem də GPU üçün optimalaşdırılmışdır.
+        - BARK → format `en_speaker_0-Male BARK` → Yaxşı keyfiyyətli, ancaq yavaş və halüsinasiyalara meyllidir.
+        - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Yalnız Çin (Sadələşdirilmiş), İngilis, Fransız, Alman, İtalyan, Portuqal, Poliş, Türk, Rus, Holland, Çex, Ərəb, İspan, Macar, Korey və Yapon dilində mövcuddur.
+
+        ---
+
+        # 🎤 R.V.C. və R.V.C.2 Səsləri Necə İstifadə Etmək (İstəyə Bağlı) 🎶
+
+        Məqsəd, tərtib olunmuş TTS (Mətnə Səsləndirmə) -ə bir R.V.C. tətbiq etməkdir 🎙️
+
+        1. `Xüsusi Səs R.V.C.` tabınızda ehtiyacınız olan modelləri yükləyin 📥 Hugging Face və Google Drive-da linklərdən, zip, pth və ya index formatlarında istifadə edə bilərsiniz. HF məkan repositoriyalarını da yükləyə bilərsiniz, lakin bu seçim çox sabit deyil 😕
+
+        2. İndi, `Səsləndiriciyi əvəzlə: TTS to R.V.C.` -ni işarələyin və `aktivləşdirmək` qutusunu seçin ✅ Bundan sonra, istədiyiniz modelləri hər bir TTS speaker üçün tətbiq edə bilərsiniz 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Bütün R.V.C. -yə tətbiq olunacaq F0 metodunu tənzimləyin 🎛️
+
+        4. Dəyişiklikləri tətbiq etmək üçün `KONFİQURASYANI TƏTİBİ ET` düyməsini basın 🔄
+
+        5. Video tərcüməsi tabınıza qayıdın və 'Tərcümə et'ə klikləyin ▶️ Artıq tərcümə, R.V.C. tətbiq edilərək həyata keçirilir 🗣️
+
+        Məsləhət: R.V.C -ni təcrübə və ən yaxşı TTS və ya konfiqurasiyaları tapmaq üçün `Test R.V.C.` istifadə edə bilərsiniz 🧪🔍
+
+        ---
+
+        """,
+    "tab_translate" : "Video tərcüməsi",
+    "video_source": "Video mənbəyi seçin",
+    "link_label" : "Mediya bağlantısı.",
+    "link_info": "Nümunə: www.youtube.com/watch?v=g_9rPvbENUw",
+    "link_ph" : "URL buraya daxil olur...",
+    "dir_label" : "Video Yolu.",
+    "dir_info": "Nümunə: /usr/home/my_video.mp4",
+    "dir_ph" : "Yol buraya daxil olur...",
+    "sl_label" : "Mənbə dil",
+    "sl_info": "Bu videoyun əsas dilidir",
+    "tat_label" : "Audio tərcüməsi",
+    "tat_info": "Hədəf dil seçin və həmçinin o dil üçün uyğun olan TTS-i seçdiyinizdən əmin olun.",
+    "num_speakers" : "Videoda danışan insanların sayını seçin.",
+    "min_sk" : "Min speakerlər",
+    "max_sk" : "Max speakerlər",
+    "tts_select" : "Hər bir səsçiyə istədiyiniz səsi seçin.",
+    "sk1" : "TTS Səsçi 1",
+    "sk2" : "TTS Səsçi 2",
+    "sk3" : "TTS Səsçi 3",
+    "sk4" : "TTS Səsçi 4",
+    "sk5" : "TTS Səsçi 5",
+    "sk6" : "TTS Səsçi 6",
+    "vc_title" : "Fərqli dillərdə Səs İmələsi",
+    "vc_subtitle" : """
+        ### Bir insanın səsini müxtəlif dillərdə çoğaldın.
+        Əksər səslər üçün effektiv olsa da, hər halda tam mükəmməlliyətə nail olmayabilir.
+        Səs imitasiyası sadəcə referans səsçinin tonunu çoxaldır, aksent və həssaslar, istifadə olunan əsas səsçi TTS modeli tərəfindən nəzarət olunur və çevirici tərəfindən çoğaldırılmır.
+        Bu, hər səsçi üçün əsas səs məlumatlarını alır və onları işləyir.
+        """,
+    "vc_active_label" : "Fəal Səs İmələsi",
+    "vc_active_info" : "Fəal Səs İmələsi: orijinal səsçinin tonunu çoğaldır",
+    "vc_method_label" : "Metod",
+    "vc_method_info" : "Səs İmələsi prosesində metod seçin",
+    "vc_segments_label" : "Maksimum nümunələr",
+    "vc_segments_info" : "Maksimum nümunələr: Proses üçün yaradılacaq səs nümunələrinin sayıdır, daha çoxu daha yaxşıdır, lakin gürültü əlavə edə bilər",
+    "vc_dereverb_label" : "Dereverb",
+    "vc_dereverb_info" : "Dereverb: Səs nümunələrinə vokal dereverb tətbiq edir.",
+    "vc_remove_label" : "Əvvəlki nümunələri silin",
+    "vc_remove_info" : "Əvvəlki nümunələri silin: Əvvəlki yaradılmış nümunələri silir, beləliklə yeni olanları yaratmaq lazımdır.",
+    "xtts_title" : "Səsə əsaslanan bir TTS yaratın",
+    "xtts_subtitle" : "Maksimum 10 saniyəlik bir səs faylı yükləyin. XTTS istifadə edərək, müvafiq səslə bir TTS yeni bir səs yaradılacaq.",
+    "xtts_file_label" : "Səslə qısa bir səs yükləyin",
+    "xtts_name_label" : "TTS üçün ad",
+    "xtts_name_info" : "Sadə bir ad istifadə edin",
+    "xtts_dereverb_label" : "Səsi dereverb edin",
+    "xtts_dereverb_info" : "Səsi dereverb edin: Səsə vokal dereverb tətbiq edir",
+    "xtts_button" : "Səsi proses edin və TTS seçiciyə daxil edin",
+    "xtts_footer" : "Səs xtts-ini avtomatik olaraq yaradın: Tərcüməni yaratarkən hər səsçiyə avtomatik olaraq segmentlər yaratmaq üçün TTS seçicidə '_XTTS_/AUTOMATIC.wav' -dən istifadə edə bilərsiniz.",
+    "extra_setting" : "Əlavə Ayarlar",
+    "acc_max_label" : "Maksimum Audio sürəti",
+    "acc_max_info" : "Üstünlük təşkil etməmək üçün tərcümə olunmuş audio segmentlərinin maksimum sürəti. 1.0 dəyəri heç bir sürəti təşkil etmir",
+    "aud_mix_label" : "Audio qarışdırma metodları",
+    "aud_mix_info" : "Orijinal və tərcümə olunmuş audio fayllarını qarışdıraraq iki mövcud qarışdırma rejimi ilə xüsusi, dengəli bir çıxış yaradın.",
+    "vol_ori" : "Orijinal səsin səsi",
+    "vol_tra" : "Tərcümə olunmuş audio səsi",
+    "voiceless_tk_label" : "Səssiz Trekk",
+    "voiceless_tk_info" : "Səssiz Trekk: Tərcümə olunmuş audio ilə birləşdirilmədən əvvəl orijinal audio səsini silin.",
+    "sub_type" : "Subtitrlərin növü",
+    "whisper_title" : "Tərcümə edilən mətnin konfiqurasiyası.",
+    "srt_file_label" : "Bir SRT subtitri faylı yükləyin (Fısıldağın transkripsiyası əvəzinə istifadə olunacaq)",
+    "divide_text_label" : "Mətn segmentlərini bölmək üçün ayırıcı daxil edin:",
+    "divide_text_info" : "(Təcrübəli) Mövcud mətn segmentlərini böləcək bir ayırıcı daxil edin. Alətlər tez-tez yaradır və uyğun gələn yerlərdə yeni segmentlər yaradır. Birdən çox ayırıcı daxil edin, |, misal: !|?|...|。",
+    "out_name_label" : "Fayl adı",
+    "out_name_info" : "Çıxış faylının adı",
+    "preview_info" : "Təcrübə məqsədi ilə videoyu yalnız 10 saniyəyə kəsir. Tam video müddətini əldə etmək üçün onu deaktiv edin.",
+    "edit_sub_label" : "Yaradılan subtitrləri redaktə edin",
+    "edit_sub_info" : "Yaradılan subtitrləri redaktə edin: Tərcüməni 2 addımlı olaraq başlatmaq üçün olan imkan. İlk olaraq 'SUBTITRİ AL VƏ REDAKTƏ ET' düyməsini basaraq subtitrləri alın, onları redaktə edin və sonra 'TƏRCÜMƏ ET' düyməsini basaraq video yarada bilərsiniz",
+    "button_subs" : "SUBTITRİ AL VƏ REDAKTƏ ET",
+    "editor_sub_label" : "Yaradılan subtitrlər",
+    "editor_sub_info" : "Burada yaradılan subtitrlərdə mətni redaktə etmək azadır. Interfeys seçimlərini dəyişdirə bilərsiniz, lakin xəbərdarlıq olaraq 'Mənbə dil', 'Audio tərcüməsi' və 'Max speakerlər' üçün xətalara yol verməmək üçün, 'TƏRCÜMƏ ET' düyməsini basmadan əvvəl. Bitdikdən sonra, 'TƏRCÜMƏ ET' düyməsini basın.",
+    "editor_sub_ph" : "İlk olaraq 'SUBTITRİ AL VƏ REDAKTƏ ET' düyməsini basın və subtitrləri alın",
+    "button_translate" : "TƏRCÜMƏ ET",
+    "output_result_label" : "TƏRCÜMƏ OLUNMUŞ VİDEOYU YÜKLƏYİN",
+    "sub_ori" : "Subtitrlər",
+    "sub_tra" : "Tərcümə olunmuş subtitrlər",
+    "ht_token_info" : "Pyannote istifadəsi üçün lisenziya razılaşmasını qəbul etmək önəmli addımdır. Model istifadə etmək üçün Hugging Face-da hesabınız olmalı və modelləri istifadə etmək üçün lisenziya qəbul etməlisiniz: https://huggingface.co/pyannote/speaker-diarization və https://huggingface.co/pyannote/segmentation. Özüncə TOKENİNİZİ buradan əldə edin: https://hf.co/settings/tokens",
+    "ht_token_ph" : "Token buraya daxil olur...",
+    "tab_docs" : "Sənəd tərcüməsi",
+    "docs_input_label" : "Sənəd mənbəyini seçin",
+    "docs_input_info" : "PDF, DOCX, TXT və ya mətn ola bilər",
+    "docs_source_info" : "Bu mətnin əsas dili",
+    "chunk_size_label" : "TTS-in hər segmenti üçün təşkil olunan maksimum simvolların sayı",
+    "chunk_size_info" : "0 dəyəri TTS üçün dinamik və daha uyğun bir dəyər təyin edir.",
+    "docs_button" : "Dil Dəyişikliyi Köprüsünü Başlat",
+    "cv_url_info" : "R.V.C. modellərini URL-dən avtomatik olaraq yükləyin. HuggingFace və Drive linklərindən istifadə edə bilərsiniz, və hər birini vergül ilə ayrılmış bir neçə link daxil edə bilərsiniz. Misal: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+    "replace_title" : "Səs əvəzləmə: TTS-dən R.V.C.-yə",
+    "sec1_title" : "### 1. İstifadəsini aktivləşdirmək üçün onu aktiv edin.",
+    "enable_replace" : "Bu modellərin istifadəsini aktivləşdirmək üçün bunu işarələyin.",
+    "sec2_title" : "### 2. Hər bir uyğun səsçi TTS-ə tətbiq olunacaq səsi seçin və konfiqurasiyaları tətbiq edin.",
+    "sec2_subtitle" : "Istifadə edəcəyiniz <TTS Səsçisi> sayına bağlı olaraq, hər biri öz modellərinə ehtiyac duyar. Əlavə olaraq, səsçi doğru şəkildə aşkar edilmirsə yardımcı bir tətbiqi mövcuddur.",
+    "cv_tts1" : "1-ci Səsçi üçün tətbiq olunacaq səsi seçin.",
+    "cv_tts2" : "2-ci Səsçi üçün tətbiq olunacaq səsi seçin.",
+    "cv_tts3" : "3-cü Səsçi üçün tətbiq olunacaq səsi seçin.",
+    "cv_tts4" : "4-cü Səsçi üçün tətbiq olunacaq səsi seçin.",
+    "cv_tts5" : "5-ci Səsçi üçün tətbiq olunacaq səsi seçin.",
+    "cv_tts6" : "6-cı Səsçi üçün tətbiq olunacaq səsi seçin.",
+    "cv_aux" : "- Səsçi doğru şəkildə aşkar edilmirsə tətbiq ediləcək səs.",
+    "cv_button_apply" : "KONFiQURASiYANI TƏTBiQ EDiN",
+    "tab_help" : "Kömək"
+  }
+  
 }
