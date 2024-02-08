@@ -1,8 +1,12 @@
 import gradio as gr
+from soni_translate.logging_setup import (
+    logger,
+    set_logging_level,
+    configure_logging_libs,
+); configure_logging_libs() # noqa
 import whisperx
 import torch
 import os
-from tqdm import tqdm  # noqa
 from soni_translate.audio_segments import create_translated_audio
 from soni_translate.text_to_speech import (
     audio_segmentation_to_voice,
@@ -36,7 +40,6 @@ from soni_translate.mdx_net import (
     MDX_DOWNLOAD_LINK,
     mdxnet_models_dir,
 )
-from soni_translate.logging_setup import logger, set_logging_level
 from soni_translate.speech_segmentation import (
     transcribe_speech,
     align_speech,
@@ -110,11 +113,6 @@ class TTS_Info:
             + self.list_coqui_xtts
         )
         return list_tts
-
-
-modules = ["numba", "httpx", "markdown_it", "speechbrain", "fairseq"]
-for module in modules:
-    logging.getLogger(module).setLevel(logging.WARNING)
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -642,9 +640,9 @@ def create_gui(theme, logs_in_gui=False):
         with gr.Tab(lg_conf["tab_translate"]):
             with gr.Row():
                 with gr.Column():
-                    input_data_type = gr.inputs.Dropdown(
+                    input_data_type = gr.Dropdown(
                         ["SUBMIT VIDEO", "URL", "Find Video Path"],
-                        default="SUBMIT VIDEO",
+                        value="SUBMIT VIDEO",
                         label=lg_conf["video_source"],
                     )
 
@@ -708,7 +706,7 @@ def create_gui(theme, logs_in_gui=False):
                     min_speakers = gr.Slider(
                         1,
                         MAX_TTS,
-                        default=1,
+                        value=1,
                         label=lg_conf["min_sk"],
                         step=1,
                         visible=False,
@@ -719,7 +717,6 @@ def create_gui(theme, logs_in_gui=False):
                         value=2,
                         step=1,
                         label=lg_conf["max_sk"],
-                        interative=True,
                     )
                     gr.Markdown(lg_conf["tts_select"])
 
@@ -949,9 +946,9 @@ def create_gui(theme, logs_in_gui=False):
                                 else:
                                     return None, None
 
-                            sub_type_output = gr.inputs.Dropdown(
+                            sub_type_output = gr.Dropdown(
                                 sub_type_options,
-                                default=sub_type_options[0],
+                                value=sub_type_options[0],
                                 label=lg_conf["sub_type"],
                             )
 
@@ -966,17 +963,17 @@ def create_gui(theme, logs_in_gui=False):
                                 "large-v2",
                                 "large-v3",
                             ]
-                            WHISPER_MODEL_SIZE = gr.inputs.Dropdown(
+                            WHISPER_MODEL_SIZE = gr.Dropdown(
                                 whisper_model_options,
-                                default=whisper_model_default,
+                                value=whisper_model_default,
                                 label="Whisper model",
                             )
-                            batch_size = gr.inputs.Slider(
-                                1, 32, default=16, label="Batch size", step=1
+                            batch_size = gr.Slider(
+                                1, 32, value=16, label="Batch size", step=1
                             )
-                            compute_type = gr.inputs.Dropdown(
+                            compute_type = gr.Dropdown(
                                 list_compute_type,
-                                default=compute_type_default,
+                                value=compute_type_default,
                                 label="Compute type",
                             )
                             input_srt = gr.File(
@@ -992,9 +989,9 @@ def create_gui(theme, logs_in_gui=False):
                             pyannote_models_list = list(
                                 diarization_models.keys()
                             )
-                            diarization_process_dropdown = gr.inputs.Dropdown(
+                            diarization_process_dropdown = gr.Dropdown(
                                 pyannote_models_list,
-                                default=pyannote_models_list[1],
+                                value=pyannote_models_list[1],
                                 label="Diarization model",
                             )
                             valid_translate_process = [
@@ -1002,9 +999,9 @@ def create_gui(theme, logs_in_gui=False):
                                 "google_translator_iterative",
                                 "disable_translation",
                             ]
-                            translate_process_dropdown = gr.inputs.Dropdown(
+                            translate_process_dropdown = gr.Dropdown(
                                 valid_translate_process,
-                                default=valid_translate_process[0],
+                                value=valid_translate_process[0],
                                 label="Translation process",
                             )
 
@@ -1014,9 +1011,9 @@ def create_gui(theme, logs_in_gui=False):
                                 "audio",
                                 "subtitle",
                             ]
-                            main_output_type = gr.inputs.Dropdown(
+                            main_output_type = gr.Dropdown(
                                 main_output_type_opt,
-                                default=main_output_type_opt[0],
+                                value=main_output_type_opt[0],
                                 label="Output type",
                             )
                             VIDEO_OUTPUT_NAME = gr.Textbox(
@@ -1075,15 +1072,18 @@ def create_gui(theme, logs_in_gui=False):
                             variant="primary",
                         )
                     with gr.Row():
-                        video_output = gr.outputs.File(
-                            label=lg_conf["output_result_label"]
+                        video_output = gr.File(
+                            label=lg_conf["output_result_label"],
+                            interactive=False,
                         )  # gr.Video()
                     with gr.Row():
-                        sub_ori_output = gr.outputs.File(
-                            label=lg_conf["sub_ori"]
+                        sub_ori_output = gr.File(
+                            label=lg_conf["sub_ori"],
+                            interactive=False,
                         )
-                        sub_tra_output = gr.outputs.File(
-                            label=lg_conf["sub_tra"]
+                        sub_tra_output = gr.File(
+                            label=lg_conf["sub_tra"],
+                            interactive=False,
                         )
 
                     line_ = gr.HTML("<hr></h2>")
@@ -1194,7 +1194,7 @@ def create_gui(theme, logs_in_gui=False):
                                     "SUBMIT DOCUMENT",
                                     "Find Document Path",
                                 ],
-                                default="SUBMIT DOCUMENT",
+                                value="SUBMIT DOCUMENT",
                                 label=lg_conf["docs_input_label"],
                                 info=lg_conf["docs_input_info"],
                             )
@@ -1284,9 +1284,9 @@ def create_gui(theme, logs_in_gui=False):
                                         "google_translator_iterative",
                                         "disable_translation",
                                     ]
-                                    docs_translate_process_dropdown = gr.inputs.Dropdown(
+                                    docs_translate_process_dropdown = gr.Dropdown(
                                         docs_valid_translate_process,
-                                        default=docs_valid_translate_process[
+                                        value=docs_valid_translate_process[
                                             0
                                         ],
                                         label="Translation process",
@@ -1298,9 +1298,9 @@ def create_gui(theme, logs_in_gui=False):
                                         "audio",
                                         "text",
                                     ]  # Add DOCX and etc.
-                                    docs_output_type = gr.inputs.Dropdown(
+                                    docs_output_type = gr.Dropdown(
                                         docs_output_type_opt,
-                                        default=docs_output_type_opt[0],
+                                        value=docs_output_type_opt[0],
                                         label="Output type",
                                     )
                                     docs_OUTPUT_NAME = gr.Textbox(
@@ -1325,7 +1325,10 @@ def create_gui(theme, logs_in_gui=False):
                                     variant="primary",
                                 )
                             with gr.Row():
-                                docs_output = gr.outputs.File(label="Result")
+                                docs_output = gr.File(
+                                    label="Result",
+                                    interactive=False,
+                                )
 
         with gr.Tab("Custom voice R.V.C. (Optional)"):
             with gr.Column():
@@ -1860,6 +1863,21 @@ def create_gui(theme, logs_in_gui=False):
     return app
 
 
+def get_language_config(language_data, language=None, base_key="english"):
+    base_lang = language_data.get(base_key)
+
+    if language not in language_data:
+        logger.error(
+            f"Language {language} not found, defaulting to {base_key}"
+        )
+        return base_lang
+
+    lg_conf = language_data.get(language, {})
+    lg_conf.update((k, v) for k, v in base_lang.items() if k not in lg_conf)
+
+    return lg_conf
+
+
 def create_parser():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -1898,6 +1916,7 @@ def create_parser():
 
 
 if __name__ == "__main__":
+
     parser = create_parser()
 
     args = parser.parse_args()
@@ -1918,13 +1937,12 @@ if __name__ == "__main__":
     models, index_paths = upload_model_list()
     os.environ["VOICES_MODELS"] = "DISABLE"
 
-    lg_conf = language_data.get(args.language, language_data.get("english"))
+    lg_conf = get_language_config(language_data, language=args.language)
 
     app = create_gui(args.theme, logs_in_gui=args.logs_in_gui)
     app.launch(
         share=args.public_url,
         show_error=True,
-        enable_queue=True,
         quiet=False,
-        debug=True,
+        debug=(True if logger.isEnabledFor(logging.DEBUG) else False),
     )

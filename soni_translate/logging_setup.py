@@ -1,5 +1,19 @@
 import logging
 import sys
+import warnings
+import os
+
+
+def configure_logging_libs(debug=False):
+    warnings.filterwarnings(
+      action="ignore", category=UserWarning, module="pyannote"
+    )
+    modules = [
+      "numba", "httpx", "markdown_it", "speechbrain", "fairseq", "pyannote"
+    ]
+    for module in modules:
+        logging.getLogger(module).setLevel(logging.WARNING)
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3" if not debug else "1"
 
 
 def setup_logger(name_log):
