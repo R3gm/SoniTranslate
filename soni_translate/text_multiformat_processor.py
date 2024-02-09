@@ -255,16 +255,23 @@ def break_aling_segments(
 
     def process_chars(chars, letter_new_start, num, text):
         start_key, end_key = "start", "end"
-        start_value = (
-            chars[0].get(start_key)
-            if start_key in chars[0]
-            else chars[1].get("start")
-        )
-        end_value = (
-            chars[-1].get(end_key)
-            if end_key in chars[-1]
-            else chars[-2].get("end")
-        )
+        start_value = end_value = None
+
+        for char in chars:
+            if start_key in char:
+                start_value = char[start_key]
+                break
+
+        for char in reversed(chars):
+            if end_key in char:
+                end_value = char[end_key]
+                break
+
+        if not start_value or not end_value:
+            raise Exception(
+                f"Unable to obtain a valid timestamp for chars: {str(chars)}"
+            )
+
         return {
             "start": start_value,
             "end": end_value,
@@ -303,6 +310,10 @@ def break_aling_segments(
                     logger.debug("No text")
                     continue
 
+                if num == 0 and not text.strip():
+                    logger.debug("blank space in start")
+                    continue
+
                 if len(text) == 1:
                     logger.debug(f"Short char append, num: {num}")
                     normal[-1]["text"] += text
@@ -322,7 +333,7 @@ def break_aling_segments(
                 text = segment['text'][letter_new_start:num+1]
 
                 # If remain text len is not default len text
-                if not len(text)-1 == num and text:
+                if num not in [len(text)-1, len(text)] and text:
                     logger.debug(f'Remaining text: {text}')
 
                 if not text:
