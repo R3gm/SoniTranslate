@@ -38,7 +38,7 @@ def audio_preprocessor(preview, base_audio, audio_wav, use_cuda=False):
     if result_convert_audio.returncode in [1, 2] or not os.path.exists(
         audio_wav
     ):
-        raise OperationFailedError("Error can't create the audio file")
+        raise OperationFailedError(f"Error can't create the audio file:\n{errors.decode('utf-8')}")
 
 
 def audio_video_preprocessor(
@@ -61,7 +61,11 @@ def audio_video_preprocessor(
             if video.endswith(".mp4"):
                 destination_path = os.path.join(os.getcwd(), "Video.mp4")
                 shutil.copy(video, destination_path)
-                mp4_ = "echo Video copied"
+                time.sleep(0.5)
+                if os.path.exists(OutputFile):
+                    mp4_ = "ffmpeg -h"
+                else:
+                    mp4_ = f'ffmpeg -y -i "{video}" -c copy Video.mp4'
             else:
                 logger.warning(
                     "File does not have the '.mp4' extension. Converting video."
@@ -100,7 +104,7 @@ def audio_video_preprocessor(
         if result_convert_video.returncode in [1, 2] or not os.path.exists(
             OutputFile
         ):
-            raise OperationFailedError("Error processing video")
+            raise OperationFailedError(f"Error processing video:\n{errors.decode('utf-8')}")
         logger.info("Process audio...")
         wav_ = "ffmpeg -y -i Video.mp4 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
         wav_ = shlex.split(wav_)
@@ -110,7 +114,7 @@ def audio_video_preprocessor(
         if result_convert_audio.returncode in [1, 2] or not os.path.exists(
             audio_wav
         ):
-            raise OperationFailedError("Error can't create the audio file")
+            raise OperationFailedError(f"Error can't create the audio file:\n{errors.decode('utf-8')}")
 
     else:
         wav_ = shlex.split(wav_)
@@ -125,7 +129,7 @@ def audio_video_preprocessor(
                 audio_wav
             ):
                 raise OperationFailedError(
-                    "Error can't create the preview file"
+                    f"Error can't create the preview file:\n{errors.decode('utf-8')}"
                 )
         else:
             logger.info("Process audio...")
@@ -135,7 +139,7 @@ def audio_video_preprocessor(
             if result_convert_audio.returncode in [1, 2] or not os.path.exists(
                 audio_wav
             ):
-                raise OperationFailedError("Error can't download the audio")
+                raise OperationFailedError(f"Error can't download the audio:\n{errors.decode('utf-8')}")
             logger.info("Process video...")
             result_convert_video = subprocess.Popen(mp4_, **sub_params)
             output, errors = result_convert_video.communicate()
@@ -143,7 +147,7 @@ def audio_video_preprocessor(
             if result_convert_video.returncode in [1, 2] or not os.path.exists(
                 OutputFile
             ):
-                raise OperationFailedError("Error can't download the video")
+                raise OperationFailedError(f"Error can't download the video:\n{errors.decode('utf-8')}")
 
 
 def old_audio_video_preprocessor(preview, video, OutputFile, audio_wav):
@@ -183,7 +187,7 @@ def old_audio_video_preprocessor(preview, video, OutputFile, audio_wav):
                 )
 
         if result_convert_video.returncode in [1, 2]:
-            raise OperationFailedError("Error can't convert the video")
+            raise OperationFailedError(f"Error can't convert the video")
 
         for i in range(120):
             time.sleep(1)
