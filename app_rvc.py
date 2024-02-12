@@ -829,7 +829,7 @@ def create_gui(theme, logs_in_gui=False):
                         with gr.Column():
                             with gr.Accordion(
                                 lg_conf["xtts_title"],
-                                open=False,
+                                open=True,
                             ):
                                 gr.Markdown(lg_conf["xtts_subtitle"])
                                 wav_speaker_file = gr.File(
