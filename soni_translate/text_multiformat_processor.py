@@ -243,6 +243,7 @@ def break_aling_segments(
     result_align = copy.deepcopy(result)
 
     break_characters_list = break_characters.split("|")
+    break_characters_list = [i for i in break_characters_list if i != '']
 
     if not break_characters_list:
         logger.info("No valid break characters were specified.")
