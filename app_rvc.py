@@ -212,6 +212,7 @@ class SoniTranslate:
         voice_imitation_method="freevc",
         dereverb_automatic_xtts=True,
         divide_text_segments_by="",
+        burn_subtitles_to_video=False,
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -498,6 +499,15 @@ class SoniTranslate:
 
         if output_type == "audio" or is_audio_file(media_file):
             return mix_audio_file
+
+        if burn_subtitles_to_video:
+            try:
+                vid_subs = "video_subs_file.mp4"
+                command = f"ffmpeg -i {video_output_file} -y -vf subtitles={sub_file} -max_muxing_queue_size 9999 {vid_subs}"
+                run_command(command)
+                base_video_file = vid_subs
+            except Exception as error:
+                logger.error(str(error))
 
         # Merge new audio + video
         remove_files(video_output_file)
@@ -972,6 +982,10 @@ def create_gui(theme, logs_in_gui=False):
                                 sub_type_options,
                                 value=sub_type_options[0],
                                 label=lg_conf["sub_type"],
+                            )
+                            burn_subtitles_to_video_gui = gr.Checkbox(
+                                label="Burn Subtitles",
+                                info="Burn Subtitles: Embed subtitles into the video, making them a permanent part of the visual content.",
                             )
 
                             gr.HTML("<hr></h2>")
@@ -1808,6 +1822,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
                 divide_text_segments_by_gui,
+                burn_subtitles_to_video_gui,
                 is_gui_dummy_check,
             ],
             outputs=subs_edit_space,
@@ -1856,6 +1871,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
                 divide_text_segments_by_gui,
+                burn_subtitles_to_video_gui,
                 is_gui_dummy_check,
             ],
             outputs=video_output,
