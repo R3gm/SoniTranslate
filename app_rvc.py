@@ -313,12 +313,19 @@ class SoniTranslate:
                     batch_size,
                     SOURCE_LANGUAGE,
                 )
-            logger.debug("Transcript complete")
+            logger.debug(
+                "Transcript complete, "
+                f"segments count {len(result['segments'])}"
+            )
 
-            prog_disp("Aligning...", 0.45, is_gui, progress=progress)
             self.align_language = result["language"]
-            result = align_speech(audio, result)
-            logger.debug("Align complete")
+            if not subtitle_file:
+                prog_disp("Aligning...", 0.45, is_gui, progress=progress)
+                result = align_speech(audio, result)
+                logger.debug(
+                    "Align complete, "
+                    f"segments count {len(result['segments'])}"
+                )
             if result["segments"] == []:
                 raise ValueError("No active speech found in audio")
 
