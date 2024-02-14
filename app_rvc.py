@@ -503,7 +503,8 @@ class SoniTranslate:
         if burn_subtitles_to_video:
             try:
                 vid_subs = "video_subs_file.mp4"
-                command = f"ffmpeg -i {video_output_file} -y -vf subtitles={sub_file} -max_muxing_queue_size 9999 {vid_subs}"
+                remove_files(vid_subs)
+                command = f"ffmpeg -i {base_video_file} -y -vf subtitles={sub_file} -max_muxing_queue_size 9999 {vid_subs}"
                 run_command(command)
                 base_video_file = vid_subs
             except Exception as error:
