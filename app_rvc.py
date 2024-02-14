@@ -59,6 +59,7 @@ from soni_translate.languages_gui import language_data
 import copy
 import logging
 import json
+from pydub import AudioSegment
 from voice_main import ClassVoices
 import argparse
 
@@ -245,6 +246,20 @@ class SoniTranslate:
         media_file = (
             media_file if isinstance(media_file, str) else media_file.name
         )
+
+        if not media_file and subtitle_file:
+            media_file = "audio_support.wav"
+            if not get_video_from_text_json:
+                remove_files(media_file)
+                srt_data = srt_file_to_segments(subtitle_file)
+                total_duration = srt_data["segments"][-1]["end"] + 30.
+                support_audio = AudioSegment.silent(
+                    duration=int(total_duration * 1000)
+                )
+                support_audio.export(
+                    media_file, format="wav"
+                )
+                logger.info("Supporting audio for the SRT file, created.")
 
         if "SET_LIMIT" == os.getenv("DEMO"):
             preview = True
