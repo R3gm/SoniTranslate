@@ -116,16 +116,6 @@ class TTS_Info:
         return list_tts
 
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-list_compute_type = (
-    ["int8", "float16", "float32"]
-    if torch.cuda.is_available()
-    else ["int8", "float32"]
-)
-compute_type_default = "float16" if torch.cuda.is_available() else "float32"
-whisper_model_default = "large-v3" if torch.cuda.is_available() else "medium"
-logger.info(f"Working in: {device}")
-
 # Custom voice
 directories = [
     "downloads",
@@ -170,6 +160,8 @@ class SoniTranslate:
         self.result_diarize = None
         self.align_language = None
         self.result_source_lang = None
+
+        logger.info(f"Working in: {self.device}")
 
     def multilingual_media_conversion(
         self,
@@ -227,15 +219,24 @@ class SoniTranslate:
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
 
         if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
-            wrn_lang = "Make sure to select a 'TTS Speaker' suitable for the translation language to avoid errors with the TTS." # noqa
+            wrn_lang = (
+                "Make sure to select a 'TTS Speaker' suitable for"
+                " the translation language to avoid errors with the TTS."
+            )
             warn_disp(wrn_lang, is_gui)
 
         if "_XTTS_" in tts_voice00 and voice_imitation:
-            wrn_lang = "When you select XTTS, it is advisable to disable Voice Imitation." # noqa
+            wrn_lang = (
+                "When you select XTTS, it is advisable "
+                "to disable Voice Imitation."
+            )
             warn_disp(wrn_lang, is_gui)
 
         if os.getenv("VOICES_MODELS") == "ENABLE" and voice_imitation:
-            wrn_lang = "When you use R.V.C. models, it is advisable to disable Voice Imitation." # noqa
+            wrn_lang = (
+                "When you use R.V.C. models, it is advisable"
+                " to disable Voice Imitation."
+            )
             warn_disp(wrn_lang, is_gui)
 
         if media_file is None:
@@ -387,12 +388,14 @@ class SoniTranslate:
                     {"start": start, "text": text, "speaker": speaker}
                 )
 
-            # Convert the list of dictionaries to a JSON string with indentation
+            # Convert list of dictionaries to a JSON string with indentation
             json_string = json.dumps(json_data, indent=2)
             logger.info("Done")
             return json_string.encode().decode("unicode_escape")
 
         if get_video_from_text_json:
+            if self.result_diarize is None:
+                raise ValueError("Generate the transcription first.")
             # with open('text_json.json', 'r') as file:
             text_json_loaded = json.loads(text_json)
             for i, segment in enumerate(self.result_diarize["segments"]):
@@ -411,6 +414,7 @@ class SoniTranslate:
         )
 
         if output_type == "subtitle":
+            logger.info(f"Done: {sub_file}")
             return sub_file
 
         prog_disp("Text to speech...", 0.80, is_gui, progress=progress)
@@ -498,13 +502,15 @@ class SoniTranslate:
                 run_command(command_volume_mix)
 
         if output_type == "audio" or is_audio_file(media_file):
+            logger.info(f"Done: {mix_audio_file}")
             return mix_audio_file
 
         if burn_subtitles_to_video:
             try:
+                logger.info("Burn subtitles")
                 vid_subs = "video_subs_file.mp4"
                 remove_files(vid_subs)
-                command = f"ffmpeg -i {base_video_file} -y -vf subtitles={sub_file} -max_muxing_queue_size 9999 {vid_subs}"
+                command = f"ffmpeg -i {base_video_file} -y -vf subtitles={sub_file} {vid_subs}"
                 run_command(command)
                 base_video_file = vid_subs
             except Exception as error:
@@ -862,7 +868,7 @@ def create_gui(theme, logs_in_gui=False):
                         with gr.Column():
                             with gr.Accordion(
                                 lg_conf["xtts_title"],
-                                open=True,
+                                open=False,
                             ):
                                 gr.Markdown(lg_conf["xtts_subtitle"])
                                 wav_speaker_file = gr.File(
@@ -1000,6 +1006,11 @@ def create_gui(theme, logs_in_gui=False):
                                 "large-v2",
                                 "large-v3",
                             ]
+                            whisper_model_default = (
+                                "large-v3"
+                                if torch.cuda.is_available()
+                                else "medium"
+                            )
                             WHISPER_MODEL_SIZE = gr.Dropdown(
                                 whisper_model_options,
                                 value=whisper_model_default,
@@ -1008,9 +1019,14 @@ def create_gui(theme, logs_in_gui=False):
                             batch_size = gr.Slider(
                                 1, 32, value=16, label="Batch size", step=1
                             )
+                            list_compute_type = (
+                                ["int8", "float16", "float32"]
+                                if torch.cuda.is_available()
+                                else ["int8", "float32"]
+                            )
                             compute_type = gr.Dropdown(
                                 list_compute_type,
-                                value=compute_type_default,
+                                value=list_compute_type[1],
                                 label="Compute type",
                             )
                             input_srt = gr.File(
@@ -1150,9 +1166,9 @@ def create_gui(theme, logs_in_gui=False):
                                 "",
                                 "",
                                 False,
-                                "large-v3",
+                                whisper_model_default,
                                 16,
-                                "float16",
+                                list_compute_type[1],
                                 "Spanish (es)",
                                 "English (en)",
                                 1,
@@ -1172,13 +1188,13 @@ def create_gui(theme, logs_in_gui=False):
                                 "",
                                 "",
                                 False,
-                                "large-v3",
+                                whisper_model_default,
                                 16,
-                                "float16",
+                                list_compute_type[1],
                                 "Japanese (ja)",
                                 "English (en)",
                                 1,
-                                2,
+                                1,
                                 "en-CA-ClaraNeural-Female",
                                 "en-AU-WilliamNeural-Male",
                                 "en-GB-ThomasNeural-Male",
@@ -1979,6 +1995,7 @@ if __name__ == "__main__":
     lg_conf = get_language_config(language_data, language=args.language)
 
     app = create_gui(args.theme, logs_in_gui=args.logs_in_gui)
+
     app.launch(
         share=args.public_url,
         show_error=True,
