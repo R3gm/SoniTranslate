@@ -160,6 +160,7 @@ class SoniTranslate:
         self.result_diarize = None
         self.align_language = None
         self.result_source_lang = None
+        self.edit_subs_complete = False
 
         logger.info(f"Working in: {self.device}")
 
@@ -211,9 +212,15 @@ class SoniTranslate:
         if not YOUR_HF_TOKEN:
             YOUR_HF_TOKEN = os.getenv("YOUR_HF_TOKEN")
             if not YOUR_HF_TOKEN:
-                raise ValueError("No valid token")
+                raise ValueError("No valid Hugging Face token")
             else:
                 os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
+
+        if get_translated_text:
+            self.edit_subs_complete = False
+        if get_video_from_text_json:
+            if not self.edit_subs_complete:
+                raise ValueError("Generate the transcription first.")
 
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
@@ -391,6 +398,7 @@ class SoniTranslate:
             # Convert list of dictionaries to a JSON string with indentation
             json_string = json.dumps(json_data, indent=2)
             logger.info("Done")
+            self.edit_subs_complete = True
             return json_string.encode().decode("unicode_escape")
 
         if get_video_from_text_json:
@@ -1695,7 +1703,10 @@ def create_gui(theme, logs_in_gui=False):
                             )
 
                     download_button.click(
-                        download_list, [url_links], [download_finish]
+                        download_list,
+                        [url_links],
+                        [download_finish],
+                        queue=False
                     ).then(
                         update_models,
                         [],
@@ -1892,6 +1903,7 @@ def create_gui(theme, logs_in_gui=False):
                 is_gui_dummy_check,
             ],
             outputs=video_output,
+            trigger_mode="multiple",
         ).then(
             get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output]
         )
@@ -1913,6 +1925,7 @@ def create_gui(theme, logs_in_gui=False):
                 docs_dummy_check,
             ],
             outputs=docs_output,
+            trigger_mode="multiple",
         )
 
     return app
@@ -1995,6 +2008,8 @@ if __name__ == "__main__":
     lg_conf = get_language_config(language_data, language=args.language)
 
     app = create_gui(args.theme, logs_in_gui=args.logs_in_gui)
+
+    app.queue()
 
     app.launch(
         share=args.public_url,
