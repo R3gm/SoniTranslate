@@ -62,6 +62,7 @@ import json
 from pydub import AudioSegment
 from voice_main import ClassVoices
 import argparse
+import time
 
 try:
     from piper import PiperVoice  # noqa
@@ -1082,6 +1083,11 @@ def create_gui(theme, logs_in_gui=False):
                                 value="video_output",
                                 info=lg_conf["out_name_info"],
                             )
+                            play_sound_gui = gr.Checkbox(
+                                True,
+                                label="Task Status Sound",
+                                info="Task Status Sound: This button plays a sound alert indicating task completion or errors during execution.",
+                            )
                             PREVIEW = gr.Checkbox(
                                 label="Preview", info=lg_conf["preview_info"]
                             )
@@ -1734,6 +1740,29 @@ def create_gui(theme, logs_in_gui=False):
             gr.Markdown(lg_conf["tutorial"])
             gr.Markdown(news)
 
+            def play_sound_alert(play_sound):
+
+                if not play_sound:
+                    return None
+
+                # silent_sound = "assets/empty_audio.mp3"
+                sound_alert = "assets/sound_alert.mp3"
+
+                time.sleep(0.25)
+                # yield silent_sound
+                yield None
+
+                time.sleep(0.25)
+                yield sound_alert
+
+            sound_alert_notification = gr.Audio(
+                value=None,
+                type="filepath",
+                format="mp3",
+                autoplay=True,
+                visible=False,
+            )
+
         if logs_in_gui:
             logger.info("Logs in gui need public url")
             import sys
@@ -1854,6 +1883,8 @@ def create_gui(theme, logs_in_gui=False):
                 is_gui_dummy_check,
             ],
             outputs=subs_edit_space,
+        ).then(
+            play_sound_alert, [play_sound_gui], [sound_alert_notification]
         )
 
         # Run translate tts and complete
@@ -1906,6 +1937,8 @@ def create_gui(theme, logs_in_gui=False):
             trigger_mode="multiple",
         ).then(
             get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output]
+        ).then(
+            play_sound_alert, [play_sound_gui], [sound_alert_notification]
         )
 
         # Run docs process
@@ -1926,6 +1959,8 @@ def create_gui(theme, logs_in_gui=False):
             ],
             outputs=docs_output,
             trigger_mode="multiple",
+        ).then(
+            play_sound_alert, [play_sound_gui], [sound_alert_notification]
         )
 
     return app
