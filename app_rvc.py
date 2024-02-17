@@ -55,7 +55,7 @@ from soni_translate.text_multiformat_processor import (
     process_subtitles,
     break_aling_segments,
 )
-from soni_translate.languages_gui import language_data
+from soni_translate.languages_gui import language_data, news
 import copy
 import logging
 import json
@@ -663,21 +663,6 @@ class SoniTranslate:
 SoniTr = SoniTranslate()
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
-news = """ ## 📖 News
-        🔥 2024/01/16: Expanded language support, the introduction of whisper large v3, configurable GUI options, integration of BARK, Facebook-mms, Coqui XTTS, and Piper-TTS. Additional features included audio separation utilities, XTTS WAV creation,  use an SRT file as a base for translation, document translation, manual speaker editing, and flexible output options (video, audio, subtitles).
-
-        🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
-
-        🔥 2023/08/03: Changed default options and added directory view of downloads..
-
-        🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
-
-        🔥 2023/08/01: Add options for use R.V.C. models.
-
-        🔥 2023/07/27: Fix some bug processing the video and audio.
-
-        🔥 2023/07/26: New UI and add mix options.
-        """
 
 
 def create_gui(theme, logs_in_gui=False):
@@ -1000,8 +985,8 @@ def create_gui(theme, logs_in_gui=False):
                                 label=lg_conf["sub_type"],
                             )
                             burn_subtitles_to_video_gui = gr.Checkbox(
-                                label="Burn Subtitles",
-                                info="Burn Subtitles: Embed subtitles into the video, making them a permanent part of the visual content.",
+                                label=lg_conf["burn_subs_label"],
+                                info=lg_conf["burn_subs_info"],
                             )
 
                             gr.HTML("<hr></h2>")
@@ -1054,7 +1039,7 @@ def create_gui(theme, logs_in_gui=False):
                             diarization_process_dropdown = gr.Dropdown(
                                 pyannote_models_list,
                                 value=pyannote_models_list[1],
-                                label="Diarization model",
+                                label=lg_conf["diarization_label"],
                             )
                             valid_translate_process = [
                                 "google_translator_batch",
@@ -1064,7 +1049,7 @@ def create_gui(theme, logs_in_gui=False):
                             translate_process_dropdown = gr.Dropdown(
                                 valid_translate_process,
                                 value=valid_translate_process[0],
-                                label="Translation process",
+                                label=lg_conf["tr_process_label"],
                             )
 
                             gr.HTML("<hr></h2>")
@@ -1076,7 +1061,7 @@ def create_gui(theme, logs_in_gui=False):
                             main_output_type = gr.Dropdown(
                                 main_output_type_opt,
                                 value=main_output_type_opt[0],
-                                label="Output type",
+                                label=lg_conf["out_type_label"],
                             )
                             VIDEO_OUTPUT_NAME = gr.Textbox(
                                 label=lg_conf["out_name_label"],
@@ -1085,8 +1070,8 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             play_sound_gui = gr.Checkbox(
                                 True,
-                                label="Task Status Sound",
-                                info="Task Status Sound: This button plays a sound alert indicating task completion or errors during execution.",
+                                label=lg_conf["task_sound_label"],
+                                info=lg_conf["task_sound_info"],
                             )
                             PREVIEW = gr.Checkbox(
                                 label="Preview", info=lg_conf["preview_info"]
