@@ -3,7 +3,7 @@ torch>=2.1.0+cu118
 torchvision>=0.16.0+cu118
 torchaudio>=2.1.0+cu118
 yt-dlp
-gradio==4.19.0
+gradio==4.19.1
 pydub==0.25.1
 edge_tts==6.1.7
 deep_translator==1.11.4

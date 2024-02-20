@@ -187,7 +187,7 @@ def old_audio_video_preprocessor(preview, video, OutputFile, audio_wav):
                 )
 
         if result_convert_video.returncode in [1, 2]:
-            raise OperationFailedError(f"Error can't convert the video")
+            raise OperationFailedError("Error can't convert the video")
 
         for i in range(120):
             time.sleep(1)

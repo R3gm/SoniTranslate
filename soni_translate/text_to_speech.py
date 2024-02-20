@@ -806,7 +806,6 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
 def audio_segmentation_to_voice(
     result_diarize,
     TRANSLATE_AUDIO_TO,
-    max_accelerate_audio,
     is_gui,
     tts_voice00,
     tts_voice01,
@@ -819,6 +818,9 @@ def audio_segmentation_to_voice(
     model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2",
     delete_previous_automatic=True,
 ):
+
+    remove_directory_contents("audio")
+
     # Mapping speakers to voice variables
     speaker_to_voice = {
         "SPEAKER_00": tts_voice00,
@@ -936,27 +938,33 @@ def audio_segmentation_to_voice(
         segments_vits_onnx_tts(filtered_vits_onnx, TRANSLATE_AUDIO_TO)  # wav
 
     [result.pop("tts_name", None) for result in result_diarize["segments"]]
-    return accelerate_segments(
-        result_diarize,
-        max_accelerate_audio,
+    return [
         speakers_edge,
         speakers_bark,
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
-    )
-
+    ]
 
 def accelerate_segments(
     result_diarize,
     max_accelerate_audio,
-    speakers_edge,
-    speakers_bark,
-    speakers_vits,
-    speakers_coqui,
-    speakers_vits_onnx,
+    valid_speakers,
+    folder_output = "audio2"
 ):
     logger.info("Apply acceleration")
+
+    (
+        speakers_edge,
+        speakers_bark,
+        speakers_vits,
+        speakers_coqui,
+        speakers_vits_onnx
+    ) = valid_speakers
+
+    create_directories(f"{folder_output}/audio/")
+    remove_directory_contents(f"{folder_output}/audio/")
+
     audio_files = []
     speakers_list = []
     for segment in tqdm(result_diarize["segments"]):
@@ -994,23 +1002,23 @@ def accelerate_segments(
         else:
             info_enc = "OGG"
 
-        # Apply aceleration or opposite to the audio file in audio2 folder
+        # Apply aceleration or opposite to the audio file in folder_output folder
         if acc_percentage == 1.0 and info_enc == "OGG":
-            copy_files(filename, f"audio2{os.sep}audio")
+            copy_files(filename, f"{folder_output}{os.sep}audio")
         else:
             os.system(
-                f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} audio2/{filename}"
+                f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} {folder_output}/{filename}"
             )
 
         if logger.isEnabledFor(logging.DEBUG):
             duration_create = librosa.get_duration(
-                filename=f"audio2/{filename}"
+                filename=f"{folder_output}/{filename}"
             )
             logger.debug(
                 f"acc_percen is {acc_percentage}, tts duration is {duration_tts}, new duration is {duration_create}, for {filename}"
             )
 
-        audio_files.append(filename)
+        audio_files.append(f"{folder_output}/{filename}")
         speakers_list.append(speaker)
 
     return audio_files, speakers_list

@@ -312,11 +312,10 @@ vits_voices_list = {
     "lv-facebook-mms VITS": "facebook/mms-tts-lav",
     # "mk-facebook-mms VITS": "facebook/mms-tts-mkd",
     "ml-facebook-mms VITS": "facebook/mms-tts-mal",
-    "ms-facebook-mms VITS": "facebook/mms-tts-zlm", # add 2 variant
+    "ms-facebook-mms VITS": "facebook/mms-tts-zlm",  # add 2 variant
     "ro-facebook-mms VITS": "facebook/mms-tts-ron",
     # "si-facebook-mms VITS": "facebook/mms-tts-sin",
     "sw-facebook-mms VITS": "facebook/mms-tts-swh",
-    
 }
 
 LANGUAGE_CODE_IN_THREE_LETTERS = {

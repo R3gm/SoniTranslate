@@ -294,13 +294,6 @@ def break_aling_segments(
             "words": chars,
         }
 
-    def valid_start_value(chars):
-        start_key = "start"
-        for char in chars:
-            if start_key in char:
-                return True
-        return False
-
     for i, segment in enumerate(result_align['segments']):
 
         logger.debug(f"- Process segment: {i}, text: {segment['text']}")
@@ -342,15 +335,6 @@ def break_aling_segments(
                     normal[-1]["words"].append(chars)
                     continue
 
-                if not valid_start_value(chars):
-                    logger.debug(
-                        "No timestamps in chars, appending: "
-                        f"{num}, chars: {str(chars)}"
-                    )
-                    normal[-1]["text"] += text
-                    normal[-1]["words"].append(chars)
-                    continue
-
                 # logger.debug(chars)
                 normal_dict = process_chars(chars, letter_new_start, num, text)
 
@@ -378,16 +362,6 @@ def break_aling_segments(
                     continue
 
                 chars = segment['chars'][letter_new_start:num+1]
-
-                if not valid_start_value(chars):
-                    logger.debug(
-                        "No timestamps in remaining chars, appending: "
-                        f"{num}, chars: {str(chars)}"
-                    )
-                    normal[-1]["text"] += text
-                    normal[-1]["words"].append(chars)
-                    # maybe need letter_new_start
-                    continue
 
                 normal_dict = process_chars(chars, letter_new_start, num, text)
 
