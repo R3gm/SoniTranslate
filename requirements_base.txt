@@ -3,12 +3,12 @@ torch>=2.1.0+cu118
 torchvision>=0.16.0+cu118
 torchaudio>=2.1.0+cu118
 yt-dlp
-gradio==4.19.1
+gradio==4.19.2
 pydub==0.25.1
 edge_tts==6.1.7
 deep_translator==1.11.4
 git+https://github.com/m-bain/whisperX.git@d6562c2
 nest_asyncio
 gTTS
-gradio_client==0.10.0
+gradio_client==0.10.1
 IPython
