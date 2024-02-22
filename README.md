@@ -174,6 +174,7 @@ Then navigate to the `SoniTranslate` folder and run either the `app_rvc.py`
 ```
 python app_rvc.py
 ```
+When the `local URL` `http://127.0.0.1:7860` is displayed in the terminal, simply open this URL in your web browser to access the SoniTranslate interface.
 
 ### Stop and close SoniTranslate.
 
@@ -197,7 +198,24 @@ conda env remove -n sonitr
 
 With the `sonitr` environment removed, you can start over with a fresh installation.
 
+## Command line arguments
 
+The app_rvc.py script supports command-line arguments to customize its behavior. Here's a brief guide on how to use them:
+
+| Argument command | Default | Value | Description |
+|------------------|---------|-------|-------------|
+| --theme          | Taithrah/Minimal | String | Sets the theme for the interface. Themes can be found in the [Theme Gallery](https://huggingface.co/spaces/gradio/theme-gallery). |
+| --language       | english | String | Selects the interface language. Available options: arabic, azerbaijani, chinese_zh_cn, english, french, german, hindi, indonesian, italian, japanese, korean, marathi, polish, portuguese, russian, spanish, swedish, turkish, ukrainian, vietnamese. |
+| --verbosity_level| info    | String | Sets the verbosity level of the logger: debug, info, warning, error, or critical. |
+| --public_url     |    | Boolean | Enables a public link. |
+| --logs_in_gui    |    | Boolean | Shows the operations performed in Logs (obsolete). |
+
+Example usage:
+```
+python app_rvc.py --theme aliabid94/new-theme --language french
+```
+This command sets the theme to a custom theme and selects French as the interface language.
+Feel free to customize these arguments according to your preferences and requirements.
 
 ## 📖 News
 
