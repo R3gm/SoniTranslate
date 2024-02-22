@@ -1,11 +1,12 @@
 import torch
+from soni_translate.logging_setup import logger
 from lib.infer_pack.models import (
     SynthesizerTrnMs256NSFsid,
     SynthesizerTrnMs256NSFsid_nono,
     SynthesizerTrnMs768NSFsid,
     SynthesizerTrnMs768NSFsid_nono,
 )
-from vc_infer_pipeline import VC
+from vci_pipeline import VC
 import traceback, pdb
 from lib.audio import load_audio
 import numpy as np
@@ -15,22 +16,20 @@ import soundfile as sf
 from gtts import gTTS
 import edge_tts
 import asyncio
-import nest_asyncio
-from soni_translate.logging_setup import logger
 from soni_translate.utils import remove_directory_contents, create_directories
 
-# model load
-def get_vc(sid, to_return_protect0, to_return_protect1):
+
+def generate_inference(sid, to_return_protect0, to_return_protect1):
     global n_spk, tgt_sr, net_g, vc, cpt, version
     if sid == "" or sid == []:
         global hubert_model
         if hubert_model is not None:  # change model or not
-            logger.info("Clean empty cache")
+            logger.debug("Clean empty cache")
             del net_g, n_spk, vc, hubert_model, tgt_sr  # ,cpt
             hubert_model = net_g = n_spk = vc = hubert_model = tgt_sr = None
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-            ### if clean
+            # if clean
             if_f0 = cpt.get("f0", 1)
             version = cpt.get("version", "v1")
             if version == "v1":
@@ -99,7 +98,6 @@ def get_vc(sid, to_return_protect0, to_return_protect1):
         to_return_protect0,
         to_return_protect1,
     )
-
 
 
 # inference
@@ -186,7 +184,6 @@ def vc_single(
         return info, (None, None)
 
 
-
 BASE_DOWNLOAD_LINK = "https://huggingface.co/r3gm/sonitranslate_voice_models/resolve/main/"
 BASE_MODELS = [
     "hubert_base.pt",
@@ -251,7 +248,7 @@ class Config:
                 or "1070" in self.gpu_name
                 or "1080" in self.gpu_name
             ):
-                logger.info("16 series / 10 series graphics cards and P40 force single precision")
+                logger.info("16/10 Series GPUs and P40 excel in single-precision tasks.")
                 self.is_half = False
                 for config_file in ["32k.json", "40k.json", "48k.json"]:
                     with open(f"configs/{config_file}", "r") as f:
@@ -310,7 +307,7 @@ class Config:
 
 
 
-        logger.info(f"Config: Device is {self.device}, float16 is {self.is_half}")
+        logger.info(f"Config: Device is {self.device}, half precision is {self.is_half}")
 
         return x_pad, x_query, x_center, x_max
 
@@ -372,15 +369,15 @@ class ClassVoices:
 
         #hubert_model = None
 
-        get_vc(
+        generate_inference(
             sid=model_voice_path,  # model path
             to_return_protect0=0.33,
             to_return_protect1=0.33
         )
 
         for _value_item in _values:
-            filename = "audio2/"+audio_files[_value_item] if _value_item != "test" else audio_files[0]
-            #filename = "audio2/"+audio_files[_value_item]
+            filename = audio_files[_value_item] if _value_item != "test" else audio_files[0]
+            #filename = audio_files[_value_item]
             try:
                 logger.info(f"{audio_files[_value_item]}, {model_voice_path}")
             except:
@@ -388,7 +385,7 @@ class ClassVoices:
 
             info_, (sample_, audio_output_) = vc_single(
                 sid=0,
-                input_audio_path=filename, #f"audio2/{filename}",
+                input_audio_path=filename, # Original file
                 f0_up_key=transpose, # transpose for m to f and reverse 0 12
                 f0_file=None,
                 f0_method= f0method,
@@ -403,7 +400,7 @@ class ClassVoices:
             )
 
             sf.write(
-                file= filename, #f"audio2/{filename}",
+                file= filename, # Overwrite
                 samplerate=sample_,
                 data=audio_output_
             )
@@ -430,7 +427,6 @@ class ClassVoices:
 
         language = tts_voice[:2]
         try:
-          #nest_asyncio.apply() # gradio;not
           asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
         except:
           try:

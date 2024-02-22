@@ -364,7 +364,7 @@ def run_mdx(
         m_threads = 1 if vram_gb < 8 else 2
     else:
         device = torch.device("cpu")
-    m_threads = 1
+        m_threads = 1
 
     model_hash = MDX.get_hash(model_path)
     mp = model_params.get(model_hash)
@@ -434,6 +434,7 @@ UVR_MODELS = [
     "UVR-MDX-NET-Voc_FT.onnx",
     "UVR_MDXNET_KARA_2.onnx",
     "Reverb_HQ_By_FoxJoy.onnx",
+    "UVR-MDX-NET-Inst_HQ_3.onnx",
 ]
 BASE_DIR = "."  # os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 mdxnet_models_dir = os.path.join(BASE_DIR, "mdx_models")
@@ -488,6 +489,19 @@ def process_uvr_task(
 
     logger.debug(f"onnxruntime device >> {ort.get_device()}")
 
+    if only_voiceless:
+        logger.info("Voiceless Track Separation...")
+        return run_mdx(
+            mdx_model_params,
+            song_output_dir,
+            os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_3.onnx"),
+            orig_song_path,
+            suffix="Voiceless",
+            denoise=False,
+            keep_orig=True,
+            exclude_inversion=True,
+        )
+
     logger.info("Vocal Track Isolation and Voiceless Track Separation...")
     vocals_path, instrumentals_path = run_mdx(
         mdx_model_params,
@@ -496,7 +510,6 @@ def process_uvr_task(
         orig_song_path,
         denoise=True,
         keep_orig=True,
-        exclude_main=only_voiceless,
     )
 
     if main_vocals:

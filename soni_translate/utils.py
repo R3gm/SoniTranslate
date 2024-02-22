@@ -201,7 +201,7 @@ def load_file_from_url(
     overwrite: bool = False,
     progress: bool = True,
 ) -> str:
-    """Download a file from `url` into `model_dir`, 
+    """Download a file from `url` into `model_dir`,
     using the file present if possible.
 
     Returns the path to the downloaded file.
@@ -284,7 +284,7 @@ def remove_directory_contents(directory_path):
     Removes all files and subdirectories within a directory.
 
     Parameters:
-    directory_path (str): Path to the directory whose 
+    directory_path (str): Path to the directory whose
     contents need to be removed.
     """
     if os.path.exists(directory_path):
@@ -336,7 +336,7 @@ def copy_files(source_path, destination_path):
     Copies a file or multiple files from a source path to a destination path.
 
     Parameters:
-    source_path (str or list): Path or list of paths to the source 
+    source_path (str or list): Path or list of paths to the source
     file(s) or directory.
     destination_path (str): Path to the destination directory.
     """

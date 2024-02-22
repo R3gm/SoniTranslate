@@ -566,7 +566,7 @@ def segments_coqui_tts(
     directory_audios_vc = "_XTTS_"
     create_directories(directory_audios_vc)
     create_new_files_for_vc(
-        speakers_coqui, 
+        speakers_coqui,
         filtered_coqui_segments["segments"],
         dereverb_automatic,
     )
@@ -806,7 +806,6 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
 def audio_segmentation_to_voice(
     result_diarize,
     TRANSLATE_AUDIO_TO,
-    max_accelerate_audio,
     is_gui,
     tts_voice00,
     tts_voice01,
@@ -819,6 +818,9 @@ def audio_segmentation_to_voice(
     model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2",
     delete_previous_automatic=True,
 ):
+
+    remove_directory_contents("audio")
+
     # Mapping speakers to voice variables
     speaker_to_voice = {
         "SPEAKER_00": tts_voice00,
@@ -936,30 +938,41 @@ def audio_segmentation_to_voice(
         segments_vits_onnx_tts(filtered_vits_onnx, TRANSLATE_AUDIO_TO)  # wav
 
     [result.pop("tts_name", None) for result in result_diarize["segments"]]
-    return accelerate_segments(
-        result_diarize,
-        max_accelerate_audio,
+    return [
         speakers_edge,
         speakers_bark,
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
-    )
+    ]
 
 
 def accelerate_segments(
     result_diarize,
     max_accelerate_audio,
-    speakers_edge,
-    speakers_bark,
-    speakers_vits,
-    speakers_coqui,
-    speakers_vits_onnx,
+    valid_speakers,
+    acceleration_rate_regulation=False,
+    folder_output="audio2",
 ):
     logger.info("Apply acceleration")
+
+    (
+        speakers_edge,
+        speakers_bark,
+        speakers_vits,
+        speakers_coqui,
+        speakers_vits_onnx
+    ) = valid_speakers
+
+    create_directories(f"{folder_output}/audio/")
+    remove_directory_contents(f"{folder_output}/audio/")
+
     audio_files = []
     speakers_list = []
-    for segment in tqdm(result_diarize["segments"]):
+
+    max_count_segments_idx = len(result_diarize["segments"]) - 1
+
+    for i, segment in tqdm(enumerate(result_diarize["segments"])):
         text = segment["text"] # noqa
         start = segment["start"]
         end = segment["end"]
@@ -978,6 +991,34 @@ def accelerate_segments(
         # Accelerate percentage
         acc_percentage = duration_tts / duration_true
 
+        # Smoth
+        if acceleration_rate_regulation and acc_percentage >= 1.4:
+            try:
+                next_segment = result_diarize["segments"][
+                    min(max_count_segments_idx, i + 1)
+                ]
+                next_start = next_segment["start"]
+                next_speaker = next_segment["speaker"]
+                duration_with_next_start = next_start - start
+
+                if duration_with_next_start > duration_true:
+                    extra_time = duration_with_next_start - duration_true
+
+                    if speaker == next_speaker:
+                        # half
+                        smoth_duration = duration_true + (extra_time * 1/2)
+                    else:
+                        # 2/3
+                        smoth_duration = duration_true + (extra_time * 2/3)
+                    logger.debug(
+                        f"Base acc: {acc_percentage}, "
+                        f"smoth acc: {duration_tts / smoth_duration}"
+                    )
+                    acc_percentage = max(1.21, (duration_tts / smoth_duration))
+
+            except Exception as error:
+                logger.error(str(error))
+
         if acc_percentage > max_accelerate_audio:
             acc_percentage = max_accelerate_audio
         elif acc_percentage <= 1.2 and acc_percentage >= 0.8:
@@ -985,7 +1026,7 @@ def accelerate_segments(
         elif acc_percentage <= 0.79:
             acc_percentage = 0.8
 
-        # Smoth and round
+        # Round
         acc_percentage = round(acc_percentage + 0.0, 1)
 
         # Format read if need
@@ -994,23 +1035,23 @@ def accelerate_segments(
         else:
             info_enc = "OGG"
 
-        # Apply aceleration or opposite to the audio file in audio2 folder
+        # Apply aceleration or opposite to the audio file in folder_output folder
         if acc_percentage == 1.0 and info_enc == "OGG":
-            copy_files(filename, f"audio2{os.sep}audio")
+            copy_files(filename, f"{folder_output}{os.sep}audio")
         else:
             os.system(
-                f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} audio2/{filename}"
+                f"ffmpeg -y -loglevel panic -i {filename} -filter:a atempo={acc_percentage} {folder_output}/{filename}"
             )
 
         if logger.isEnabledFor(logging.DEBUG):
             duration_create = librosa.get_duration(
-                filename=f"audio2/{filename}"
+                filename=f"{folder_output}/{filename}"
             )
             logger.debug(
                 f"acc_percen is {acc_percentage}, tts duration is {duration_tts}, new duration is {duration_create}, for {filename}"
             )
 
-        audio_files.append(filename)
+        audio_files.append(f"{folder_output}/{filename}")
         speakers_list.append(speaker)
 
     return audio_files, speakers_list
@@ -1043,7 +1084,7 @@ def se_process_audio_segments(
     return se
 
 
-def openvoice_wav_vc(
+def create_wav_vc(
     valid_speakers,
     segments_base,
     audio_name,
@@ -1145,7 +1186,7 @@ def openvoice_wav_vc(
     return path_source_segments, path_target_segments
 
 
-def toneconverter(
+def toneconverter_openvoice(
     result_diarize,
     preprocessor_max_segments,
     remove_previous_process=True,
@@ -1173,7 +1214,7 @@ def toneconverter(
     if remove_previous_process:
         remove_directory_contents(target_dir)
 
-    path_source_segments, path_target_segments = openvoice_wav_vc(
+    path_source_segments, path_target_segments = create_wav_vc(
         valid_speakers,
         result_diarize["segments"],
         audio_name,
@@ -1198,6 +1239,8 @@ def toneconverter(
     tone_color_converter.load_ckpt(checkpoint_path)
 
     logger.info("Openvoice tone color converter:")
+    global_progress_bar = tqdm(total=len(result_diarize["segments"]), desc="Progress")
+
     for source_seg, target_seg, speaker in zip(
         path_source_segments, path_target_segments, valid_speakers
     ):
@@ -1217,7 +1260,7 @@ def toneconverter(
             src_path = (
                 save_path
             ) = f"audio2/audio/{str(seg['start'])}.ogg"  # overwrite
-            logger.info(f"{src_path}")
+            logger.debug(f"{src_path}")
 
             tone_color_converter.convert(
                 audio_src_path=src_path,
@@ -1226,6 +1269,11 @@ def toneconverter(
                 output_path=save_path,
                 message=encode_message,
             )
+
+            global_progress_bar.update(1)
+
+    global_progress_bar.close()
+
     try:
         del tone_color_converter
         gc.collect()
@@ -1234,6 +1282,118 @@ def toneconverter(
         logger.error(str(error))
         gc.collect()
         torch.cuda.empty_cache()
+
+
+def toneconverter_freevc(
+    result_diarize,
+    remove_previous_process=True,
+    get_vocals_dereverb=False,
+):
+    audio_path = "audio.wav"
+    target_dir = "processed"
+    create_directories(target_dir)
+
+    from openvoice import se_extractor
+
+    audio_name = f"{os.path.basename(audio_path).rsplit('.', 1)[0]}_{se_extractor.hash_numpy_array(audio_path)}"
+
+    # create wav seg; original is target and dubbing is source
+    valid_speakers = list(
+        {item["speaker"] for item in result_diarize["segments"]}
+    )
+
+    logger.info("FreeVC preprocessor...")
+
+    if remove_previous_process:
+        remove_directory_contents(target_dir)
+
+    path_source_segments, path_target_segments = create_wav_vc(
+        valid_speakers,
+        result_diarize["segments"],
+        audio_name,
+        max_segments=1,
+        get_vocals_dereverb=get_vocals_dereverb,
+    )
+
+    logger.info("FreeVC loading model...")
+    try:
+        from TTS.api import TTS
+        tts = TTS(
+            model_name="voice_conversion_models/multilingual/vctk/freevc24",
+            progress_bar=False
+        ).to(device)
+    except Exception as error:
+        logger.error(str(error))
+        logger.error("Error loading the FreeVC model.")
+        return
+
+    logger.info("FreeVC process:")
+    global_progress_bar = tqdm(total=len(result_diarize["segments"]), desc="Progress")
+
+    for source_seg, target_seg, speaker in zip(
+        path_source_segments, path_target_segments, valid_speakers
+    ):
+
+        filtered_speaker = [
+            segment
+            for segment in result_diarize["segments"]
+            if segment["speaker"] == speaker
+        ]
+
+        files_and_directories = os.listdir(target_seg)
+        wav_files = [file for file in files_and_directories if file.endswith(".wav")]
+        original_wav_audio_segment = os.path.join(target_seg, wav_files[0])
+
+        for seg in filtered_speaker:
+
+            src_path = (
+                  save_path
+              ) = f"audio2/audio/{str(seg['start'])}.ogg"  # overwrite
+            logger.debug(f"{src_path} - {original_wav_audio_segment}")
+
+            tts.voice_conversion_to_file(
+                source_wav=src_path,
+                target_wav=original_wav_audio_segment,
+                file_path=save_path
+            )
+
+            global_progress_bar.update(1)
+
+    global_progress_bar.close()
+
+    try:
+        del tts
+        gc.collect()
+        torch.cuda.empty_cache()
+    except Exception as error:
+        logger.error(str(error))
+        gc.collect()
+        torch.cuda.empty_cache()
+
+
+def toneconverter(
+    result_diarize,
+    preprocessor_max_segments,
+    remove_previous_process=True,
+    get_vocals_dereverb=False,
+    method_vc="freevc"
+):
+
+    if method_vc == "freevc":
+        if preprocessor_max_segments > 1:
+            logger.info("FreeVC only uses one segment.")
+        return toneconverter_freevc(
+                    result_diarize,
+                    remove_previous_process=remove_previous_process,
+                    get_vocals_dereverb=get_vocals_dereverb,
+                )
+    elif method_vc == "openvoice":
+        return toneconverter_openvoice(
+                    result_diarize,
+                    preprocessor_max_segments,
+                    remove_previous_process=remove_previous_process,
+                    get_vocals_dereverb=get_vocals_dereverb,
+                )
 
 
 if __name__ == "__main__":

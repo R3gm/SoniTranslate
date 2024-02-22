@@ -1,4 +1,4 @@
-import numpy as np, parselmouth, torch, pdb, sys, os
+import numpy as np, parselmouth, torch, pdb, sys
 from time import time as ttime
 import torch.nn.functional as F
 import scipy.signal as signal
@@ -132,7 +132,7 @@ class VC(object):
             if hasattr(self, "model_rmvpe") == False:
                 from lib.rmvpe import RMVPE
 
-                logger.info("Loading rmvpe model")
+                logger.info("Loading vocal pitch estimator model")
                 self.model_rmvpe = RMVPE(
                     "rmvpe.pt", is_half=self.is_half, device=self.device
                 )
@@ -159,7 +159,10 @@ class VC(object):
         ) + 1
         f0_mel[f0_mel <= 1] = 1
         f0_mel[f0_mel > 255] = 255
-        f0_coarse = np.rint(f0_mel).astype(np.int)
+        try:
+            f0_coarse = np.rint(f0_mel).astype(np.int)
+        except: # noqa
+            f0_coarse = np.rint(f0_mel).astype(int)
         return f0_coarse, f0bak  # 1-0
 
     def vc(

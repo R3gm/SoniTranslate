@@ -2,7 +2,6 @@ from pydub import AudioSegment
 from tqdm import tqdm
 from .utils import run_command
 from .logging_setup import logger
-from .utils import remove_directory_contents
 
 
 def create_translated_audio(
@@ -64,5 +63,3 @@ def create_translated_audio(
         combined_audio.export(
             final_file, format="wav"
         )  # best than ogg, change if the audio is anomalous
-
-    remove_directory_contents("audio")

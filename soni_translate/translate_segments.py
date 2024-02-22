@@ -13,7 +13,7 @@ def translate_iterative(segments, TRANSLATE_AUDIO_TO):
     Parameters:
     - segments (list): A list of dictionaries, each containing 'text' as a key
         with the segment text to be translated.
-    - TRANSLATE_AUDIO_TO (str): The language code to which the text should be 
+    - TRANSLATE_AUDIO_TO (str): The language code to which the text should be
         translated.
 
     Returns:
@@ -91,7 +91,7 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
     except Exception as error:
         logger.error(str(error))
         logger.warning(
-            f"The translation in chunks failed, switching to iterative. Related> too many request"
+            "The translation in chunks failed, switching to iterative. Related: too many request"
         )  # use proxy or less chunk size
         return translate_iterative(segments, TRANSLATE_AUDIO_TO)
 
