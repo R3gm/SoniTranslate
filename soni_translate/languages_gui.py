@@ -2,6 +2,8 @@
 
 news = """ ## 📖 News
 
+        🔥 2024/02/22: Added freevc for voice imitation, fixed voiceless track, divide segments. New languages support. New translations of the GUI. With subtitle file, no align and the media file is not needed to process the SRT file. Burn subtitles to video. Queue can accept multiple tasks simultaneously. Sound alert notification. Continue process from last checkpoint. Acceleration rate regulation
+
         🔥 2024/01/16: Expanded language support, the introduction of whisper large v3, configurable GUI options, integration of BARK, Facebook-mms, Coqui XTTS, and Piper-TTS. Additional features included audio separation utilities, XTTS WAV creation,  use an SRT file as a base for translation, document translation, manual speaker editing, and flexible output options (video, audio, subtitles).
 
         🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.

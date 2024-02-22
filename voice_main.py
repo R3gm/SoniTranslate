@@ -307,7 +307,7 @@ class Config:
 
 
 
-        logger.info(f"Config: Device is {self.device}, presicion is {self.is_half}")
+        logger.info(f"Config: Device is {self.device}, half precision is {self.is_half}")
 
         return x_pad, x_query, x_center, x_max
 
