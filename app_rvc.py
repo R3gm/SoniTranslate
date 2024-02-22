@@ -261,6 +261,7 @@ class SoniTranslate(SoniTrCache):
         video_output_name="video_dub",
         AUDIO_MIX_METHOD="Adjusting volumes and mixing audio",
         max_accelerate_audio=2.1,
+        acceleration_rate_regulation=False,
         volume_original_audio=0.25,
         volume_translated_audio=1.80,
         output_format_subtitle="srt",
@@ -622,6 +623,7 @@ class SoniTranslate(SoniTrCache):
 
         if not self.task_in_cache("acc_and_vc", [
             max_accelerate_audio,
+            acceleration_rate_regulation,
             voice_imitation,
             voice_imitation_max_segments,
             voice_imitation_remove_previous,
@@ -638,6 +640,7 @@ class SoniTranslate(SoniTrCache):
                     self.result_diarize,
                     max_accelerate_audio,
                     self.valid_speakers,
+                    acceleration_rate_regulation,
                 )
 
             # Voice Imitation (Tone color converter)
@@ -1157,6 +1160,11 @@ def create_gui(theme, logs_in_gui=False):
                                 interactive=True,
                                 info=lg_conf["acc_max_info"],
                             )
+                            acceleration_rate_regulation_gui = gr.Checkbox(
+                                False,
+                                label="Acceleration Rate Regulation",
+                                info="Acceleration Rate Regulation: Adjusts durations for smoother acceleration between segments, factoring in speaker continuity and next-start timing.",
+                            )
 
                             audio_mix_options = [
                                 "Mixing audio with sidechain compression",
@@ -1467,6 +1475,7 @@ def create_gui(theme, logs_in_gui=False):
                             VIDEO_OUTPUT_NAME,
                             AUDIO_MIX,
                             audio_accelerate,
+                            acceleration_rate_regulation_gui,
                             volume_original_mix,
                             volume_translated_mix,
                             sub_type_output,
@@ -2086,6 +2095,7 @@ def create_gui(theme, logs_in_gui=False):
                 VIDEO_OUTPUT_NAME,
                 AUDIO_MIX,
                 audio_accelerate,
+                acceleration_rate_regulation_gui,
                 volume_original_mix,
                 volume_translated_mix,
                 sub_type_output,
@@ -2138,6 +2148,7 @@ def create_gui(theme, logs_in_gui=False):
                 VIDEO_OUTPUT_NAME,
                 AUDIO_MIX,
                 audio_accelerate,
+                acceleration_rate_regulation_gui,
                 volume_original_mix,
                 volume_translated_mix,
                 sub_type_output,

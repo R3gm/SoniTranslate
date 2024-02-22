@@ -946,11 +946,13 @@ def audio_segmentation_to_voice(
         speakers_vits_onnx,
     ]
 
+
 def accelerate_segments(
     result_diarize,
     max_accelerate_audio,
     valid_speakers,
-    folder_output = "audio2"
+    acceleration_rate_regulation=False,
+    folder_output="audio2",
 ):
     logger.info("Apply acceleration")
 
@@ -967,7 +969,10 @@ def accelerate_segments(
 
     audio_files = []
     speakers_list = []
-    for segment in tqdm(result_diarize["segments"]):
+
+    max_count_segments_idx = len(result_diarize["segments"]) - 1
+
+    for i, segment in tqdm(enumerate(result_diarize["segments"])):
         text = segment["text"] # noqa
         start = segment["start"]
         end = segment["end"]
@@ -986,6 +991,34 @@ def accelerate_segments(
         # Accelerate percentage
         acc_percentage = duration_tts / duration_true
 
+        # Smoth
+        if acceleration_rate_regulation and acc_percentage >= 1.4:
+            try:
+                next_segment = result_diarize["segments"][
+                    min(max_count_segments_idx, i + 1)
+                ]
+                next_start = next_segment["start"]
+                next_speaker = next_segment["speaker"]
+                duration_with_next_start = next_start - start
+
+                if duration_with_next_start > duration_true:
+                    extra_time = duration_with_next_start - duration_true
+
+                    if speaker == next_speaker:
+                        # half
+                        smoth_duration = duration_true + (extra_time * 1/2)
+                    else:
+                        # 2/3
+                        smoth_duration = duration_true + (extra_time * 2/3)
+                    logger.debug(
+                        f"Base acc: {acc_percentage}, "
+                        f"smoth acc: {duration_tts / smoth_duration}"
+                    )
+                    acc_percentage = max(1.21, (duration_tts / smoth_duration))
+
+            except Exception as error:
+                logger.error(str(error))
+
         if acc_percentage > max_accelerate_audio:
             acc_percentage = max_accelerate_audio
         elif acc_percentage <= 1.2 and acc_percentage >= 0.8:
@@ -993,7 +1026,7 @@ def accelerate_segments(
         elif acc_percentage <= 0.79:
             acc_percentage = 0.8
 
-        # Smoth and round
+        # Round
         acc_percentage = round(acc_percentage + 0.0, 1)
 
         # Format read if need
