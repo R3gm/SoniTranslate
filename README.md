@@ -53,6 +53,28 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 | ca            | Catalan    |
 | ne            | Nepali     |
 | th            | Thai       |
+| sv            | Swedish    |
+| am            | Amharic    |
+| cy            | Welsh      |
+| hr            | Croatian   |
+| is            | Icelandic  |
+| ka            | Georgian   |
+| km            | Khmer      |
+| sk            | Slovak     |
+| sq            | Albanian   |
+| sr            | Serbian    |
+| az            | Azerbaijani|
+| bg            | Bulgarian  |
+| gl            | Galician   |
+| gu            | Gujarati   |
+| kk            | Kazakh     |
+| kn            | Kannada    |
+| lt            | Lithuanian |
+| lv            | Latvian    |
+| ml            | Malayalam  |
+| ro            | Romanian   |
+| si            | Sinhala    |
+| su            | Sundanese  |
 
 ## Example:
 
@@ -81,7 +103,7 @@ Before you start installing and using SoniTranslate, there are a few things you 
 2. Accept the license agreement for using Pyannote. You need to have an account on Hugging Face and `accept the license to use the models`: https://huggingface.co/pyannote/speaker-diarization and https://huggingface.co/pyannote/segmentation
 3. Create a [huggingface token](https://huggingface.co/settings/tokens). Hugging Face is a natural language processing platform that provides access to state-of-the-art models and tools. You will need to create a token in order to use some of the automatic model download features in SoniTranslate. Follow the instructions on the Hugging Face website to create a token.
 4. Install [Anaconda](https://www.anaconda.com/). Anaconda is a free and open-source distribution of Python and R. It includes a package manager called conda that makes it easy to install and manage Python environments and packages. Follow the instructions on the Anaconda website to download and install Anaconda on your system.
-5. Install Git for your system. Git is a version control system that helps you track changes to your code and collaborate with other developers. You can install Git with Anaconda by running `conda install -c anaconda git -y` in your terminal. If you have trouble installing Git via Anaconda, you can use the following link instead:
+5. Install Git for your system. Git is a version control system that helps you track changes to your code and collaborate with other developers. You can install Git with Anaconda by running `conda install -c anaconda git -y` in your terminal (Do this after step 1 in the following section.). If you have trouble installing Git via Anaconda, you can use the following link instead:
    - [Git for Linux](https://git-scm.com/download/linux)
 
 Once you have completed these steps, you will be ready to install SoniTranslate.
@@ -106,7 +128,7 @@ cd SoniTranslate
 3. Install required packages:
 
 ```
-pip install -r requirements_colab.txt -v
+pip install -r requirements_base.txt -v
 pip install -r requirements_extra.txt -v
 pip install onnxruntime-gpu
 ```
@@ -143,7 +165,7 @@ conda activate sonitr
 Setting your Hugging Face token as an environment variable in Linux:
 
 ```
-export YOUR_HF_TOKEN="<YOUR_HUGGING_FACE_TOKEN>"
+export YOUR_HF_TOKEN="YOUR_HUGGING_FACE_TOKEN"
 ```
 
 Then navigate to the `SoniTranslate` folder and run either the `app_rvc.py`
@@ -177,6 +199,8 @@ With the `sonitr` environment removed, you can start over with a fresh installat
 
 
 ## 📖 News
+
+🔥 2024/02/22: Added freevc for voice imitation, fixed voiceless track, divide segments. New languages support (Swedish, Amharic, Welsh, Croatian, Icelandic, Georgian, Khmer, Slovak, Albanian, Serbian, Azerbaijani, Bulgarian, Galician, Gujarati, Kazakh, Kannada, Lithuanian, Latvian, Malayalam, Romanian, Sinhala and Sundanese). New translations of the GUI (Spanish, French, German, Italian, Japanese, Chinese Simplified, Ukrainian, Arabic, Russian, Turkish, Indonesian, Portuguese, Hindi, Vietnamese, Polish, Swedish, Korean, Marathi and Azerbaijani). With subtitle file, no align and the media file is not needed to process the SRT file. Burn subtitles to video. Queue can accept multiple tasks simultaneously. Sound alert notification. Continue process from last checkpoint. Acceleration rate regulation.
 
 🔥 2024/01/16: Expanded language support (Thai, Nepali, Catalan, Javanese, Tamil, Marathi, Telugu, Bengali and Indonesian), the introduction of whisper large v3, configurable GUI options, integration of BARK, Facebook-mms, Coqui XTTS, and Piper-TTS. Additional features included audio separation utilities, XTTS WAV creation, use an SRT file as a base for translation, document translation, manual speaker editing, and flexible output options (video, audio, subtitles).
 
