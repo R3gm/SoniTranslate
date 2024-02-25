@@ -21,6 +21,7 @@ from soni_translate.preprocessor import (
     audio_video_preprocessor,
     audio_preprocessor,
 )
+from soni_translate.postprocessor import media_out
 from soni_translate.language_configuration import (
     LANGUAGES,
     LANGUAGES_LIST,
@@ -258,7 +259,7 @@ class SoniTranslate(SoniTrCache):
         tts_voice03="en-GB-SoniaNeural-Female",
         tts_voice04="en-NZ-MitchellNeural-Male",
         tts_voice05="en-GB-MaisieNeural-Female",
-        video_output_name="video_dub",
+        video_output_name="",
         AUDIO_MIX_METHOD="Adjusting volumes and mixing audio",
         max_accelerate_audio=2.1,
         acceleration_rate_regulation=False,
@@ -378,7 +379,7 @@ class SoniTranslate(SoniTrCache):
         voiceless_audio_file = "audio_Voiceless.wav"
         mix_audio_file = "audio_mix.mp3"
         vid_subs = "video_subs_file.mp4"
-        video_output_file = f"{video_output_name}.mp4"
+        video_output_file = "video_dub.mp4"
 
         if os.path.exists(media_file):
             media_base_hash = get_hash(media_file)
@@ -558,8 +559,15 @@ class SoniTranslate(SoniTrCache):
             )
 
         if output_type == "subtitle":
-            logger.info(f"Done: {self.sub_file}")
-            return self.sub_file
+            output = media_out(
+                media_file,
+                TRANSLATE_AUDIO_TO,
+                video_output_name,
+                output_format_subtitle,
+                file_obj=self.sub_file,
+            )
+            logger.info(f"Done: {output}")
+            return output
 
         if not self.task_in_cache("tts", [
             TRANSLATE_AUDIO_TO,
@@ -735,8 +743,15 @@ class SoniTranslate(SoniTrCache):
                     run_command(command_volume_mix)
 
         if output_type == "audio" or is_audio_file(media_file):
-            logger.info(f"Done: {mix_audio_file}")
-            return mix_audio_file
+            output = media_out(
+                media_file,
+                TRANSLATE_AUDIO_TO,
+                video_output_name,
+                "mp3",
+                file_obj=mix_audio_file,
+            )
+            logger.info(f"Done: {output}")
+            return output
 
         hash_base_video_file = get_hash(base_video_file)
 
@@ -766,9 +781,16 @@ class SoniTranslate(SoniTrCache):
                 f"ffmpeg -i {base_video_file} -i {mix_audio_file} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output_file}"
             )
 
-        logger.info(f"Done: {video_output_file}")
+        output = media_out(
+            media_file,
+            TRANSLATE_AUDIO_TO,
+            video_output_name,
+            "mp4",
+            file_obj=video_output_file,
+        )
+        logger.info(f"Done: {output}")
 
-        return video_output_file
+        return output
 
     def multilingual_docs_conversion(
         self,
@@ -1308,7 +1330,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             VIDEO_OUTPUT_NAME = gr.Textbox(
                                 label=lg_conf["out_name_label"],
-                                value="video_output",
+                                value="",
                                 info=lg_conf["out_name_info"],
                             )
                             play_sound_gui = gr.Checkbox(
@@ -1426,7 +1448,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "en-GB-SoniaNeural-Female",
                                 "en-NZ-MitchellNeural-Male",
                                 "en-GB-MaisieNeural-Female",
-                                "video_output",
+                                "",
                                 "Adjusting volumes and mixing audio",
                             ],
                             [
@@ -1448,7 +1470,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "en-GB-SoniaNeural-Female",
                                 "en-NZ-MitchellNeural-Male",
                                 "en-GB-MaisieNeural-Female",
-                                "video_output",
+                                "",
                                 "Adjusting volumes and mixing audio",
                             ],
                         ],  # no update
