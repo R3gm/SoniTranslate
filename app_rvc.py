@@ -330,7 +330,10 @@ class SoniTranslate(SoniTrCache):
     ):
         if not YOUR_HF_TOKEN:
             YOUR_HF_TOKEN = os.getenv("YOUR_HF_TOKEN")
-            if not YOUR_HF_TOKEN:
+            if diarization_model == "disable" or max_speakers == 1:
+                if YOUR_HF_TOKEN is None:
+                    YOUR_HF_TOKEN = ""
+            elif not YOUR_HF_TOKEN:
                 raise ValueError("No valid Hugging Face token")
             else:
                 os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN

@@ -103,6 +103,7 @@ def align_speech(audio, result):
 diarization_models = {
     "pyannote_3.1": "pyannote/speaker-diarization-3.1",
     "pyannote_2.1": "pyannote/speaker-diarization@2.1",
+    "disable": "",
 }
 
 
@@ -139,7 +140,8 @@ def diarize_speech(
     - If only one speaker is specified, each segment is automatically assigned as
         the first speaker, eliminating the need for diarization inference.
     """
-    if max(min_speakers, max_speakers) > 1:
+
+    if max(min_speakers, max_speakers) > 1 and model_name:
         try:
             with capture.capture_output() as cap:
                 diarize_model = whisperx.DiarizationPipeline(

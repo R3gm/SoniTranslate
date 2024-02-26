@@ -227,17 +227,23 @@ def get_audio_and_video_files(directory):
             elif is_video_file(item):
                 video_files.append(item_path)
 
+    logger.info(
+        f"Files in path (str{directory}): {str(audio_files + video_files)}"
+    )
+
     return audio_files, video_files
 
 
 def get_valid_files(paths):
-    for i, path in enumerate(paths):
+    valid_paths = []
+    for path in paths:
         if os.path.isdir(path):
             audio_files, video_files = get_audio_and_video_files(path)
-            paths.pop(i)
-            paths.extend(audio_files)
-            paths.extend(video_files)
-    return paths
+            valid_paths.extend(audio_files)
+            valid_paths.extend(video_files)
+        else:
+            valid_paths.append(path)
+    return valid_paths
 
 # =====================================
 # Download Manager
