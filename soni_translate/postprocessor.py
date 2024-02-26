@@ -13,13 +13,20 @@ def get_no_ext_filename(file_path):
 
 
 def get_video_info(link):
+    params_dlp = {"quiet": True, "no_warnings": True, "noplaylist": True}
     try:
         from yt_dlp import YoutubeDL
 
-        with YoutubeDL({"quiet": True, "no_warnings": True}) as ydl:
+        with YoutubeDL(params_dlp) as ydl:
             info_dict = ydl.extract_info(link, download=False, process=False)
-            video_id = info_dict.get("id", "youtube_video")
+            video_id = info_dict.get("id", "url_video")
             video_title = info_dict.get("title", video_id)
+            if "youtube.com" in link and "&list=" in link:
+                video_title = ydl.extract_info(
+                    "https://m.youtube.com/watch?v="+video_id,
+                    download=False,
+                    process=False
+                ).get("title", video_title)
     except Exception as error:
         logger.error(str(error))
         aux_name = link[:10] + link[-15:]

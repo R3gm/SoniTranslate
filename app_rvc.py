@@ -36,6 +36,7 @@ from soni_translate.utils import (
     run_command,
     is_audio_file,
     copy_files,
+    get_valid_files,
 )
 from soni_translate.mdx_net import (
     UVR_MODELS,
@@ -209,6 +210,10 @@ class SoniTrCache:
 
     def clear_cache(self, media, force=False):
 
+        self.cache["media"] = (
+            self.cache["media"] if len(self.cache["media"]) else [[]]
+        )
+
         if media != self.cache["media"][0] or force:
 
             # Clear cache
@@ -238,6 +243,43 @@ class SoniTranslate(SoniTrCache):
         self.burn_subs_id = None
 
         logger.info(f"Working in: {self.device}")
+
+    def batch_multilingual_media_conversion(self, *kwargs):
+        logger.debug(str(kwargs))
+
+        media_file_arg = kwargs[0] if kwargs[0] is not None else []
+
+        link_media_arg = kwargs[1]
+        link_media_arg = [x.strip() for x in link_media_arg.split(',')]
+
+        path_arg = kwargs[2]
+        path_arg = [x.strip() for x in path_arg.split(',')]
+        path_arg = get_valid_files(path_arg)
+
+        edit_text_arg = kwargs[25]
+        get_text_arg = kwargs[26]
+
+        kwargs = kwargs[3:]
+
+        media_batch = media_file_arg + link_media_arg + path_arg
+        media_batch = list(filter(lambda x: x != "", media_batch))
+        media_batch = media_batch if media_batch else [None]
+        logger.debug(str(media_batch))
+
+        if edit_text_arg or get_text_arg:
+            return self.multilingual_media_conversion(
+                media_batch[0], "", "", *kwargs
+            )
+
+        result = []
+        for media in media_batch:
+            # Call the nested function with the parameters
+            output_file = self.multilingual_media_conversion(
+                media, "", "", *kwargs
+            )
+            result.append(output_file)
+
+        return result
 
     def multilingual_media_conversion(
         self,
@@ -959,7 +1001,11 @@ def create_gui(theme, logs_in_gui=False):
                                 gr.update(visible=True, value=""),
                             )
 
-                    video_input = gr.File(label="VIDEO")
+                    video_input = gr.File(
+                        label="VIDEO",
+                        file_count="multiple",
+                        type="filepath",
+                    )
                     blink_input = gr.Textbox(
                         visible=False,
                         label=lg_conf["link_label"],
@@ -1396,7 +1442,9 @@ def create_gui(theme, logs_in_gui=False):
                     with gr.Row():
                         video_output = gr.File(
                             label=lg_conf["output_result_label"],
+                            file_count="multiple",
                             interactive=False,
+
                         )  # gr.Video()
                     with gr.Row():
                         sub_ori_output = gr.File(
@@ -1430,7 +1478,7 @@ def create_gui(theme, logs_in_gui=False):
                     gr.Examples(
                         examples=[
                             [
-                                "./assets/Video_main.mp4",
+                                ["./assets/Video_main.mp4"],
                                 "",
                                 "",
                                 "",
@@ -1474,7 +1522,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "Adjusting volumes and mixing audio",
                             ],
                         ],  # no update
-                        fn=SoniTr.multilingual_media_conversion,
+                        fn=SoniTr.batch_multilingual_media_conversion,
                         inputs=[
                             video_input,
                             blink_input,
@@ -2094,7 +2142,7 @@ def create_gui(theme, logs_in_gui=False):
 
         # Run translate text
         subs_button.click(
-            SoniTr.multilingual_media_conversion,
+            SoniTr.batch_multilingual_media_conversion,
             inputs=[
                 video_input,
                 blink_input,
@@ -2147,7 +2195,7 @@ def create_gui(theme, logs_in_gui=False):
 
         # Run translate tts and complete
         video_button.click(
-            SoniTr.multilingual_media_conversion,
+            SoniTr.batch_multilingual_media_conversion,
             inputs=[
                 video_input,
                 blink_input,

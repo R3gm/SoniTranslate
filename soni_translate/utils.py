@@ -165,6 +165,29 @@ def select_zip_and_rar_files(directory_path="downloads/"):
     return "Download complete"
 
 
+def is_video_file(string_path):
+    video_extensions = [
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".mkv",
+        ".wmv",
+        ".flv",
+        ".webm",
+        ".m4v",
+        ".mpeg",
+        ".mpg",
+        ".3gp",
+    ]
+
+    if any(
+        string_path.lower().endswith(ext) for ext in video_extensions
+    ) and os.path.exists(string_path):
+        return True
+    else:
+        return False
+
+
 def is_audio_file(string_path):
     audio_extensions = [
         ".mp3",
@@ -182,12 +205,39 @@ def is_audio_file(string_path):
 
     # Check if the string_path ends with any audio extension
     if any(
-        string_path.endswith(ext) for ext in audio_extensions
+        string_path.lower().endswith(ext) for ext in audio_extensions
     ) and os.path.exists(string_path):
         return True
     else:
         return False
 
+
+def get_audio_and_video_files(directory):
+    audio_files = []
+    video_files = []
+
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+
+        if os.path.isfile(item_path):
+
+            if is_audio_file(item):
+                audio_files.append(item_path)
+
+            elif is_video_file(item):
+                video_files.append(item_path)
+
+    return audio_files, video_files
+
+
+def get_valid_files(paths):
+    for i, path in enumerate(paths):
+        if os.path.isdir(path):
+            audio_files, video_files = get_audio_and_video_files(path)
+            paths.pop(i)
+            paths.extend(audio_files)
+            paths.extend(video_files)
+    return paths
 
 # =====================================
 # Download Manager
