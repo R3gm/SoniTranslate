@@ -37,6 +37,7 @@ from soni_translate.utils import (
     is_audio_file,
     copy_files,
     get_valid_files,
+    get_link_list,
 )
 from soni_translate.mdx_net import (
     UVR_MODELS,
@@ -245,12 +246,13 @@ class SoniTranslate(SoniTrCache):
         logger.info(f"Working in: {self.device}")
 
     def batch_multilingual_media_conversion(self, *kwargs):
-        logger.debug(str(kwargs))
+        # logger.debug(str(kwargs))
 
         media_file_arg = kwargs[0] if kwargs[0] is not None else []
 
         link_media_arg = kwargs[1]
         link_media_arg = [x.strip() for x in link_media_arg.split(',')]
+        link_media_arg = get_link_list(link_media_arg)
 
         path_arg = kwargs[2]
         path_arg = [x.strip() for x in path_arg.split(',')]
