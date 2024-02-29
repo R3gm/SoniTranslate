@@ -86,7 +86,9 @@ def document_preprocessor(file_path, is_string):
     elif file_ext == ".docx":
         text = docx_to_txt(file_path)
     elif file_ext == ".txt":
-        with open(file_path, "r") as file:
+        with open(
+            file_path, "r", encoding='utf-8', errors='replace'
+        ) as file:
             text = file.read()
     else:
         raise Exception("Unsupported file format")
@@ -103,7 +105,9 @@ def document_preprocessor(file_path, is_string):
     # file_name = os.path.splitext(os.path.basename(file_path))[0]
     txt_file_path = "./text_preprocessor.txt"
 
-    with open(txt_file_path, "w") as txt_file:
+    with open(
+        txt_file_path, "w", encoding='utf-8', errors='replace'
+    ) as txt_file:
         txt_file.write(text)
 
     return txt_file_path, text
@@ -176,7 +180,9 @@ def segments_to_plain_text(result_diarize):
     # file_name = os.path.splitext(os.path.basename(file_path))[0]
     txt_file_path = "./text_translation.txt"
 
-    with open(txt_file_path, "w") as txt_file:
+    with open(
+        txt_file_path, "w", encoding='utf-8', errors='replace'
+    ) as txt_file:
         txt_file.write(complete_text)
 
     return txt_file_path, complete_text

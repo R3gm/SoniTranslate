@@ -19,9 +19,9 @@ def audio_preprocessor(preview, base_audio, audio_wav, use_cuda=False):
             "Creating a preview video of 10 seconds, to disable "
             "this option, go to advanced settings and turn off preview."
         )
-        wav_ = f"ffmpeg -y -i {base_audio} -ss 00:00:20 -t 00:00:10 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+        wav_ = f'ffmpeg -y -i "{base_audio}" -ss 00:00:20 -t 00:00:10 -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav'
     else:
-        wav_ = f"ffmpeg -y -i {base_audio} -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav"
+        wav_ = f'ffmpeg -y -i "{base_audio}" -vn -acodec pcm_s16le -ar 44100 -ac 2 audio.wav'
 
     # Run cmd process
     sub_params = {

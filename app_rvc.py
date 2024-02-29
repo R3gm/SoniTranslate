@@ -261,6 +261,8 @@ class SoniTranslate(SoniTrCache):
         edit_text_arg = kwargs[25]
         get_text_arg = kwargs[26]
 
+        is_gui_arg = kwargs[-1]
+
         kwargs = kwargs[3:]
 
         media_batch = media_file_arg + link_media_arg + path_arg
@@ -273,6 +275,9 @@ class SoniTranslate(SoniTrCache):
                 media_batch[0], "", "", *kwargs
             )
 
+        if "SET_LIMIT" == os.getenv("DEMO"):
+            media_batch = [media_batch[0]]
+
         result = []
         for media in media_batch:
             # Call the nested function with the parameters
@@ -280,6 +285,9 @@ class SoniTranslate(SoniTrCache):
                 media, "", "", *kwargs
             )
             result.append(output_file)
+
+            if is_gui_arg and len(media_batch) > 1:
+                gr.Info(f"Done: {os.path.basename(output_file)}")
 
         return result
 
@@ -316,7 +324,7 @@ class SoniTranslate(SoniTrCache):
         diarization_model="pyannote_2.1",
         translate_process="google_translator_batch",
         subtitle_file=None,
-        output_type="video",
+        output_type="video (mp4)",
         voiceless_track=False,
         voice_imitation=False,
         voice_imitation_max_segments=3,
@@ -325,6 +333,7 @@ class SoniTranslate(SoniTrCache):
         voice_imitation_method="freevc",
         dereverb_automatic_xtts=True,
         divide_text_segments_by="",
+        soft_subtitles_to_video=False,
         burn_subtitles_to_video=False,
         enable_cache=False,
         is_gui=False,
@@ -604,6 +613,14 @@ class SoniTranslate(SoniTrCache):
                 output_format_subtitle,
                 TRANSLATE_AUDIO_TO,
             )
+            if output_format_subtitle != "srt":
+                self.sub_file = process_subtitles(
+                    self.result_source_lang,
+                    self.align_language,
+                    self.result_diarize,
+                    "srt",
+                    TRANSLATE_AUDIO_TO,
+                )
 
         if output_type == "subtitle":
             output = media_out(
@@ -708,10 +725,10 @@ class SoniTranslate(SoniTrCache):
                 try:
                     toneconverter(
                         copy.deepcopy(self.result_diarize),
-                        preprocessor_max_segments=voice_imitation_max_segments,
-                        remove_previous_process=voice_imitation_remove_previous,
-                        get_vocals_dereverb=voice_imitation_vocals_dereverb,
-                        method_vc=voice_imitation_method,
+                        voice_imitation_max_segments,
+                        voice_imitation_remove_previous,
+                        voice_imitation_vocals_dereverb,
+                        voice_imitation_method,
                     )
                 except Exception as error:
                     logger.error(str(error))
@@ -789,12 +806,14 @@ class SoniTranslate(SoniTrCache):
                     logger.error(str(error_mix))
                     run_command(command_volume_mix)
 
-        if output_type == "audio" or is_audio_file(media_file):
+        if "audio" in output_type or is_audio_file(media_file):
             output = media_out(
                 media_file,
                 TRANSLATE_AUDIO_TO,
                 video_output_name,
-                "mp3",
+                "wav" if "wav" in output_type else (
+                    "ogg" if "ogg" in output_type else "mp3"
+                ),
                 file_obj=mix_audio_file,
             )
             logger.info(f"Done: {output}")
@@ -803,12 +822,15 @@ class SoniTranslate(SoniTrCache):
         hash_base_video_file = get_hash(base_video_file)
 
         if burn_subtitles_to_video:
-            hashvideo_text = [hash_base_video_file, [seg["text"] for seg in self.result_diarize["segments"]]]
+            hashvideo_text = [
+                hash_base_video_file,
+                [seg["text"] for seg in self.result_diarize["segments"]]
+            ]
             if self.burn_subs_id != hashvideo_text:
                 try:
                     logger.info("Burn subtitles")
                     remove_files(vid_subs)
-                    command = f"ffmpeg -i {base_video_file} -y -vf subtitles={self.sub_file} {vid_subs}"
+                    command = f"ffmpeg -i {base_video_file} -y -vf subtitles=sub_tra.srt {vid_subs}"
                     run_command(command)
                     base_video_file = vid_subs
                     self.burn_subs_id = hashvideo_text
@@ -832,8 +854,9 @@ class SoniTranslate(SoniTrCache):
             media_file,
             TRANSLATE_AUDIO_TO,
             video_output_name,
-            "mp4",
+            "mkv" if "mkv" in output_type else "mp4",
             file_obj=video_output_file,
+            soft_subtitles=soft_subtitles_to_video,
         )
         logger.info(f"Done: {output}")
 
@@ -855,7 +878,7 @@ class SoniTranslate(SoniTrCache):
         progress=gr.Progress(),
     ):
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
-        if translate_process != "disable translation":
+        if translate_process != "disable_translation":
             TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         else:
             TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
@@ -893,7 +916,7 @@ class SoniTranslate(SoniTrCache):
 
         if (
             output_type == "text"
-            and translate_process == "disable translation"
+            and translate_process == "disable_translation"
         ):
             return result_file_path
 
@@ -904,7 +927,7 @@ class SoniTranslate(SoniTrCache):
                 "CPU errors. No limitations with GPU.\n"
             )
 
-        if translate_process != "disable translation":
+        if translate_process != "disable_translation":
             # chunks text for translation
             result_diarize = plain_text_to_segments(result_text, 1700)
             prog_disp("Translating...", 0.30, is_gui, progress=progress)
@@ -1029,11 +1052,11 @@ def create_gui(theme, logs_in_gui=False):
                         outputs=[video_input, blink_input, directory_input],
                     )
 
-                    link = gr.HTML()
+                    gr.HTML()
 
                     SOURCE_LANGUAGE = gr.Dropdown(
                         LANGUAGES_LIST,
-                        value="Automatic detection",
+                        value=LANGUAGES_LIST[0],
                         label=lg_conf["sl_label"],
                         info=lg_conf["sl_info"],
                     )
@@ -1044,7 +1067,8 @@ def create_gui(theme, logs_in_gui=False):
                         info=lg_conf["tat_info"],
                     )
 
-                    line_ = gr.HTML("<hr></h2>")
+                    gr.HTML("<hr></h2>")
+
                     gr.Markdown(lg_conf["num_speakers"])
                     MAX_TTS = 6
                     min_speakers = gr.Slider(
@@ -1235,9 +1259,11 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             acceleration_rate_regulation_gui = gr.Checkbox(
                                 False,
-                                label="Acceleration Rate Regulation",
-                                info="Acceleration Rate Regulation: Adjusts durations for smoother acceleration between segments, factoring in speaker continuity and next-start timing.",
+                                label=lg_conf["acc_rate_label"],
+                                info=lg_conf["acc_rate_info"],
                             )
+
+                            gr.HTML("<hr></h2>")
 
                             audio_mix_options = [
                                 "Mixing audio with sidechain compression",
@@ -1251,7 +1277,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             volume_original_mix = gr.Slider(
                                 label=lg_conf["vol_ori"],
-                                info="for <Adjusting volumes and mixing audio>",
+                                info="for Adjusting volumes and mixing audio",
                                 value=0.25,
                                 step=0.05,
                                 minimum=0.0,
@@ -1261,7 +1287,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             volume_translated_mix = gr.Slider(
                                 label=lg_conf["vol_tra"],
-                                info="for <Adjusting volumes and mixing audio>",
+                                info="for Adjusting volumes and mixing audio",
                                 value=1.80,
                                 step=0.05,
                                 minimum=0.0,
@@ -1299,6 +1325,10 @@ def create_gui(theme, logs_in_gui=False):
                                 sub_type_options,
                                 value=sub_type_options[0],
                                 label=lg_conf["sub_type"],
+                            )
+                            soft_subtitles_to_video_gui = gr.Checkbox(
+                                label=lg_conf["soft_subs_label"],
+                                info=lg_conf["soft_subs_info"],
                             )
                             burn_subtitles_to_video_gui = gr.Checkbox(
                                 label=lg_conf["burn_subs_label"],
@@ -1370,8 +1400,11 @@ def create_gui(theme, logs_in_gui=False):
 
                             gr.HTML("<hr></h2>")
                             main_output_type_opt = [
-                                "video",
-                                "audio",
+                                "video (mp4)",
+                                "video (mkv)",
+                                "audio (mp3)",
+                                "audio (ogg)",
+                                "audio (wav)",
                                 "subtitle",
                             ]
                             main_output_type = gr.Dropdown(
@@ -1391,8 +1424,8 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             enable_cache_gui = gr.Checkbox(
                                 True,
-                                label="Retrieve Progress",
-                                info="Retrieve Progress: Continue process from last checkpoint.",
+                                label=lg_conf["cache_label"],
+                                info=lg_conf["cache_info"],
                             )
                             PREVIEW = gr.Checkbox(
                                 label="Preview", info=lg_conf["preview_info"]
@@ -1461,7 +1494,8 @@ def create_gui(theme, logs_in_gui=False):
                             interactive=False,
                         )
 
-                    line_ = gr.HTML("<hr></h2>")
+                    gr.HTML("<hr></h2>")
+
                     if (
                         os.getenv("YOUR_HF_TOKEN") is None
                         or os.getenv("YOUR_HF_TOKEN") == ""
@@ -1622,7 +1656,7 @@ def create_gui(theme, logs_in_gui=False):
                                 ],
                             )
 
-                            link = gr.HTML()
+                            gr.HTML()
 
                             tts_documents = gr.Dropdown(
                                 list(
@@ -1637,7 +1671,7 @@ def create_gui(theme, logs_in_gui=False):
                                 interactive=True,
                             )
 
-                            link = gr.HTML()
+                            gr.HTML()
 
                             docs_SOURCE_LANGUAGE = gr.Dropdown(
                                 LANGUAGES_LIST[1:],
@@ -1668,7 +1702,7 @@ def create_gui(theme, logs_in_gui=False):
                                         label="Translation process",
                                     )
 
-                                    line_ = gr.HTML("<hr></h2>")
+                                    gr.HTML("<hr></h2>")
 
                                     docs_output_type_opt = [
                                         "audio",
@@ -2189,6 +2223,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
                 divide_text_segments_by_gui,
+                soft_subtitles_to_video_gui,
                 burn_subtitles_to_video_gui,
                 enable_cache_gui,
                 is_gui_dummy_check,
@@ -2242,6 +2277,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
                 divide_text_segments_by_gui,
+                soft_subtitles_to_video_gui,
                 burn_subtitles_to_video_gui,
                 enable_cache_gui,
                 is_gui_dummy_check,
@@ -2302,7 +2338,11 @@ def create_parser():
         "--theme",
         type=str,
         default="Taithrah/Minimal",
-        help="Specify the theme; find themes in https://huggingface.co/spaces/gradio/theme-gallery; Example: --theme aliabid94/new-theme",
+        help=(
+            "Specify the theme; find themes in "
+            "https://huggingface.co/spaces/gradio/theme-gallery;"
+            " Example: --theme aliabid94/new-theme"
+        ),
     )
     parser.add_argument(
         "--public_url",
@@ -2320,7 +2360,10 @@ def create_parser():
         "--verbosity_level",
         type=str,
         default="info",
-        help="Set logger verbosity level:  debug, info, warning, error or critical",
+        help=(
+            "Set logger verbosity level: "
+            "debug, info, warning, error, or critical"
+        ),
     )
     parser.add_argument(
         "--language",

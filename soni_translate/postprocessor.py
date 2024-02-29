@@ -1,4 +1,4 @@
-from .utils import remove_files
+from .utils import remove_files, run_command
 from .logging_setup import logger
 import unicodedata
 import shutil
@@ -43,14 +43,36 @@ def sanitize_file_name(file_name):
     return sanitized_name
 
 
-def get_output_file(original_file, new_file_name):
+def get_output_file(original_file, new_file_name, soft_subtitles):
 
     directory, filename = os.path.split(original_file)
 
     new_file_path = os.path.join(directory, new_file_name)
     remove_files(new_file_path)
 
-    shutil.copy2(original_file, new_file_path)
+    cm = None
+    if soft_subtitles and original_file.endswith(".mp4"):
+        if new_file_path.endswith(".mp4"):
+            cm = f'ffmpeg -y -i "{original_file}" -i sub_tra.srt -i sub_ori.srt -map 0:v -map 0:a -map 1 -map 2 -c:v copy -c:a copy -c:s mov_text "{new_file_path}"'
+        else:
+            cm = f'ffmpeg -y -i "{original_file}" -i sub_tra.srt -i sub_ori.srt -map 0:v -map 0:a -map 1 -map 2 -c:v copy -c:a copy -c:s srt -movflags use_metadata_tags -map_metadata 0 "{new_file_path}"'
+    elif new_file_path.endswith(".mkv"):
+        cm = f'ffmpeg -i "{original_file}" -c:v copy -c:a copy "{new_file_path}"'
+    elif new_file_path.endswith(".wav"):
+        cm = f'ffmpeg -y -i "{original_file}" -acodec pcm_s16le -ar 44100 -ac 2 "{new_file_path}"'
+    elif new_file_path.endswith(".ogg"):
+        cm = f'ffmpeg -i "{original_file}" -c:a libvorbis "{new_file_path}"'
+
+    if cm:
+        try:
+            run_command(cm)
+        except Exception as error:
+            logger.error(str(error))
+            remove_files(new_file_path)
+            shutil.copy2(original_file, new_file_path)
+    else:
+        shutil.copy2(original_file, new_file_path)
+
     return os.path.join(os.getcwd(), new_file_path)
 
 
@@ -60,6 +82,7 @@ def media_out(
     media_out_name="",
     extension="mp4",
     file_obj="video_dub.mp4",
+    soft_subtitles=False,
 ):
     if not media_out_name:
         if os.path.exists(media_file):
@@ -69,4 +92,4 @@ def media_out(
 
     f_name = f"{sanitize_file_name(media_out_name)}__{lang_code}.{extension}"
 
-    return get_output_file(file_obj, f_name)
+    return get_output_file(file_obj, f_name, soft_subtitles)
