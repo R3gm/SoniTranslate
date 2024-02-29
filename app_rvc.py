@@ -614,7 +614,7 @@ class SoniTranslate(SoniTrCache):
                 TRANSLATE_AUDIO_TO,
             )
             if output_format_subtitle != "srt":
-                self.sub_file = process_subtitles(
+                _ = process_subtitles(
                     self.result_source_lang,
                     self.align_language,
                     self.result_diarize,
