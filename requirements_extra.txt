@@ -12,7 +12,6 @@ optimum
 sentencepiece
 srt
 git+https://github.com/R3gm/openvoice_package.git@lite
-git+https://github.com/SYSTRAN/faster-whisper.git@0920672
 # Documents
 PyPDF2
 python-docx
