@@ -43,11 +43,18 @@ def sanitize_file_name(file_name):
     return sanitized_name
 
 
-def get_output_file(original_file, new_file_name, soft_subtitles):
-
+def get_output_file(
+        original_file,
+        new_file_name,
+        soft_subtitles,
+        output_directory="",
+):
     directory, filename = os.path.split(original_file)
 
-    new_file_path = os.path.join(directory, new_file_name)
+    if output_directory and os.path.isdir(output_directory):
+        new_file_path = os.path.join(output_directory, new_file_name)
+    else:
+        new_file_path = os.path.join(directory, "outputs", new_file_name)
     remove_files(new_file_path)
 
     cm = None
@@ -86,10 +93,12 @@ def media_out(
 ):
     if not media_out_name:
         if os.path.exists(media_file):
-            media_out_name = get_no_ext_filename(media_file)
+            base_name = get_no_ext_filename(media_file)
         else:
-            media_out_name, _ = get_video_info(media_file)
+            base_name, _ = get_video_info(media_file)
 
-    f_name = f"{sanitize_file_name(media_out_name)}__{lang_code}.{extension}"
+        media_out_name = f"{base_name}__{lang_code}"
+
+    f_name = f"{sanitize_file_name(media_out_name)}.{extension}"
 
     return get_output_file(file_obj, f_name, soft_subtitles)

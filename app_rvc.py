@@ -78,6 +78,7 @@ directories = [
     "_XTTS_",
     f"audio2{os.sep}audio",
     "audio",
+    "outputs",
 ]
 [
     os.makedirs(directory)
