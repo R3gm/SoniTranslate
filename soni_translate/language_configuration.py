@@ -62,7 +62,9 @@ LANGUAGES = {
     "Sundanese (su)": "su",
     # "Swahili (sw)": "sw", # error aling
 }
-LANGUAGES_LIST = list(LANGUAGES.keys())
+
+BASE_L_LIST = LANGUAGES.keys()
+LANGUAGES_LIST = [list(BASE_L_LIST)[0]] + sorted(list(BASE_L_LIST)[1:])
 
 EXTRA_ALIGN = {
     "id": "indonesian-nlp/wav2vec2-large-xlsr-indonesian",

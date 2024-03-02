@@ -1,6 +1,8 @@
 import os, zipfile, rarfile, shutil, subprocess, shlex, sys # noqa
 from .logging_setup import logger
 from urllib.parse import urlparse
+from IPython.utils import capture
+import re
 
 
 def run_command(command):
@@ -165,6 +167,29 @@ def select_zip_and_rar_files(directory_path="downloads/"):
     return "Download complete"
 
 
+def is_video_file(string_path):
+    video_extensions = [
+        ".mp4",
+        ".avi",
+        ".mov",
+        ".mkv",
+        ".wmv",
+        ".flv",
+        ".webm",
+        ".m4v",
+        ".mpeg",
+        ".mpg",
+        ".3gp",
+    ]
+
+    if any(
+        string_path.lower().endswith(ext) for ext in video_extensions
+    ) and os.path.exists(string_path):
+        return True
+    else:
+        return False
+
+
 def is_audio_file(string_path):
     audio_extensions = [
         ".mp3",
@@ -182,12 +207,79 @@ def is_audio_file(string_path):
 
     # Check if the string_path ends with any audio extension
     if any(
-        string_path.endswith(ext) for ext in audio_extensions
+        string_path.lower().endswith(ext) for ext in audio_extensions
     ) and os.path.exists(string_path):
         return True
     else:
         return False
 
+
+def get_audio_and_video_files(directory):
+    audio_files = []
+    video_files = []
+
+    for item in os.listdir(directory):
+        item_path = os.path.join(directory, item)
+
+        if os.path.isfile(item_path):
+
+            if is_audio_file(item_path):
+                audio_files.append(item_path)
+
+            elif is_video_file(item_path):
+                video_files.append(item_path)
+
+    logger.info(
+        f"Files in path ({directory}): {str(audio_files + video_files)}"
+    )
+
+    return audio_files, video_files
+
+
+def get_valid_files(paths):
+    valid_paths = []
+    for path in paths:
+        if os.path.isdir(path):
+            audio_files, video_files = get_audio_and_video_files(path)
+            valid_paths.extend(audio_files)
+            valid_paths.extend(video_files)
+        else:
+            valid_paths.append(path)
+
+    return valid_paths
+
+
+def extract_video_links(link):
+
+    params_dlp = {"quiet": False, "no_warnings": True, "noplaylist": False}
+
+    try:
+        from yt_dlp import YoutubeDL
+        with capture.capture_output() as cap:
+            with YoutubeDL(params_dlp) as ydl:
+                info_dict = ydl.extract_info( # noqa
+                    link, download=False, process=True
+                )
+
+        urls = re.findall(r'\[youtube\] Extracting URL: (.*?)\n', cap.stdout)
+        logger.info(f"List of videos in ({link}): {str(urls)}")
+        del cap
+    except Exception as error:
+        logger.error(f"{link} >> {str(error)}")
+        urls = [link]
+
+    return urls
+
+
+def get_link_list(urls):
+    valid_links = []
+    for url_video in urls:
+        if "youtube.com" in url_video and "/watch?v=" not in url_video:
+            url_links = extract_video_links(url_video)
+            valid_links.extend(url_links)
+        else:
+            valid_links.append(url_video)
+    return valid_links
 
 # =====================================
 # Download Manager
