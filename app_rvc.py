@@ -38,6 +38,7 @@ from soni_translate.utils import (
     copy_files,
     get_valid_files,
     get_link_list,
+    remove_directory_contents,
 )
 from soni_translate.mdx_net import (
     UVR_MODELS,
@@ -69,7 +70,6 @@ import argparse
 import time
 import hashlib
 
-# Custom voice
 directories = [
     "downloads",
     "logs",
@@ -221,6 +221,9 @@ class SoniTrCache:
             # Clear cache
             self.cache = {key: [] for key in self.cache}
             self.cache["media"] = [[]]
+
+            remove_directory_contents("outputs")
+
             logger.info("Cache flushed")
 
 
