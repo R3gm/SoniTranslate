@@ -222,8 +222,6 @@ class SoniTrCache:
             self.cache = {key: [] for key in self.cache}
             self.cache["media"] = [[]]
 
-            remove_directory_contents("outputs")
-
             logger.info("Cache flushed")
 
 
@@ -273,6 +271,8 @@ class SoniTranslate(SoniTrCache):
         media_batch = list(filter(lambda x: x != "", media_batch))
         media_batch = media_batch if media_batch else [None]
         logger.debug(str(media_batch))
+
+        remove_directory_contents("outputs")
 
         if edit_text_arg or get_text_arg:
             return self.multilingual_media_conversion(
