@@ -434,7 +434,7 @@ UVR_MODELS = [
     "UVR-MDX-NET-Voc_FT.onnx",
     "UVR_MDXNET_KARA_2.onnx",
     "Reverb_HQ_By_FoxJoy.onnx",
-    "UVR-MDX-NET-Inst_HQ_3.onnx",
+    "UVR-MDX-NET-Inst_HQ_4.onnx",
 ]
 BASE_DIR = "."  # os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 mdxnet_models_dir = os.path.join(BASE_DIR, "mdx_models")
@@ -494,7 +494,7 @@ def process_uvr_task(
         return run_mdx(
             mdx_model_params,
             song_output_dir,
-            os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_3.onnx"),
+            os.path.join(mdxnet_models_dir, "UVR-MDX-NET-Inst_HQ_4.onnx"),
             orig_song_path,
             suffix="Voiceless",
             denoise=False,

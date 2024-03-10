@@ -286,6 +286,20 @@
         "mdx_n_fft_scale_set": 7680,
         "primary_stem": "Vocals"
     },
+    "0f2a6bc5b49d87d64728ee40e23bceb1": {
+        "compensate": 1.019,
+        "mdx_dim_f_set": 2560,
+        "mdx_dim_t_set": 8,
+        "mdx_n_fft_scale_set": 5120,
+        "primary_stem": "Instrumental"
+    },
+    "b02be2d198d4968a121030cf8950b492": {
+        "compensate": 1.020,
+        "mdx_dim_f_set": 2560,
+        "mdx_dim_t_set": 8,
+        "mdx_n_fft_scale_set": 5120,
+        "primary_stem": "No Crowd"
+    },
     "2154254ee89b2945b97a7efed6e88820": {
         "config_yaml": "model_2_stem_061321.yaml"
     },
