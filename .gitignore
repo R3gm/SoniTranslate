@@ -157,3 +157,25 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Ignore
+sub_tra.*
+sub_ori.*
+*.mp3
+*.mp4
+*.ogg
+*.wav
+*.mkv
+list.txt
+text_preprocessor.txt
+text_translation.txt
+*.srt
+mdx_models/*.onnx
+_XTTS_/
+downloads/
+logs/
+weights/
+clean_song_output/
+audio2/
+audio/
+outputs/

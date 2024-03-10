@@ -803,6 +803,26 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
 # =====================================
 
 
+def find_spkr(pattern, speaker_to_voice, segments):
+    return [
+        speaker
+        for speaker, voice in speaker_to_voice.items()
+        if pattern.match(voice) and any(
+            segment["speaker"] == speaker for segment in segments
+        )
+    ]
+
+
+def filter_by_speaker(speakers, segments):
+    return {
+        "segments": [
+            segment
+            for segment in segments
+            if segment["speaker"] in speakers
+        ]
+    }
+
+
 def audio_segmentation_to_voice(
     result_diarize,
     TRANSLATE_AUDIO_TO,
@@ -836,7 +856,8 @@ def audio_segmentation_to_voice(
         if "speaker" not in segment:
             segment["speaker"] = "SPEAKER_00"
             logger.warning(
-                f"NO SPEAKER DETECT IN SEGMENT: First TTS will be used in the segment time {segment['start'], segment['text']}"
+                "NO SPEAKER DETECT IN SEGMENT: First TTS will be used in the"
+                f" segment time {segment['start'], segment['text']}"
             )
         # Assign the TTS name
         segment["tts_name"] = speaker_to_voice[segment["speaker"]]
@@ -848,68 +869,22 @@ def audio_segmentation_to_voice(
     pattern_coqui = re.compile(r".+\.(wav|mp3|ogg|m4a)$")
     pattern_vits_onnx = re.compile(r".* VITS-onnx$")
 
-    speakers_edge = [
-        speaker
-        for speaker, voice in speaker_to_voice.items()
-        if pattern_edge.match(voice)
-    ]
-    speakers_bark = [
-        speaker
-        for speaker, voice in speaker_to_voice.items()
-        if pattern_bark.match(voice)
-    ]
-    speakers_vits = [
-        speaker
-        for speaker, voice in speaker_to_voice.items()
-        if pattern_vits.match(voice)
-    ]
-    speakers_coqui = [
-        speaker
-        for speaker, voice in speaker_to_voice.items()
-        if pattern_coqui.match(voice)
-    ]
-    speakers_vits_onnx = [
-        speaker
-        for speaker, voice in speaker_to_voice.items()
-        if pattern_vits_onnx.match(voice)
-    ]
+    all_segments = result_diarize["segments"]
+
+    speakers_edge = find_spkr(pattern_edge, speaker_to_voice, all_segments)
+    speakers_bark = find_spkr(pattern_bark, speaker_to_voice, all_segments)
+    speakers_vits = find_spkr(pattern_vits, speaker_to_voice, all_segments)
+    speakers_coqui = find_spkr(pattern_coqui, speaker_to_voice, all_segments)
+    speakers_vits_onnx = find_spkr(
+        pattern_vits_onnx, speaker_to_voice, all_segments
+    )
 
     # Filter method in segments
-    filtered_edge = {
-        "segments": [
-            segment
-            for segment in result_diarize["segments"]
-            if segment["speaker"] in speakers_edge
-        ]
-    }
-    filtered_bark = {
-        "segments": [
-            segment
-            for segment in result_diarize["segments"]
-            if segment["speaker"] in speakers_bark
-        ]
-    }
-    filtered_vits = {
-        "segments": [
-            segment
-            for segment in result_diarize["segments"]
-            if segment["speaker"] in speakers_vits
-        ]
-    }
-    filtered_coqui = {
-        "segments": [
-            segment
-            for segment in result_diarize["segments"]
-            if segment["speaker"] in speakers_coqui
-        ]
-    }
-    filtered_vits_onnx = {
-        "segments": [
-            segment
-            for segment in result_diarize["segments"]
-            if segment["speaker"] in speakers_vits_onnx
-        ]
-    }
+    filtered_edge = filter_by_speaker(speakers_edge, all_segments)
+    filtered_bark = filter_by_speaker(speakers_bark, all_segments)
+    filtered_vits = filter_by_speaker(speakers_vits, all_segments)
+    filtered_coqui = filter_by_speaker(speakers_coqui, all_segments)
+    filtered_vits_onnx = filter_by_speaker(speakers_vits_onnx, all_segments)
 
     # Infer
     if filtered_edge["segments"]:
