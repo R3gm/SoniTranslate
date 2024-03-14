@@ -161,7 +161,7 @@ def diarize_speech(
                         " You need to have an account on Hugging Face and "
                         "accept the license to use the models: "
                         "https://huggingface.co/pyannote/speaker-diarization "
-                        "and https://huggingface.co/pyannote/segmentation. "
+                        "and https://huggingface.co/pyannote/segmentation "
                         "Get your KEY TOKEN here: https://hf.co/settings/tokens"
                     )
                 elif model_name == diarization_models["pyannote_3.1"]:
@@ -169,7 +169,7 @@ def diarize_speech(
                         "New Licence Pyannote 3.1: You need to have an account"
                         " on Hugging Face and accept the license to use the "
                         "models: https://huggingface.co/pyannote/speaker-diarization-3.1"
-                        " and https://huggingface.co/pyannote/segmentation-3.0"
+                        " and https://huggingface.co/pyannote/segmentation-3.0 "
                     )
             else:
                 raise error
