@@ -151,10 +151,10 @@ def diarize_speech(
                 )
                 del cap
         except Exception as error:
-            error = str(error)
+            error_str = str(error)
             gc.collect()
             torch.cuda.empty_cache()  # noqa
-            if "'NoneType' object has no attribute 'to'" in error:
+            if "'NoneType' object has no attribute 'to'" in error_str:
                 if model_name == diarization_models["pyannote_2.1"]:
                     raise ValueError(
                         "Accept the license agreement for using Pyannote 2.1."
