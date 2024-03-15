@@ -406,6 +406,7 @@ class SoniTranslate(SoniTrCache):
             )
 
         if not media_file and subtitle_file:
+            diarization_model = "disable"
             media_file = "audio_support.wav"
             if not get_video_from_text_json:
                 remove_files(media_file)
