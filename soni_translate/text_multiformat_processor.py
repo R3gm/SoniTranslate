@@ -5,6 +5,12 @@ import srt
 import re
 import os
 import copy
+import string
+
+punctuation_list = list(
+    string.punctuation + "¡¿«»„”“”‚‘’「」『』《》（）【】〈〉〔〕〖〗〘〙〚〛⸤⸥⸨⸩"
+)
+symbol_list = punctuation_list + ["", "..", "..."]
 
 
 def extract_from_srt(file_path):
@@ -17,18 +23,51 @@ def extract_from_srt(file_path):
     return srt_content_list
 
 
+def clean_text(text):
+
+    # Remove content within square brackets
+    text = re.sub(r'\[.*?\]', '', text)
+    # Add pattern to remove content within <comment> tags
+    text = re.sub(r'<comment>.*?</comment>', '', text)
+    # Remove HTML tags
+    text = re.sub(r'<.*?>', '', text)
+    # Remove "♫" and "♪" content
+    text = re.sub(r'♫.*?♫', '', text)
+    text = re.sub(r'♪.*?♪', '', text)
+    # Replace newline characters with an empty string
+    text = text.replace("\n", ". ")
+    # Remove double quotation marks
+    text = text.replace('"', '')
+    # Collapse multiple spaces and replace with a single space
+    text = re.sub(r"\s+", " ", text)
+    # Normalize spaces around periods
+    text = re.sub(r"[\s\.]+(?=\s)", ". ", text)
+    # Check if there are ♫ or ♪ symbols present
+    if '♫' in text or '♪' in text:
+        return ""
+
+    text = text.strip()
+
+    # Valid text
+    return text if text not in symbol_list else ""
+
+
 def srt_file_to_segments(file_path, speaker=False):
     srt_content_list = extract_from_srt(file_path)
 
     segments = []
     for segment in srt_content_list:
-        segments.append(
-            {
-                "text": str(segment.content),
-                "start": float(segment.start.total_seconds()),
-                "end": float(segment.end.total_seconds()),
-            }
-        )
+
+        text = clean_text(str(segment.content))
+
+        if text:
+            segments.append(
+                {
+                    "text": text,
+                    "start": float(segment.start.total_seconds()),
+                    "end": float(segment.end.total_seconds()),
+                }
+            )
 
     if not segments:
         raise Exception("No data found in srt subtitle file")
