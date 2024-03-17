@@ -203,6 +203,12 @@ def is_audio_file(string_path):
         ".m4a",
         ".alac",
         ".pcm",
+        ".opus",
+        ".ape",
+        ".amr",
+        ".ac3",
+        ".vox",
+        ".caf",
     ]
 
     # Check if the string_path ends with any audio extension
