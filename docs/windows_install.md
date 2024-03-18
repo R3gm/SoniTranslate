@@ -71,18 +71,21 @@ pip install onnxruntime-gpu
 
 After installing FFmpeg, you can install these optional packages.
 
-
-[Piper TTS](https://github.com/rhasspy/piper) is a fast, local neural text to speech system that sounds great and is optimized for the Raspberry Pi 4. Piper is used in a variety of projects. Voices are trained with VITS and exported to the onnxruntime.
-
-```
-pip install -q piper-tts==1.2.0
-```
-
 [Coqui XTTS](https://github.com/coqui-ai/TTS) is a text-to-speech (TTS) model that lets you generate realistic voices in different languages. It can clone voices with just a short audio clip, even speak in a different language! It's like having a personal voice mimic for any text you need spoken.
 
 ```
 pip install -q -r requirements_xtts.txt
 pip install -q TTS==0.21.1  --no-deps
+```
+
+[Piper TTS](https://github.com/rhasspy/piper) is a fast, local neural text to speech system that sounds great and is optimized for the Raspberry Pi 4. Piper is used in a variety of projects. Voices are trained with VITS and exported to the onnxruntime.
+
+🚧 For Windows users, it's important to note that the Python module piper-tts is not fully supported on this operating system. While it works smoothly on Linux, Windows compatibility is currently experimental. If you still wish to install it on Windows, you can follow this experimental method:
+
+```
+pip install https://github.com/R3gm/piper-phonemize/releases/download/1.2.0/piper_phonemize-1.2.0-cp310-cp310-win_amd64.whl
+pip install sherpa-onnx==1.9.12
+pip install piper-tts==1.2.0 --no-deps
 ```
 
 7. Setting your [Hugging Face token](https://huggingface.co/settings/tokens) as an environment variable in quotes:
