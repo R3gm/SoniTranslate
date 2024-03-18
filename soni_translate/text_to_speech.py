@@ -22,6 +22,7 @@ from pathlib import Path
 
 # from scipy.io.wavfile import write as write_wav
 import soundfile as sf
+import platform
 import logging
 from .logging_setup import logger
 
@@ -681,6 +682,10 @@ def load_piper_model(
             cuda = False
     except Exception as error:
         raise TTS_OperationError(f"onnxruntime error: {str(error)}")
+
+    # Disable CUDA in Windows
+    if platform.system() == "Windows":
+        cuda = False
 
     if not download_dir:
         # Download to first data directory by default
