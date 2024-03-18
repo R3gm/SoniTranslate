@@ -85,6 +85,13 @@ pip install -q -r requirements_xtts.txt
 pip install -q TTS==0.21.1  --no-deps
 ```
 
+7. Setting your [Hugging Face token](https://huggingface.co/settings/tokens) as an environment variable in quotes:
+
+```
+conda env config vars set YOUR_HF_TOKEN="YOUR_HUGGING_FACE_TOKEN_HERE"
+conda deactivate
+```
+
 
 ### Running SoniTranslate
 
@@ -92,12 +99,6 @@ To run SoniTranslate locally, make sure the `sonitr` conda environment is active
 
 ```
 conda activate sonitr
-```
-
-Setting your Hugging Face token as an environment variable in Linux:
-
-```
-export YOUR_HF_TOKEN="YOUR_HUGGING_FACE_TOKEN"
 ```
 
 Then navigate to the `SoniTranslate` folder and run either the `app_rvc.py`
