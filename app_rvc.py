@@ -510,11 +510,14 @@ class SoniTranslate(SoniTrCache):
                 self.align_language = self.result["language"]
                 if not subtitle_file:
                     prog_disp("Aligning...", 0.45, is_gui, progress=progress)
-                    self.result = align_speech(audio, self.result)
-                    logger.debug(
-                        "Align complete, "
-                        f"segments count {len(self.result['segments'])}"
-                    )
+                    try:
+                        self.result = align_speech(audio, self.result)
+                        logger.debug(
+                            "Align complete, "
+                            f"segments count {len(self.result['segments'])}"
+                        )
+                    except Exception as error:
+                        logger.error(str(error))
 
             if self.result["segments"] == []:
                 raise ValueError("No active speech found in audio")
