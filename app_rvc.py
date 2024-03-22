@@ -325,6 +325,7 @@ class SoniTranslate(SoniTrCache):
         get_translated_text=False,
         get_video_from_text_json=False,
         text_json="{}",
+        avoid_overlap=False,
         diarization_model="pyannote_2.1",
         translate_process="google_translator_batch",
         subtitle_file=None,
@@ -712,7 +713,8 @@ class SoniTranslate(SoniTrCache):
             os.getenv("VOICES_MODELS"),
             cc_model_paths,
             cc_index_values,
-            cc_transpose_values
+            cc_transpose_values,
+            avoid_overlap
         ], {
             "valid_speakers": self.valid_speakers
         }):
@@ -765,7 +767,11 @@ class SoniTranslate(SoniTrCache):
             )
             remove_files(dub_audio_file)
             create_translated_audio(
-                self.result_diarize, audio_files, dub_audio_file
+                self.result_diarize,
+                audio_files,
+                dub_audio_file,
+                False,
+                avoid_overlap,
             )
 
         # Voiceless track, change with file
@@ -1269,6 +1275,11 @@ def create_gui(theme, logs_in_gui=False):
                                 False,
                                 label=lg_conf["acc_rate_label"],
                                 info=lg_conf["acc_rate_info"],
+                            )
+                            avoid_overlap_gui = gr.Checkbox(
+                                False,
+                                label="Overlap Reduction",
+                                info="Overlap Reduction: Ensures segments don't overlap by adjusting start times based on previous end times; could disrupt synchronization.",
                             )
 
                             gr.HTML("<hr></h2>")
@@ -2219,6 +2230,7 @@ def create_gui(theme, logs_in_gui=False):
                 edit_sub_check,  # TRUE BY DEFAULT
                 dummy_false_check,  # dummy false
                 subs_edit_space,
+                avoid_overlap_gui,
                 diarization_process_dropdown,
                 translate_process_dropdown,
                 input_srt,
@@ -2273,6 +2285,7 @@ def create_gui(theme, logs_in_gui=False):
                 dummy_false_check,
                 edit_sub_check,
                 subs_edit_space,
+                avoid_overlap_gui,
                 diarization_process_dropdown,
                 translate_process_dropdown,
                 input_srt,
