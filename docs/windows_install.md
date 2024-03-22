@@ -54,10 +54,16 @@ cd SoniTranslate
 3. Install CUDA Toolkit 11.8.0
 
 ```
-conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit
+conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit -y
 ```
 
-4. Install required packages:
+4. Install cuDNN
+
+```
+conda install -c conda-forge cudnn -y
+```
+
+5. Install required packages:
 
 ```
 pip install -r requirements_base.txt -v
@@ -65,9 +71,9 @@ pip install -r requirements_extra.txt -v
 pip install onnxruntime-gpu
 ```
 
-5. Install [ffmpeg](https://ffmpeg.org/download.html). FFmpeg is a free software project that produces libraries and programs for handling multimedia data. You will need it to process audio and video files. You can install ffmpeg with Anaconda by running `conda install -y ffmpeg` in your terminal. If you have trouble installing ffmpeg via Anaconda, you can use the following link instead: (https://ffmpeg.org/ffmpeg.html). Once it is installed, make sure it is in your PATH by running `ffmpeg -h` in your terminal. If you don't get an error message, you're good to go.
+6. Install [ffmpeg](https://ffmpeg.org/download.html). FFmpeg is a free software project that produces libraries and programs for handling multimedia data. You will need it to process audio and video files. You can install ffmpeg with Anaconda by running `conda install -y ffmpeg` in your terminal. If you have trouble installing ffmpeg via Anaconda, you can use the following link instead: (https://ffmpeg.org/ffmpeg.html). Once it is installed, make sure it is in your PATH by running `ffmpeg -h` in your terminal. If you don't get an error message, you're good to go.
 
-6. Optional install:
+7. Optional install:
 
 After installing FFmpeg, you can install these optional packages.
 
@@ -88,7 +94,7 @@ pip install sherpa-onnx==1.9.12
 pip install piper-tts==1.2.0 --no-deps
 ```
 
-7. Setting your [Hugging Face token](https://huggingface.co/settings/tokens) as an environment variable in quotes:
+8. Setting your [Hugging Face token](https://huggingface.co/settings/tokens) as an environment variable in quotes:
 
 ```
 conda env config vars set YOUR_HF_TOKEN="YOUR_HUGGING_FACE_TOKEN_HERE"
@@ -132,3 +138,6 @@ conda env remove -n sonitr
 ```
 
 With the `sonitr` environment removed, you can start over with a fresh installation.
+
+### Notes
+If for any reason the installation fails or gets stuck when cuDNN is being installed, it will be necessary to directly install [CUDA Toolkit 11.8.0](https://developer.nvidia.com/cuda-11-8-0-download-archive) and [cuDNN for CUDA 11.x](https://developer.nvidia.com/rdp/cudnn-archive), [info](https://docs.nvidia.com/deeplearning/cudnn/installation/windows.html) provided by NVIDIA.
