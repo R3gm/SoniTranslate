@@ -19,8 +19,6 @@ from .utils import (
 import numpy as np
 from typing import Any, Dict
 from pathlib import Path
-
-# from scipy.io.wavfile import write as write_wav
 import soundfile as sf
 import platform
 import logging
@@ -81,6 +79,22 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         verify_saved_file_and_size(filename)
 
 
+def pad_array(array, sr):
+
+    valid_indices = np.where(np.abs(array) > 0.001)[0]
+
+    if len(valid_indices) == 0:
+        return array
+
+    pad_indice = int(0.1 * sr)
+    start_pad = max(0, valid_indices[0] - pad_indice)
+    end_pad = min(len(array), valid_indices[-1] + 1 + pad_indice)
+
+    padded_array = array[start_pad:end_pad]
+
+    return padded_array
+
+
 # =====================================
 # EDGE TTS
 # =====================================
@@ -136,6 +150,7 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
 
         # make the tts audio
         filename = f"audio/{start}.ogg"
+        temp_file = filename[:-3] + "mp3"
 
         logger.info(f"{text} >> {filename}")
         try:
@@ -143,9 +158,24 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
             asyncio.run(
                 edge_tts.Communicate(
                     text, "-".join(tts_name.split("-")[:-1])
-                ).save(filename)
+                ).save(temp_file)
+            )
+            verify_saved_file_and_size(temp_file)
+
+            data, sample_rate = sf.read(temp_file)
+            data = pad_array(data, sample_rate)
+            # os.remove(temp_file)
+
+            # Save file
+            sf.write(
+                file=filename,
+                samplerate=sample_rate,
+                data=data,
+                format="ogg",
+                subtype="vorbis",
             )
             verify_saved_file_and_size(filename)
+
         except Exception as error:
             error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
 
@@ -205,10 +235,14 @@ def segments_bark_tts(
                     pad_token_id=processor.tokenizer.pad_token_id,
                 )
             # Save file
+            data_tts = pad_array(
+                speech_output.cpu().numpy().squeeze().astype(np.float32),
+                sampling_rate,
+            )
             sf.write(
                 file=filename,
                 samplerate=sampling_rate,
-                data=speech_output.cpu().numpy().squeeze().astype(np.float32),
+                data=data_tts,
                 format="ogg",
                 subtype="vorbis",
             )
@@ -305,11 +339,16 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
             # Infer
             with torch.no_grad():
                 speech_output = model(**inputs).waveform
+
+            data_tts = pad_array(
+                speech_output.cpu().numpy().squeeze().astype(np.float32),
+                sampling_rate,
+            )
             # Save file
             sf.write(
                 file=filename,
                 samplerate=sampling_rate,
-                data=speech_output.cpu().numpy().squeeze().astype(np.float32),
+                data=data_tts,
                 format="ogg",
                 subtype="vorbis",
             )
@@ -403,7 +442,8 @@ def convert_to_xtts_good_sample(audio_path: str = "", destination: str = ""):
 def sanitize_file_name(file_name):
     import unicodedata
 
-    # Normalize the string to NFKD form to separate combined characters into base characters and diacritics
+    # Normalize the string to NFKD form to separate combined characters into
+    # base characters and diacritics
     normalized_name = unicodedata.normalize("NFKD", file_name)
     # Replace any non-ASCII characters or special symbols with an underscore
     sanitized_name = re.sub(r"[^\w\s.-]", "_", normalized_name)
@@ -459,7 +499,11 @@ def create_wav_file_vc(
         raise Exception(f"Error wav: {final_sample}")
 
 
-def create_new_files_for_vc(speakers_coqui, segments_base, dereverb_automatic=True):
+def create_new_files_for_vc(
+    speakers_coqui,
+    segments_base,
+    dereverb_automatic=True
+):
     # before function delete automatic delete_previous_automatic
     output_dir = os.path.join(".", "clean_song_output")  # remove content
     remove_directory_contents(output_dir)
@@ -557,7 +601,7 @@ def segments_coqui_tts(
         raise TTS_OperationError(
             f"'{TRANSLATE_AUDIO_TO}' is not a supported language for Coqui XTTS"
         )
-    # Emotion and speed can only be used with Coqui Studio models. Which is discontinued
+    # Emotion and speed can only be used with Coqui Studio models. discontinued
     # emotions = ["Neutral", "Happy", "Sad", "Angry", "Dull"]
 
     if delete_previous_automatic:
@@ -597,11 +641,15 @@ def segments_coqui_tts(
             wav = model.tts(
                 text=text, speaker_wav=tts_name, language=TRANSLATE_AUDIO_TO
             )
+            data_tts = pad_array(
+                wav,
+                sampling_rate,
+            )
             # Save file
             sf.write(
                 file=filename,
                 samplerate=sampling_rate,
-                data=wav,
+                data=data_tts,
                 format="ogg",
                 subtype="vorbis",
             )
@@ -780,11 +828,15 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
             speech_output = synthesize_text_to_audio_np_array(
                 model, text, synthesize_args
             )
+            data_tts = pad_array(
+                speech_output,  # .cpu().numpy().squeeze().astype(np.float32),
+                sampling_rate,
+            )
             # Save file
             sf.write(
                 file=filename,
                 samplerate=sampling_rate,
-                data=speech_output,  # .cpu().numpy().squeeze().astype(np.float32),
+                data=data_tts,
                 format="ogg",
                 subtype="vorbis",
             )
@@ -972,7 +1024,7 @@ def accelerate_segments(
         acc_percentage = duration_tts / duration_true
 
         # Smoth
-        if acceleration_rate_regulation and acc_percentage >= 1.4:
+        if acceleration_rate_regulation and acc_percentage >= 1.3:
             try:
                 next_segment = result_diarize["segments"][
                     min(max_count_segments_idx, i + 1)
@@ -986,22 +1038,22 @@ def accelerate_segments(
 
                     if speaker == next_speaker:
                         # half
-                        smoth_duration = duration_true + (extra_time * 1/2)
+                        smoth_duration = duration_true + (extra_time * 0.5)
                     else:
-                        # 2/3
-                        smoth_duration = duration_true + (extra_time * 2/3)
+                        # 7/10
+                        smoth_duration = duration_true + (extra_time * 0.7)
                     logger.debug(
                         f"Base acc: {acc_percentage}, "
                         f"smoth acc: {duration_tts / smoth_duration}"
                     )
-                    acc_percentage = max(1.21, (duration_tts / smoth_duration))
+                    acc_percentage = max(1.2, (duration_tts / smoth_duration))
 
             except Exception as error:
                 logger.error(str(error))
 
         if acc_percentage > max_accelerate_audio:
             acc_percentage = max_accelerate_audio
-        elif acc_percentage <= 1.2 and acc_percentage >= 0.8:
+        elif acc_percentage <= 1.15 and acc_percentage >= 0.8:
             acc_percentage = 1.0
         elif acc_percentage <= 0.79:
             acc_percentage = 0.8

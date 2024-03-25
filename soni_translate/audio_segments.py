@@ -96,6 +96,7 @@ def create_translated_audio(
         )
 
         last_end_time = 0
+        previous_speaker = ""
         for line, audio_file in tqdm(
             zip(result_diarize["segments"], audio_files)
         ):
@@ -107,12 +108,21 @@ def create_translated_audio(
                 # audio_a = audio.speedup(playback_speed=1.5)
 
                 if avoid_overlap:
+                    speaker = line["speaker"]
                     if (last_end_time - 0.500) > start:
-                        start = (last_end_time - 0.250)
+                        overlap_time = last_end_time - start
+                        if previous_speaker and previous_speaker != speaker:
+                            start = (last_end_time - 0.600)
+                        else:
+                            start = (last_end_time - 0.250)
+                        if overlap_time > 2.5:
+                            start = start - 0.3
                         logger.debug(
                               f"Avoid overlap for {str(audio_file)} "
                               f"with {str(start)}"
                         )
+
+                    previous_speaker = speaker
 
                     duration_tts_seconds = len(audio) / 1000.0  # to sec
                     last_end_time = (start + duration_tts_seconds)
