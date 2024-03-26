@@ -118,6 +118,7 @@ To install SoniTranslate, follow these steps:
 ```
 conda create -n sonitr python=3.10 -y
 conda activate sonitr
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 
 2. Clone this github repository and navigate to it:
