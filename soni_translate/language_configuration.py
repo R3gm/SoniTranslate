@@ -3,7 +3,7 @@ from .logging_setup import logger
 LANGUAGES = {
     "Automatic detection": "Automatic detection",
     "Arabic (ar)": "ar",
-    "Chinese (zh)": "zh",
+    "Chinese - Simplified (zh-CN)": "zh",
     "Czech (cs)": "cs",
     "Danish (da)": "da",
     "Dutch (nl)": "nl",
@@ -39,6 +39,7 @@ LANGUAGES = {
     "Swedish (sv)": "sv",
     "Amharic (am)": "am",
     "Welsh (cy)": "cy",  # no aux gTTS
+    "Estonian (et)": "et",
     "Croatian (hr)": "hr",
     "Icelandic (is)": "is",
     "Georgian (ka)": "ka",  # no aux gTTS
@@ -54,17 +55,44 @@ LANGUAGES = {
     "Kannada (kn)": "kn",
     "Lithuanian (lt)": "lt",  # no aux gTTS
     "Latvian (lv)": "lv",
-    # "Macedonian (mk)": "mk",  # no aux gTTS # error get align model
+    "Macedonian (mk)": "mk",  # no aux gTTS # error get align model
     "Malayalam (ml)": "ml",
-    # "Malay (ms)": "ms",  # error get align model
+    "Malay (ms)": "ms",  # error get align model
     "Romanian (ro)": "ro",
     "Sinhala (si)": "si",
     "Sundanese (su)": "su",
-    # "Swahili (sw)": "sw", # error aling
+    "Swahili (sw)": "sw",  # error aling
+    "Afrikaans (af)": "af",
+    "Bosnian (bs)": "bs",
+    "Latin (la)": "la",
+    "Myanmar Burmese (my)": "my",
+    "Norwegian (no|nb)": "no",
+    "Chinese - Traditional (zh-TW)": "zh-TW",
+    "Assamese (as)": "as",
+    "Basque (eu)": "eu",
+    "Hausa (ha)": "ha",
+    "Haitian Creole (ht)": "ht",
+    "Armenian (hy)": "hy",
+    "Lao (lo)": "lo",
+    "Malagasy (mg)": "mg",
+    "Mongolian (mn)": "mn",
+    "Maltese (mt)": "mt",
+    "Punjabi (pa)": "pa",
+    "Pashto (ps)": "ps",
+    "Slovenian (sl)": "sl",
+    "Shona (sn)": "sn",
+    "Somali (so)": "so",
+    "Tajik (tg)": "tg",
+    "Turkmen (tk)": "tk",
+    "Tatar (tt)": "tt",
+    "Uzbek (uz)": "uz",
+    "Yoruba (yo)": "yo",
 }
 
 BASE_L_LIST = LANGUAGES.keys()
 LANGUAGES_LIST = [list(BASE_L_LIST)[0]] + sorted(list(BASE_L_LIST)[1:])
+INVERTED_LANGUAGES = {value: key for key, value in LANGUAGES.items()}
+
 
 EXTRA_ALIGN = {
     "id": "indonesian-nlp/wav2vec2-large-xlsr-indonesian",
@@ -93,13 +121,38 @@ EXTRA_ALIGN = {
     "kn": "Harveenchadha/vakyansh-wav2vec2-kannada-knm-560",
     "lt": "DeividasM/wav2vec2-large-xlsr-53-lithuanian",
     "lv": "anton-l/wav2vec2-large-xlsr-53-latvian",
-    "mk": "Konstantin-Bogdanoski/wav2vec2-macedonian-base",
+    "mk": "",  # Konstantin-Bogdanoski/wav2vec2-macedonian-base
     "ml": "gvs/wav2vec2-large-xlsr-malayalam",
-    "ms": "Duy/wav2vec2_malay",
+    "ms": "",  # Duy/wav2vec2_malay
     "ro": "anton-l/wav2vec2-large-xlsr-53-romanian",
     "si": "IAmNotAnanth/wav2vec2-large-xls-r-300m-sinhala",
     "su": "cahya/wav2vec2-large-xlsr-sundanese",
-    "sw": "Lians/fine-tune-wav2vec2-large-swahili",
+    "sw": "",  # Lians/fine-tune-wav2vec2-large-swahili
+    "af": "",  # ylacombe/wav2vec2-common_voice-af-demo
+    "bs": "",
+    "la": "",
+    "my": "",
+    "no": "NbAiLab/wav2vec2-xlsr-300m-norwegian",
+    "zh-TW": "jonatasgrosman/wav2vec2-large-xlsr-53-chinese-zh-cn",
+    "as": "",
+    "eu": "", # cahya/wav2vec2-large-xlsr-basque # verify
+    "ha": "infinitejoy/wav2vec2-large-xls-r-300m-hausa",
+    "ht": "",
+    "hy": "infinitejoy/wav2vec2-large-xls-r-300m-armenian", # no (.)
+    "lo": "",
+    "mg": "",
+    "mn": "tugstugi/wav2vec2-large-xlsr-53-mongolian",
+    "mt": "carlosdanielhernandezmena/wav2vec2-large-xlsr-53-maltese-64h",
+    "pa": "kingabzpro/wav2vec2-large-xlsr-53-punjabi",
+    "ps": "aamirhs/wav2vec2-large-xls-r-300m-pashto-colab",
+    "sl": "anton-l/wav2vec2-large-xlsr-53-slovenian",
+    "sn": "",
+    "so": "",
+    "tg": "",
+    "tk": "",  # Ragav/wav2vec2-tk
+    "tt": "anton-l/wav2vec2-large-xlsr-53-tatar",
+    "uz": "",  # Mekhriddin/wav2vec2-large-xls-r-300m-uzbek-colab
+    "yo": "ogbi/wav2vec2-large-mms-1b-yoruba-test",
 }
 
 
@@ -109,7 +162,7 @@ def fix_code_language(translate_to, syntax="google"):
         replace_lang_code = {"zh": "zh-CN", "he": "iw", "zh-cn": "zh-CN"}
     elif syntax == "coqui":
         # coqui-xtts
-        replace_lang_code = {"zh": "zh-cn", "zh-CN": "zh-cn"}
+        replace_lang_code = {"zh": "zh-cn", "zh-CN": "zh-cn", "zh-TW": "zh-cn"}
 
     new_code_lang = replace_lang_code.get(translate_to, translate_to)
     logger.debug(f"Fix code {translate_to} -> {new_code_lang}")
@@ -314,10 +367,40 @@ vits_voices_list = {
     "lv-facebook-mms VITS": "facebook/mms-tts-lav",
     # "mk-facebook-mms VITS": "facebook/mms-tts-mkd",
     "ml-facebook-mms VITS": "facebook/mms-tts-mal",
-    "ms-facebook-mms VITS": "facebook/mms-tts-zlm",  # add 2 variant
+    "ms-facebook-mms VITS": "facebook/mms-tts-zlm",
+    "ms_Central-facebook-mms VITS": "facebook/mms-tts-pse",
+    "ms_Manado-facebook-mms VITS": "facebook/mms-tts-xmm",
     "ro-facebook-mms VITS": "facebook/mms-tts-ron",
     # "si-facebook-mms VITS": "facebook/mms-tts-sin",
     "sw-facebook-mms VITS": "facebook/mms-tts-swh",
+    # "af-facebook-mms VITS": "facebook/mms-tts-afr",
+    # "bs-facebook-mms VITS": "facebook/mms-tts-bos",
+    "la-facebook-mms VITS": "facebook/mms-tts-lat",
+    "my-facebook-mms VITS": "facebook/mms-tts-mya",
+    # "no_Bokmål-facebook-mms VITS": "thomasht86/mms-tts-nob",  # verify
+    "as-facebook-mms VITS": "facebook/mms-tts-asm",
+    "as_Nagamese-facebook-mms VITS": "facebook/mms-tts-nag",
+    "eu-facebook-mms VITS": "facebook/mms-tts-eus",
+    "ha-facebook-mms VITS": "facebook/mms-tts-hau",
+    "ht-facebook-mms VITS": "facebook/mms-tts-hat",
+    "hy_Western-facebook-mms VITS": "facebook/mms-tts-hyw",
+    "lo-facebook-mms VITS": "facebook/mms-tts-lao",
+    "mg-facebook-mms VITS": "facebook/mms-tts-mlg",
+    "mn-facebook-mms VITS": "facebook/mms-tts-mon",
+    # "mt-facebook-mms VITS": "facebook/mms-tts-mlt",
+    "pa_Eastern-facebook-mms VITS": "facebook/mms-tts-pan",
+    # "pa_Western-facebook-mms VITS": "facebook/mms-tts-pnb",
+    # "ps-facebook-mms VITS": "facebook/mms-tts-pus",
+    # "sl-facebook-mms VITS": "facebook/mms-tts-slv",
+    "sn-facebook-mms VITS": "facebook/mms-tts-sna",
+    "so-facebook-mms VITS": "facebook/mms-tts-son",
+    "tg-facebook-mms VITS": "facebook/mms-tts-tgk",
+    "tk_script_arabic-facebook-mms VITS": "facebook/mms-tts-tuk-script_arabic",
+    "tk_script_latin-facebook-mms VITS": "facebook/mms-tts-tuk-script_latin",
+    "tt-facebook-mms VITS": "facebook/mms-tts-tat",
+    "tt_Crimean-facebook-mms VITS": "facebook/mms-tts-crh",
+    "uz_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-uzb-script_cyrillic",
+    "yo-facebook-mms VITS": "facebook/mms-tts-yor",
 }
 
 LANGUAGE_CODE_IN_THREE_LETTERS = {

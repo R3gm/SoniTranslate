@@ -252,7 +252,9 @@ def process_subtitles(
 
     # original lang
     subs_copy_result = copy.deepcopy(deep_copied_result)
-    subs_copy_result["language"] = align_language
+    subs_copy_result["language"] = (
+        "zh" if align_language == "zh-TW" else align_language
+    )
     for segment in subs_copy_result["segments"]:
         segment.pop("speaker", None)
 
@@ -279,7 +281,7 @@ def process_subtitles(
     # translated lang
     subs_tra_copy_result = copy.deepcopy(result_diarize)
     subs_tra_copy_result["language"] = (
-        "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh"] else align_language
+        "ja" if TRANSLATE_AUDIO_TO in ["ja", "zh", "zh-TW"] else align_language
     )
     subs_tra_copy_result.pop("word_segments", None)
     for segment in subs_tra_copy_result["segments"]:

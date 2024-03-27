@@ -9,11 +9,25 @@ def configure_logging_libs(debug=False):
       action="ignore", category=UserWarning, module="pyannote"
     )
     modules = [
-      "numba", "httpx", "markdown_it", "speechbrain", "fairseq", "pyannote"
+      "numba", "httpx", "markdown_it", "speechbrain", "fairseq", "pyannote",
+      "pytorch_lightning.utilities.migration.utils",
+      "pytorch_lightning.utilities.migration",
+      "pytorch_lightning",
+      "lightning",
+      "lightning.pytorch.utilities.migration.utils",
     ]
-    for module in modules:
-        logging.getLogger(module).setLevel(logging.WARNING)
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3" if not debug else "1"
+    try:
+        for module in modules:
+            logging.getLogger(module).setLevel(logging.WARNING)
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = "3" if not debug else "1"
+
+        # fix verbose pyannote audio
+        def fix_verbose_pyannote(*args, what=""):
+            pass
+        import pyannote.audio.core.model # noqa
+        pyannote.audio.core.model.check_version = fix_verbose_pyannote
+    except Exception as error:
+        logger.error(str(error))
 
 
 def setup_logger(name_log):

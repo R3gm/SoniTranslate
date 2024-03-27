@@ -30,16 +30,31 @@ def transcribe_speech(
         - audio: Loaded audio file.
         - result: Transcription result as a dictionary.
     """
-    with capture.capture_output() as cap:
-        model = whisperx.load_model(
-            WHISPER_MODEL_SIZE,
-            device,
-            compute_type=compute_type,
-            language=SOURCE_LANGUAGE,
-        )
-        del cap
+
+    # https://github.com/openai/whisper/discussions/277
+    prompt = "以下是普通话的句子。" if SOURCE_LANGUAGE == "zh" else None
+    SOURCE_LANGUAGE = (
+        SOURCE_LANGUAGE if SOURCE_LANGUAGE != "zh-TW" else "zh"
+    )
+    asr_options = {
+        "initial_prompt": prompt
+    }
+
+    model = whisperx.load_model(
+        WHISPER_MODEL_SIZE,
+        device,
+        compute_type=compute_type,
+        language=SOURCE_LANGUAGE,
+        asr_options=asr_options,
+    )
+
     audio = whisperx.load_audio(audio_wav)
     result = model.transcribe(audio, batch_size=batch_size)
+
+    if result["language"] == "zh" and not prompt:
+        result["language"] = "zh-TW"
+        logger.info("Chinese - Traditional (zh-TW)")
+
     del model
     gc.collect()
     torch.cuda.empty_cache()  # noqa
@@ -52,11 +67,12 @@ def align_speech(audio, result):
 
     Parameters:
     - audio (array): The audio data in a suitable format for alignment.
-    - result (dict): Metadata containing information about the segments and language.
+    - result (dict): Metadata containing information about the segments
+         and language.
 
     Returns:
-    - result (dict): Updated metadata after aligning the segments with the audio.
-        This includes character-level alignments if
+    - result (dict): Updated metadata after aligning the segments with
+        the audio. This includes character-level alignments if
         'return_char_alignments' is set to True.
 
     Notes:
@@ -70,7 +86,6 @@ def align_speech(audio, result):
         not result["language"] in DAMHF.keys()
         and not result["language"] in EXTRA_ALIGN.keys()
     ):
-        audio = result = None
         logger.warning(
             "Automatic detection: Source language not compatible with align"
         )
@@ -78,6 +93,15 @@ def align_speech(audio, result):
             f"Detected language {result['language']}  incompatible, "
             "you can select the source language to avoid this error."
         )
+    if (
+        result["language"] in EXTRA_ALIGN.keys()
+        and EXTRA_ALIGN[result["language"]] == ""
+    ):
+        logger.warning(
+            "No compatible wav2vec2 model found "
+            "for this language, skipping alignment."
+        )
+        return result
 
     model_a, metadata = whisperx.load_align_model(
         language_code=result["language"],
@@ -119,12 +143,14 @@ def diarize_speech(
     Performs speaker diarization on speech segments.
 
     Parameters:
-    - audio_wav (array): Audio data in WAV format to perform speaker diarization.
+    - audio_wav (array): Audio data in WAV format to perform speaker
+        diarization.
     - result (dict): Metadata containing information about speech segments
         and alignments.
     - min_speakers (int): Minimum number of speakers expected in the audio.
     - max_speakers (int): Maximum number of speakers expected in the audio.
-    - YOUR_HF_TOKEN (str): Your Hugging Face API token for model authentication.
+    - YOUR_HF_TOKEN (str): Your Hugging Face API token for model
+        authentication.
     - model_name (str): Name of the speaker diarization model to be used
         (default: "pyannote/speaker-diarization@2.1").
 
@@ -137,19 +163,19 @@ def diarize_speech(
         segments in the audio.
     - It assigns speakers to word-level segments based on diarization results.
     - Cleans up memory by releasing resources after diarization.
-    - If only one speaker is specified, each segment is automatically assigned as
-        the first speaker, eliminating the need for diarization inference.
+    - If only one speaker is specified, each segment is automatically assigned
+        as the first speaker, eliminating the need for diarization inference.
     """
 
     if max(min_speakers, max_speakers) > 1 and model_name:
         try:
-            with capture.capture_output() as cap:
-                diarize_model = whisperx.DiarizationPipeline(
-                    model_name=model_name,
-                    use_auth_token=YOUR_HF_TOKEN,
-                    device=device,
-                )
-                del cap
+
+            diarize_model = whisperx.DiarizationPipeline(
+                model_name=model_name,
+                use_auth_token=YOUR_HF_TOKEN,
+                device=device,
+            )
+
         except Exception as error:
             error_str = str(error)
             gc.collect()
@@ -162,14 +188,15 @@ def diarize_speech(
                         "accept the license to use the models: "
                         "https://huggingface.co/pyannote/speaker-diarization "
                         "and https://huggingface.co/pyannote/segmentation "
-                        "Get your KEY TOKEN here: https://hf.co/settings/tokens"
+                        "Get your KEY TOKEN here: "
+                        "https://hf.co/settings/tokens "
                     )
                 elif model_name == diarization_models["pyannote_3.1"]:
                     raise ValueError(
                         "New Licence Pyannote 3.1: You need to have an account"
                         " on Hugging Face and accept the license to use the "
-                        "models: https://huggingface.co/pyannote/speaker-diarization-3.1"
-                        " and https://huggingface.co/pyannote/segmentation-3.0 "
+                        "models: https://huggingface.co/pyannote/speaker-diarization-3.1 " # noqa
+                        "and https://huggingface.co/pyannote/segmentation-3.0 "
                     )
             else:
                 raise error
