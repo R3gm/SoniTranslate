@@ -1,5 +1,33 @@
 from .logging_setup import logger
 
+LANGUAGES_UNIDIRECTIONAL = {
+    "Aymara (ay)": "ay",
+    "Bambara (bm)": "bm",
+    "Cebuano (ceb)": "ceb",
+    "Chichewa (ny)": "ny",
+    "Divehi (dv)": "dv",
+    "Dogri (doi)": "doi",
+    "Ewe (ee)": "ee",
+    "Guarani (gn)": "gn",
+    "Iloko (ilo)": "ilo",
+    "Kinyarwanda (rw)": "rw",
+    "Krio (kri)": "kri",
+    "Kurdish (ku)": "ku",
+    "Kirghiz (ky)": "ky",
+    "Ganda (lg)": "lg",
+    "Maithili (mai)": "mai",
+    "Oriya (or)": "or",
+    "Oromo (om)": "om",
+    "Quechua (qu)": "qu",
+    "Samoan (sm)": "sm",
+    "Tigrinya (ti)": "ti",
+    "Tsonga (ts)": "ts",
+    "Akan (ak)": "ak",
+    "Uighur (ug)": "ug"
+}
+
+UNIDIRECTIONAL_L_LIST = LANGUAGES_UNIDIRECTIONAL.keys()
+
 LANGUAGES = {
     "Automatic detection": "Automatic detection",
     "Arabic (ar)": "ar",
@@ -87,12 +115,12 @@ LANGUAGES = {
     "Tatar (tt)": "tt",
     "Uzbek (uz)": "uz",
     "Yoruba (yo)": "yo",
+    **LANGUAGES_UNIDIRECTIONAL
 }
 
 BASE_L_LIST = LANGUAGES.keys()
 LANGUAGES_LIST = [list(BASE_L_LIST)[0]] + sorted(list(BASE_L_LIST)[1:])
 INVERTED_LANGUAGES = {value: key for key, value in LANGUAGES.items()}
-
 
 EXTRA_ALIGN = {
     "id": "indonesian-nlp/wav2vec2-large-xlsr-indonesian",
@@ -401,6 +429,54 @@ vits_voices_list = {
     "tt_Crimean-facebook-mms VITS": "facebook/mms-tts-crh",
     "uz_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-uzb-script_cyrillic",
     "yo-facebook-mms VITS": "facebook/mms-tts-yor",
+    "ay-facebook-mms VITS": "facebook/mms-tts-ayr",
+    "bm-facebook-mms VITS": "facebook/mms-tts-bam",
+    "ceb-facebook-mms VITS": "facebook/mms-tts-ceb",
+    "ny-facebook-mms VITS": "facebook/mms-tts-nya",
+    "dv-facebook-mms VITS": "facebook/mms-tts-div",
+    "doi-facebook-mms VITS": "facebook/mms-tts-dgo",
+    "ee-facebook-mms VITS": "facebook/mms-tts-ewe",
+    "gn-facebook-mms VITS": "facebook/mms-tts-grn",
+    "ilo-facebook-mms VITS": "facebook/mms-tts-ilo",
+    "rw-facebook-mms VITS": "facebook/mms-tts-kin",
+    "kri-facebook-mms VITS": "facebook/mms-tts-kri",
+    "ku_script_arabic-facebook-mms VITS": "facebook/mms-tts-kmr-script_arabic",
+    "ku_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-kmr-script_cyrillic",
+    "ku_script_latin-facebook-mms VITS": "facebook/mms-tts-kmr-script_latin",
+    "ckb-facebook-mms VITS": "razhan/mms-tts-ckb",  # Verify w
+    "ky-facebook-mms VITS": "facebook/mms-tts-kir",
+    "lg-facebook-mms VITS": "facebook/mms-tts-lug",
+    "mai-facebook-mms VITS": "facebook/mms-tts-mai",
+    "or-facebook-mms VITS": "facebook/mms-tts-ory",
+    "om-facebook-mms VITS": "facebook/mms-tts-orm",
+    "qu_Huallaga-facebook-mms VITS": "facebook/mms-tts-qub",
+    "qu_Lambayeque-facebook-mms VITS": "facebook/mms-tts-quf",
+    "qu_South_Bolivian-facebook-mms VITS": "facebook/mms-tts-quh",
+    "qu_North_Bolivian-facebook-mms VITS": "facebook/mms-tts-qul",
+    "qu_Tena_Lowland-facebook-mms VITS": "facebook/mms-tts-quw",
+    "qu_Ayacucho-facebook-mms VITS": "facebook/mms-tts-quy",
+    "qu_Cusco-facebook-mms VITS": "facebook/mms-tts-quz",
+    "qu_Cajamarca-facebook-mms VITS": "facebook/mms-tts-qvc",
+    "qu_Eastern_Apurímac-facebook-mms VITS": "facebook/mms-tts-qve",
+    "qu_Huamalíes_Dos_de_Mayo_Huánuco-facebook-mms VITS": "facebook/mms-tts-qvh",
+    "qu_Margos_Yarowilca_Lauricocha-facebook-mms VITS": "facebook/mms-tts-qvm",
+    "qu_North_Junín-facebook-mms VITS": "facebook/mms-tts-qvn",
+    "qu_Napo-facebook-mms VITS": "facebook/mms-tts-qvo",
+    "qu_San_Martín-facebook-mms VITS": "facebook/mms-tts-qvs",
+    "qu_Huaylla_Wanca-facebook-mms VITS": "facebook/mms-tts-qvw",
+    "qu_Northern_Pastaza-facebook-mms VITS": "facebook/mms-tts-qvz",
+    "qu_Huaylas_Ancash-facebook-mms VITS": "facebook/mms-tts-qwh",
+    "qu_Panao-facebook-mms VITS": "facebook/mms-tts-qxh",
+    "qu_Salasaca_Highland-facebook-mms VITS": "facebook/mms-tts-qxl",
+    "qu_Northern_Conchucos_Ancash-facebook-mms VITS": "facebook/mms-tts-qxn",
+    "qu_Southern_Conchucos-facebook-mms VITS": "facebook/mms-tts-qxo",
+    "qu_Cañar_Highland-facebook-mms VITS": "facebook/mms-tts-qxr",
+    "sm-facebook-mms VITS": "facebook/mms-tts-smo",
+    "ti-facebook-mms VITS": "facebook/mms-tts-tir",
+    "ts-facebook-mms VITS": "facebook/mms-tts-tso",
+    "ak-facebook-mms VITS": "facebook/mms-tts-aka",
+    "ug_script_arabic-facebook-mms VITS": "facebook/mms-tts-uig-script_arabic",
+    "ug_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-uig-script_cyrillic",
 }
 
 LANGUAGE_CODE_IN_THREE_LETTERS = {

@@ -6,7 +6,7 @@ import whisperx
 import torch
 import gc
 from IPython.utils import capture
-from .language_configuration import EXTRA_ALIGN
+from .language_configuration import EXTRA_ALIGN, INVERTED_LANGUAGES
 from .logging_setup import logger
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -97,9 +97,14 @@ def align_speech(audio, result):
         result["language"] in EXTRA_ALIGN.keys()
         and EXTRA_ALIGN[result["language"]] == ""
     ):
+        lang_name = (
+            INVERTED_LANGUAGES[result["language"]]
+            if result["language"] in INVERTED_LANGUAGES.keys()
+            else result["language"]
+        )
         logger.warning(
             "No compatible wav2vec2 model found "
-            "for this language, skipping alignment."
+            f"for the language '{lang_name}', skipping alignment."
         )
         return result
 

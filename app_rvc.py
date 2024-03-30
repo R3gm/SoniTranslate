@@ -24,6 +24,7 @@ from soni_translate.preprocessor import (
 from soni_translate.postprocessor import media_out
 from soni_translate.language_configuration import (
     LANGUAGES,
+    UNIDIRECTIONAL_L_LIST,
     LANGUAGES_LIST,
     bark_voices_list,
     vits_voices_list,
@@ -353,6 +354,12 @@ class SoniTranslate(SoniTrCache):
                 raise ValueError("No valid Hugging Face token")
             else:
                 os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
+
+        if SOURCE_LANGUAGE in UNIDIRECTIONAL_L_LIST and not subtitle_file:
+            raise ValueError(
+                f"The language '{SOURCE_LANGUAGE}' "
+                "is not supported for transcription (ASR)."
+            )
 
         if get_translated_text:
             self.edit_subs_complete = False

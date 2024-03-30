@@ -1383,10 +1383,17 @@ def toneconverter_freevc(
               ) = f"audio2/audio/{str(seg['start'])}.ogg"  # overwrite
             logger.debug(f"{src_path} - {original_wav_audio_segment}")
 
-            tts.voice_conversion_to_file(
+            wav = tts.voice_conversion(
                 source_wav=src_path,
                 target_wav=original_wav_audio_segment,
-                file_path=save_path
+            )
+
+            sf.write(
+                file=save_path,
+                samplerate=tts.voice_converter.vc_config.audio.output_sample_rate,
+                data=wav,
+                format="ogg",
+                subtype="vorbis",
             )
 
             global_progress_bar.update(1)
