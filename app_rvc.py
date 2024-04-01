@@ -576,11 +576,17 @@ class SoniTranslate(SoniTrCache):
                 "result_diarize": self.result_diarize
             }):
                 prog_disp("Translating...", 0.70, is_gui, progress=progress)
+                lang_source = (
+                    self.align_language
+                    if self.align_language
+                    else SOURCE_LANGUAGE
+                )
                 self.result_diarize["segments"] = translate_text(
                     self.result_diarize["segments"],
                     TRANSLATE_AUDIO_TO,
                     translate_process,
                     chunk_size=1800,
+                    source=lang_source,
                 )
                 logger.debug("Translation complete")
                 logger.debug(self.result_diarize)
@@ -958,6 +964,7 @@ class SoniTranslate(SoniTrCache):
                 TRANSLATE_AUDIO_TO,
                 translate_process,
                 chunk_size=0,
+                source=SOURCE_LANGUAGE,
             )
 
             txt_file_path, result_text = segments_to_plain_text(result_diarize)

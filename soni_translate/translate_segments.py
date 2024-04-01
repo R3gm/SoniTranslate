@@ -2,34 +2,41 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 from itertools import chain
 import copy
-from .language_configuration import fix_code_language
+from tqdm import tqdm
+from .language_configuration import fix_code_language, INVERTED_LANGUAGES
 from .logging_setup import logger
 
 
-def translate_iterative(segments, TRANSLATE_AUDIO_TO):
+def translate_iterative(segments, target, source=None):
     """
     Translate text segments individually to the specified language.
 
     Parameters:
-    - segments (list): A list of dictionaries, each containing 'text' as a key
-        with the segment text to be translated.
-    - TRANSLATE_AUDIO_TO (str): The language code to which the text should be
-        translated.
+    - segments (list): A list of dictionaries with 'text' as a key for
+        segment text.
+    - target (str): Target language code.
+    - source (str, optional): Source language code. Defaults to None.
 
     Returns:
-    - list: A list of dictionaries with translated text segments in the specified language.
+    - list: Translated text segments in the target language.
 
     Notes:
-    - This function translates each text segment individually using the Google Translator.
+    - Translates each segment using Google Translate.
 
     Example:
-    segments = [{'text': 'This is the first segment.'}, {'text': 'And this is the second segment.'}]
+    segments = [{'text': 'first segment.'}, {'text': 'second segment.'}]
     translated_segments = translate_iterative(segments, 'es')
     """
 
     segments_ = copy.deepcopy(segments)
 
-    translator = GoogleTranslator(source="auto", target=TRANSLATE_AUDIO_TO)
+    if (
+        not source
+    ):
+        logger.debug("No source language")
+        source = "auto"
+
+    translator = GoogleTranslator(source=source, target=target)
 
     for line in tqdm(range(len(segments_))):
         text = segments_[line]["text"]
@@ -39,29 +46,41 @@ def translate_iterative(segments, TRANSLATE_AUDIO_TO):
     return segments_
 
 
-def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
+def translate_batch(segments, target, chunk_size=2000, source=None):
     """
-    Translate a batch of text segments into the specified language in chunks respecting the character limit.
+    Translate a batch of text segments into the specified language in chunks,
+        respecting the character limit.
 
     Parameters:
-    - segments (list): A list of dictionaries, each containing 'text' as a key with the segment text to be translated.
-    - TRANSLATE_AUDIO_TO (str): The language code to which the text should be translated.
-    - chunk_size (int, optional): The maximum character limit for each translation chunk (default is 2000); max 5000.
+    - segments (list): List of dictionaries with 'text' as a key for segment
+        text.
+    - target (str): Target language code.
+    - chunk_size (int, optional): Maximum character limit for each translation
+        chunk (default is 2000; max 5000).
+    - source (str, optional): Source language code. Defaults to None.
 
     Returns:
-    - list: A list of dictionaries with translated text segments in the specified language.
+    - list: Translated text segments in the target language.
 
     Notes:
-    - This function splits the input segments into chunks respecting the character limit for translation.
-    - It translates the chunks using the Google Translator.
-    - If the chunked translation fails, it switches to iterative translation using `translate_iterative()`.
+    - Splits input segments into chunks respecting the character limit for
+        translation.
+    - Translates the chunks using Google Translate.
+    - If chunked translation fails, switches to iterative translation using
+        `translate_iterative()`.
 
     Example:
-    segments = [{'text': 'This is the first segment.'}, {'text': 'And this is the second segment.'}]
-    translated_segments = translate_batch(segments, 'es', chunk_size=4000)
+    segments = [{'text': 'first segment.'}, {'text': 'second segment.'}]
+    translated = translate_batch(segments, 'es', chunk_size=4000, source='en')
     """
 
     segments_copy = copy.deepcopy(segments)
+
+    if (
+        not source
+    ):
+        logger.debug("No source language")
+        source = "auto"
 
     # Get text
     text_lines = []
@@ -72,63 +91,91 @@ def translate_batch(segments, TRANSLATE_AUDIO_TO, chunk_size=2000):
     # chunk limit
     text_merge = []
     actual_chunk = ""
+    global_text_list = []
+    actual_text_list = []
     for one_line in text_lines:
+        one_line = " " if not one_line else one_line
         if (len(actual_chunk) + len(one_line)) <= chunk_size:
             if actual_chunk:
                 actual_chunk += " ||||| "
             actual_chunk += one_line
+            actual_text_list.append(one_line)
         else:
             text_merge.append(actual_chunk)
-            one_line = " " if not one_line else one_line
             actual_chunk = one_line
+            global_text_list.append(actual_text_list)
+            actual_text_list = [one_line]
     if actual_chunk:
         text_merge.append(actual_chunk)
+        global_text_list.append(actual_text_list)
 
     # translate chunks
-    translator = GoogleTranslator(source="auto", target=TRANSLATE_AUDIO_TO)
+    progress_bar = tqdm(total=len(segments), desc="Translating")
+    translator = GoogleTranslator(source=source, target=target)
+    split_list = []
     try:
-        translated_lines = translator.translate_batch(text_merge)
+        for text, text_iterable in zip(text_merge, global_text_list):
+            translated_line = translator.translate(text.strip())
+            split_text = translated_line.split("|||||")
+            if len(split_text) == len(text_iterable):
+                progress_bar.update(len(split_text))
+            else:
+                logger.debug(
+                    "Chunk fixing iteratively. Len chunk: "
+                    f"{len(split_text)}, expected: {len(text_iterable)}"
+                )
+                split_text = []
+                for txt_iter in text_iterable:
+                    translated_txt = translator.translate(txt_iter.strip())
+                    split_text.append(translated_txt)
+                    progress_bar.update(1)
+            split_list.append(split_text)
+        progress_bar.close()
     except Exception as error:
+        progress_bar.close()
         logger.error(str(error))
         logger.warning(
-            "The translation in chunks failed, switching to iterative. Related: too many request"
+            "The translation in chunks failed, switching to iterative."
+            " Related: too many request"
         )  # use proxy or less chunk size
-        return translate_iterative(segments, TRANSLATE_AUDIO_TO)
+        return translate_iterative(segments, target, source)
 
     # un chunk
-    split_list = [sentence.split("|||||") for sentence in translated_lines]
     translated_lines = list(chain.from_iterable(split_list))
 
     # verify integrity ok
     if len(segments) == len(translated_lines):
         for line in range(len(segments_copy)):
             logger.debug(
-                f"{segments_copy[line]['text']} >> {translated_lines[line].strip()}"
+                f"{segments_copy[line]['text']} >> "
+                f"{translated_lines[line].strip()}"
             )
             segments_copy[line]["text"] = translated_lines[line].strip()
         return segments_copy
     else:
         logger.error(
-            f"The translation in chunks failed, switching to iterative. {len(segments), len(translated_lines)}"
+            "The translation in chunks failed, switching to iterative. "
+            f"{len(segments), len(translated_lines)}"
         )
-        return translate_iterative(segments, TRANSLATE_AUDIO_TO)
+        return translate_iterative(segments, target, source)
 
 
 def translate_text(
     segments,
-    TRANSLATE_AUDIO_TO,
+    target,
     translation_process="google_translator_batch",
     chunk_size=4500,
+    source=None,
 ):
     """Translates text segments using a specified process."""
     match translation_process:
         case "google_translator_batch":
             return translate_batch(
-                segments, fix_code_language(TRANSLATE_AUDIO_TO), chunk_size
+                segments, fix_code_language(target), chunk_size, source
             )
         case "google_translator_iterative":
             return translate_iterative(
-                segments, fix_code_language(TRANSLATE_AUDIO_TO)
+                segments, fix_code_language(target), source
             )
         case "disable_translation":
             return segments
