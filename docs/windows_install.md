@@ -57,10 +57,9 @@ cd SoniTranslate
 conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit -y
 ```
 
-4. Install cuDNN
-
+4. Install PyTorch using conda
 ```
-conda install -c conda-forge cudnn -y
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
 ```
 
 5. Install required packages:
@@ -71,7 +70,7 @@ pip install -r requirements_extra.txt -v
 pip install onnxruntime-gpu
 ```
 
-6. Install [ffmpeg](https://ffmpeg.org/download.html). FFmpeg is a free software project that produces libraries and programs for handling multimedia data. You will need it to process audio and video files. You can install ffmpeg with Anaconda by running `conda install -y ffmpeg` in your terminal. If you have trouble installing ffmpeg via Anaconda, you can use the following link instead: (https://ffmpeg.org/ffmpeg.html). Once it is installed, make sure it is in your PATH by running `ffmpeg -h` in your terminal. If you don't get an error message, you're good to go.
+6. Install [ffmpeg](https://ffmpeg.org/download.html). FFmpeg is a free software project that produces libraries and programs for handling multimedia data. You will need it to process audio and video files. You can install ffmpeg with Anaconda by running `conda install -y ffmpeg` in your terminal (recommended). If you have trouble installing ffmpeg via Anaconda, you can use the following link instead: (https://ffmpeg.org/ffmpeg.html). Once it is installed, make sure it is in your PATH by running `ffmpeg -h` in your terminal. If you don't get an error message, you're good to go.
 
 7. Optional install:
 
@@ -140,4 +139,12 @@ conda env remove -n sonitr
 With the `sonitr` environment removed, you can start over with a fresh installation.
 
 ### Notes
-If for any reason the installation fails or gets stuck when cuDNN is being installed, it will be necessary to directly install [CUDA Toolkit 11.8.0](https://developer.nvidia.com/cuda-11-8-0-download-archive) and [cuDNN for CUDA 11.x](https://developer.nvidia.com/rdp/cudnn-archive), [info](https://docs.nvidia.com/deeplearning/cudnn/installation/windows.html) provided by NVIDIA.
+-  To use OpenAI's GPT API for translation, set up your OpenAI API key as an environment variable in quotes:
+
+```
+conda activate sonitr
+conda env config vars set OPENAI_API_KEY="your-api-key-here"
+conda deactivate
+```
+
+- Alternatively, you can install the CUDA Toolkit 11.8.0  directly on your system [CUDA Toolkit 11.8.0](https://developer.nvidia.com/cuda-11-8-0-download-archive).
