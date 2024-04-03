@@ -5,7 +5,7 @@ from whisperx.alignment import (
 import whisperx
 import torch
 import gc
-from IPython.utils import capture
+from IPython.utils import capture # noqa
 from .language_configuration import EXTRA_ALIGN, INVERTED_LANGUAGES
 from .logging_setup import logger
 
@@ -212,6 +212,15 @@ def diarize_speech(
         result_diarize = whisperx.assign_word_speakers(
             diarize_segments, result
         )
+
+        for segment in result_diarize["segments"]:
+            if "speaker" not in segment:
+                segment["speaker"] = "SPEAKER_00"
+                logger.warning(
+                    f"No speaker detected in {segment['start']}. First TTS "
+                    f"will be used for the segment text: {segment['text']} "
+                )
+
         del diarize_model
         gc.collect()
         torch.cuda.empty_cache()  # noqa

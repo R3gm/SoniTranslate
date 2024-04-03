@@ -39,7 +39,8 @@ def verify_saved_file_and_size(filename):
         raise TTS_OperationError(f"File '{filename}' was not saved.")
     if os.path.getsize(filename) == 0:
         raise TTS_OperationError(
-            f"File '{filename}' has a zero size. Related to incorrect TTS for the target language"
+            f"File '{filename}' has a zero size. "
+            "Related to incorrect TTS for the target language"
         )
 
 
@@ -64,7 +65,8 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         )
 
         logger.warning(
-            f'TTS auxiliary will be utilized rather than TTS: {segment["tts_name"]}'
+            'TTS auxiliary will be utilized '
+            f'rather than TTS: {segment["tts_name"]}'
         )
         verify_saved_file_and_size(filename)
     except Exception as error:
@@ -1080,7 +1082,9 @@ def accelerate_segments(
                 filename=f"{folder_output}/{filename}"
             )
             logger.debug(
-                f"acc_percen is {acc_percentage}, tts duration is {duration_tts}, new duration is {duration_create}, for {filename}"
+                f"acc_percen is {acc_percentage}, tts duration "
+                f"is {duration_tts}, new duration is {duration_create}"
+                f", for {filename}"
             )
 
         audio_files.append(f"{folder_output}/{filename}")
@@ -1166,7 +1170,8 @@ def create_wav_vc(
 
                 if os.path.exists(check_segment_audio_target_file):
                     logger.debug(
-                        f"Segment vc source exists: {check_segment_audio_target_file}"
+                        "Segment vc source exists: "
+                        f"{check_segment_audio_target_file}"
                     )
                     pass
                 else:

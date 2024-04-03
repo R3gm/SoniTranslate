@@ -16,7 +16,11 @@ from soni_translate.text_to_speech import (
     create_wav_file_vc,
     accelerate_segments,
 )
-from soni_translate.translate_segments import translate_text
+from soni_translate.translate_segments import (
+    translate_text,
+    TRANSLATION_PROCESS_OPTIONS,
+    DOCS_TRANSLATION_PROCESS_OPTIONS
+)
 from soni_translate.preprocessor import (
     audio_video_preprocessor,
     audio_preprocessor,
@@ -235,6 +239,16 @@ def get_hash(filepath):
     return file_hash.hexdigest()[:18]
 
 
+def check_openai_api_key():
+    if not os.environ.get("OPENAI_API_KEY"):
+        raise ValueError(
+            "To use GPT for translation, please set up your OpenAI API key "
+            "as an environment variable in Linux as follows: "
+            "export OPENAI_API_KEY='your-api-key-here'. Or change the "
+            "translation process in Advanced settings."
+        )
+
+
 class SoniTranslate(SoniTrCache):
     def __init__(self, dev=False):
         super().__init__()
@@ -354,6 +368,9 @@ class SoniTranslate(SoniTrCache):
                 raise ValueError("No valid Hugging Face token")
             else:
                 os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
+
+        if "gpt" in translate_process:
+            check_openai_api_key()
 
         if SOURCE_LANGUAGE in UNIDIRECTIONAL_L_LIST and not subtitle_file:
             raise ValueError(
@@ -898,12 +915,15 @@ class SoniTranslate(SoniTrCache):
         TRANSLATE_AUDIO_TO="English (en)",
         tts_voice00="en-AU-WilliamNeural-Male",
         name_final_file="sample",
-        translate_process="google_translator_iterative",
+        translate_process="google_translator",
         output_type="audio",
         chunk_size=None,
         is_gui=False,
         progress=gr.Progress(),
     ):
+        if "gpt" in translate_process:
+            check_openai_api_key()
+
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
         if translate_process != "disable_translation":
             TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
@@ -1420,14 +1440,9 @@ def create_gui(theme, logs_in_gui=False):
                                 value=pyannote_models_list[1],
                                 label=lg_conf["diarization_label"],
                             )
-                            valid_translate_process = [
-                                "google_translator_batch",
-                                "google_translator_iterative",
-                                "disable_translation",
-                            ]
                             translate_process_dropdown = gr.Dropdown(
-                                valid_translate_process,
-                                value=valid_translate_process[0],
+                                TRANSLATION_PROCESS_OPTIONS,
+                                value=TRANSLATION_PROCESS_OPTIONS[0],
                                 label=lg_conf["tr_process_label"],
                             )
 
@@ -1723,13 +1738,9 @@ def create_gui(theme, logs_in_gui=False):
                                 with gr.Accordion(
                                     lg_conf["extra_setting"], open=False
                                 ):
-                                    docs_valid_translate_process = [
-                                        "google_translator_iterative",
-                                        "disable_translation",
-                                    ]
                                     docs_translate_process_dropdown = gr.Dropdown(
-                                        docs_valid_translate_process,
-                                        value=docs_valid_translate_process[
+                                        DOCS_TRANSLATION_PROCESS_OPTIONS,
+                                        value=DOCS_TRANSLATION_PROCESS_OPTIONS[
                                             0
                                         ],
                                         label="Translation process",

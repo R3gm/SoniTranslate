@@ -2,7 +2,6 @@ from pydub import AudioSegment
 from tqdm import tqdm
 from .utils import run_command
 from .logging_setup import logger
-from pydub import AudioSegment
 import numpy as np
 
 
@@ -24,7 +23,7 @@ class Mixer:
         positions, segs = zip(*self.parts)
 
         frame_rate = segs[0].frame_rate
-        array_type = segs[0].array_type
+        array_type = segs[0].array_type # noqa
 
         offsets = [int(frame_rate * pos / 1000.0) for pos in positions]
         segs = AudioSegment.empty()._sync(*segs)
@@ -117,7 +116,7 @@ def create_translated_audio(
                             start = (last_end_time - 0.250)
                         if overlap_time > 2.5:
                             start = start - 0.3
-                        logger.debug(
+                        logger.info(
                               f"Avoid overlap for {str(audio_file)} "
                               f"with {str(start)}"
                         )
