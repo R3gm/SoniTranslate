@@ -260,7 +260,50 @@ class SoniTranslate(SoniTrCache):
         self.voiceless_id = None
         self.burn_subs_id = None
 
+        os.environ["VOICES_MODELS"] = "DISABLE"
+        self.vci = ClassVoices()
+
+        self.tts_voices = self.get_tts_voice_list()
+
         logger.info(f"Working in: {self.device}")
+
+    def get_tts_voice_list(self):
+        try:
+            from piper import PiperVoice  # noqa
+
+            piper_enabled = True
+            logger.info("PIPER TTS enabled")
+        except Exception as error:
+            logger.debug(str(error))
+            piper_enabled = False
+            logger.info("PIPER TTS disabled")
+        try:
+            from TTS.api import TTS  # noqa
+
+            xtts_enabled = True
+            logger.info("Coqui XTTS enabled")
+            logger.info(
+                "In this app, by using Coqui TTS (text-to-speech), you "
+                "acknowledge and agree to the license.\n"
+                "You confirm that you have read, understood, and agreed "
+                "to the Terms and Conditions specified at the following "
+                "link:\nhttps://coqui.ai/cpml.txt."
+            )
+            os.environ["COQUI_TOS_AGREED"] = "1"
+        except Exception as error:
+            logger.debug(str(error))
+            xtts_enabled = False
+            logger.info("Coqui XTTS disabled")
+
+        self.tts_info = TTS_Info(piper_enabled, xtts_enabled)
+
+        return self.tts_info.tts_list()
+
+    def enable_custom_model_voice(self):
+        os.environ["VOICES_MODELS"] = "ENABLE"
+
+    def disable_custom_model_voice(self):
+        os.environ["VOICES_MODELS"] = "DISABLE"
 
     def batch_multilingual_media_conversion(self, *kwargs):
         # logger.debug(str(kwargs))
@@ -312,10 +355,10 @@ class SoniTranslate(SoniTrCache):
 
     def multilingual_media_conversion(
         self,
-        media_file,
-        link_media,
-        directory_input,
-        YOUR_HF_TOKEN,
+        media_file=None,
+        link_media="",
+        directory_input="",
+        YOUR_HF_TOKEN="",
         preview=False,
         WHISPER_MODEL_SIZE="large-v3",
         batch_size=16,
@@ -688,7 +731,7 @@ class SoniTranslate(SoniTrCache):
             self.valid_speakers = audio_segmentation_to_voice(
                 self.result_diarize,
                 TRANSLATE_AUDIO_TO,
-                True,
+                is_gui,
                 tts_voice00,
                 tts_voice01,
                 tts_voice02,
@@ -698,38 +741,38 @@ class SoniTranslate(SoniTrCache):
                 dereverb_automatic_xtts,
             )
 
-        if not hasattr(vci, 'model_voice_path00'):
+        if not hasattr(self.vci, 'model_voice_path00'):
             cc_transpose_values = cc_index_values = cc_model_paths = None
         else:
             cc_model_paths = [
-                vci.model_voice_path00,
-                vci.model_voice_path01,
-                vci.model_voice_path02,
-                vci.model_voice_path03,
-                vci.model_voice_path04,
-                vci.model_voice_path05,
-                vci.model_voice_path99
+                self.vci.model_voice_path00,
+                self.vci.model_voice_path01,
+                self.vci.model_voice_path02,
+                self.vci.model_voice_path03,
+                self.vci.model_voice_path04,
+                self.vci.model_voice_path05,
+                self.vci.model_voice_path99
             ]
 
             cc_index_values = [
-                vci.file_index200,
-                vci.file_index201,
-                vci.file_index202,
-                vci.file_index203,
-                vci.file_index204,
-                vci.file_index205,
-                vci.file_index299
+                self.vci.file_index200,
+                self.vci.file_index201,
+                self.vci.file_index202,
+                self.vci.file_index203,
+                self.vci.file_index204,
+                self.vci.file_index205,
+                self.vci.file_index299
             ]
 
             cc_transpose_values = [
-                vci.f0method,
-                vci.transpose00,
-                vci.transpose01,
-                vci.transpose02,
-                vci.transpose03,
-                vci.transpose04,
-                vci.transpose05,
-                vci.transpose99
+                self.vci.f0method,
+                self.vci.transpose00,
+                self.vci.transpose01,
+                self.vci.transpose02,
+                self.vci.transpose03,
+                self.vci.transpose04,
+                self.vci.transpose05,
+                self.vci.transpose99
             ]
 
         if not self.task_in_cache("acc_and_vc", [
@@ -785,7 +828,7 @@ class SoniTranslate(SoniTrCache):
                     logger.error("Apply the configuration!")
 
                 try:
-                    vci(speakers_list, audio_files)
+                    self.vci(speakers_list, audio_files)
                 except Exception as error:
                     logger.error(str(error))
 
@@ -908,7 +951,7 @@ class SoniTranslate(SoniTrCache):
 
     def multilingual_docs_conversion(
         self,
-        string_text,  # string
+        string_text="",  # string
         document=None,  # doc path gui
         directory_input="",  # doc path
         SOURCE_LANGUAGE="English (en)",
@@ -1027,7 +1070,7 @@ class SoniTranslate(SoniTrCache):
                 is_gui,
                 progress=progress,
             )
-            vci(speakers_list, audio_files)
+            self.vci(speakers_list, audio_files)
 
         prog_disp(
             "Creating final audio file...", 0.90, is_gui, progress=progress
@@ -1144,42 +1187,42 @@ def create_gui(theme, logs_in_gui=False):
                         return [value for value in visibility_dict.values()]
 
                     tts_voice00 = gr.Dropdown(
-                        tts_info.tts_list(),
+                        SoniTr.tts_info.tts_list(),
                         value="en-AU-WilliamNeural-Male",
                         label=lg_conf["sk1"],
                         visible=True,
                         interactive=True,
                     )
                     tts_voice01 = gr.Dropdown(
-                        tts_info.tts_list(),
+                        SoniTr.tts_info.tts_list(),
                         value="en-CA-ClaraNeural-Female",
                         label=lg_conf["sk2"],
                         visible=True,
                         interactive=True,
                     )
                     tts_voice02 = gr.Dropdown(
-                        tts_info.tts_list(),
+                        SoniTr.tts_info.tts_list(),
                         value="en-GB-ThomasNeural-Male",
                         label=lg_conf["sk3"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice03 = gr.Dropdown(
-                        tts_info.tts_list(),
+                        SoniTr.tts_info.tts_list(),
                         value="en-GB-SoniaNeural-Female",
                         label=lg_conf["sk4"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice04 = gr.Dropdown(
-                        tts_info.tts_list(),
+                        SoniTr.tts_info.tts_list(),
                         value="en-NZ-MitchellNeural-Male",
                         label=lg_conf["sk4"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice05 = gr.Dropdown(
-                        tts_info.tts_list(),
+                        SoniTr.tts_info.tts_list(),
                         value="en-GB-MaisieNeural-Female",
                         label=lg_conf["sk6"],
                         visible=False,
@@ -1211,7 +1254,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             voice_imitation_method_options = (
                                 ["freevc", "openvoice"]
-                                if xtts_enabled
+                                if SoniTr.tts_info.xtts_enabled
                                 else ["openvoice"]
                             )
                             voice_imitation_method_gui = gr.Dropdown(
@@ -1241,7 +1284,7 @@ def create_gui(theme, logs_in_gui=False):
                                 info=lg_conf["vc_remove_info"],
                             )
 
-                    if xtts_enabled:
+                    if SoniTr.tts_info.xtts_enabled:
                         with gr.Column():
                             with gr.Accordion(
                                 lg_conf["xtts_title"],
@@ -1710,7 +1753,7 @@ def create_gui(theme, logs_in_gui=False):
                                 list(
                                     filter(
                                         lambda x: x != "_XTTS_/AUTOMATIC.wav",
-                                        tts_info.tts_list(),
+                                        SoniTr.tts_info.tts_list(),
                                     )
                                 ),
                                 value="en-GB-ThomasNeural-Male",
@@ -2002,7 +2045,7 @@ def create_gui(theme, logs_in_gui=False):
                         confirm_conf = gr.HTML()
 
                     button_config.click(
-                        vci.apply_conf,
+                        SoniTr.vci.apply_conf,
                         inputs=[
                             f0_method_global,
                             model_voice_path00,
@@ -2042,7 +2085,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             with gr.Column():
                                 tts_test = gr.Dropdown(
-                                    sorted(tts_info.list_edge),
+                                    sorted(SoniTr.tts_info.list_edge),
                                     value="en-GB-ThomasNeural-Male",
                                     label="TTS",
                                     visible=True,
@@ -2083,7 +2126,7 @@ def create_gui(theme, logs_in_gui=False):
                                 ttsvoice = gr.Audio()
 
                             button_test.click(
-                                vci.make_test,
+                                SoniTr.vci.make_test,
                                 inputs=[
                                     text_test,
                                     tts_test,
@@ -2181,18 +2224,18 @@ def create_gui(theme, logs_in_gui=False):
                 logs = gr.Textbox(label=">>>")
                 app.load(read_logs, None, logs, every=1)
 
-        if xtts_enabled:
+        if SoniTr.tts_info.xtts_enabled:
             # Update tts list
             def update_tts_list():
                 update_dict = {
-                    f"tts_voice{i:02d}": gr.update(choices=tts_info.tts_list())
+                    f"tts_voice{i:02d}": gr.update(choices=SoniTr.tts_info.tts_list())
                     for i in range(6)
                 }
                 update_dict["tts_documents"] = gr.update(
                     choices=list(
                         filter(
                             lambda x: x != "_XTTS_/AUTOMATIC.wav",
-                            tts_info.tts_list(),
+                            SoniTr.tts_info.tts_list(),
                         )
                     )
                 )
@@ -2437,40 +2480,8 @@ if __name__ == "__main__":
         )
 
     models, index_paths = upload_model_list()
-    os.environ["VOICES_MODELS"] = "DISABLE"
 
-    vci = ClassVoices()
     SoniTr = SoniTranslate()
-
-    try:
-        from piper import PiperVoice  # noqa
-
-        piper_enabled = True
-        logger.info("PIPER TTS enabled")
-    except Exception as error:
-        logger.warning(str(error))
-        piper_enabled = False
-        logger.info("PIPER TTS disabled")
-    try:
-        from TTS.api import TTS  # noqa
-
-        xtts_enabled = True
-        logger.info("Coqui XTTS enabled")
-        logger.info(
-            "In this app, by using Coqui TTS (text-to-speech), you "
-            "acknowledge and agree to the license.\n"
-            "You confirm that you have read, understood, and agreed "
-            "to the Terms and Conditions specified at the following link:\n"
-            "https://coqui.ai/cpml.txt."
-        )
-        os.environ["COQUI_TOS_AGREED"] = "1"
-    except Exception as error:
-        logger.warning(str(error))
-        xtts_enabled = False
-        logger.info("Coqui XTTS disabled")
-
-    tts_info = TTS_Info(piper_enabled, xtts_enabled)
-    # list_tts = tts_info.tts_list()
 
     lg_conf = get_language_config(language_data, language=args.language)
 

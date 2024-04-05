@@ -318,15 +318,15 @@ class ClassVoices:
 
     def apply_conf(self, f0method,
                    model_voice_path00, transpose00, file_index2_00,
-                   model_voice_path01, transpose01, file_index2_01,
-                   model_voice_path02, transpose02, file_index2_02,
-                   model_voice_path03, transpose03, file_index2_03,
-                   model_voice_path04, transpose04, file_index2_04,
-                   model_voice_path05, transpose05, file_index2_05,
-                   model_voice_path99, transpose99, file_index2_99):
+                   model_voice_path01="", transpose01=0, file_index2_01="",
+                   model_voice_path02="", transpose02=0, file_index2_02="",
+                   model_voice_path03="", transpose03=0, file_index2_03="",
+                   model_voice_path04="", transpose04=0, file_index2_04="",
+                   model_voice_path05="", transpose05=0, file_index2_05="",
+                   model_voice_path99="", transpose99=0, file_index2_99=""):
 
         #self.filename = filename
-        self.f0method = f0method # pm
+        self.f0method = f0method
         
         self.model_voice_path00 = model_voice_path00
         self.transpose00 = transpose00

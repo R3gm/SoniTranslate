@@ -156,12 +156,16 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
 
         logger.info(f"{text} >> {filename}")
         try:
-            # nest_asyncio.apply() if not is_gui else None
-            asyncio.run(
-                edge_tts.Communicate(
-                    text, "-".join(tts_name.split("-")[:-1])
-                ).save(temp_file)
-            )
+            if is_gui:
+                asyncio.run(
+                    edge_tts.Communicate(
+                        text, "-".join(tts_name.split("-")[:-1])
+                    ).save(temp_file)
+                )
+            else:
+                # nest_asyncio.apply() if not is_gui else None
+                command = f'edge-tts -t "{text}" -v "{tts_name.replace("-Male", "").replace("-Female", "")}" --write-media "{temp_file}"'
+                run_command(command)
             verify_saved_file_and_size(temp_file)
 
             data, sample_rate = sf.read(temp_file)
