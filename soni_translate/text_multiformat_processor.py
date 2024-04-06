@@ -340,6 +340,43 @@ def process_subtitles(
     return name_tra + output_format_subtitle
 
 
+def linguistic_level_segments(
+    result_base,
+    linguistic_unit="word",  # word or char
+):
+    linguistic_unit = linguistic_unit[:4]
+    linguistic_unit_key = linguistic_unit + "s"
+    result = copy.deepcopy(result_base)
+
+    if linguistic_unit_key not in result["segments"][0].keys():
+        raise ValueError("No alignment detected, can't process")
+
+    segments_by_unit = []
+    for segment in result["segments"]:
+        segment_units = segment[linguistic_unit_key]
+        # segment_speaker = segment.get("speaker", "SPEAKER_00")
+
+        for unit in segment_units:
+
+            text = unit[linguistic_unit]
+
+            if "start" in unit.keys():
+                segments_by_unit.append(
+                    {
+                        "start": unit["start"],
+                        "end": unit["end"],
+                        "text": text,
+                        # "speaker": segment_speaker,
+                    }
+                    )
+            elif not segments_by_unit:
+                pass
+            else:
+                segments_by_unit[-1]["text"] += text
+
+    return {"segments": segments_by_unit}
+
+
 def break_aling_segments(
     result: dict,
     break_characters: str = "",  # ":|,|.|"

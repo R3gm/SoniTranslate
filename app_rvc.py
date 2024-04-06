@@ -68,6 +68,7 @@ from soni_translate.text_multiformat_processor import (
     plain_text_to_segments,
     segments_to_plain_text,
     process_subtitles,
+    linguistic_level_segments,
     break_aling_segments,
 )
 from soni_translate.languages_gui import language_data, news
@@ -403,6 +404,7 @@ class SoniTranslate(SoniTrCache):
         voice_imitation_remove_previous=True,
         voice_imitation_method="freevc",
         dereverb_automatic_xtts=True,
+        text_segmentation_scale="sentence",
         divide_text_segments_by="",
         soft_subtitles_to_video=False,
         burn_subtitles_to_video=False,
@@ -437,6 +439,19 @@ class SoniTranslate(SoniTrCache):
 
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+
+        if (
+            text_segmentation_scale in ["word", "character"]
+            and "subtitle" not in output_type
+        ):
+            wrn_lang = (
+                "Text segmentation by words or characters is typically"
+                " used for generating subtitles. If subtitles are not the"
+                " intended output, consider selecting 'sentence' "
+                "segmentation method to ensure optimal results."
+
+            )
+            warn_disp(wrn_lang, is_gui)
 
         if tts_voice00[:2].lower() != TRANSLATE_AUDIO_TO[:2].lower():
             wrn_lang = (
@@ -548,7 +563,13 @@ class SoniTranslate(SoniTrCache):
                 SOURCE_LANGUAGE,
                 WHISPER_MODEL_SIZE,
                 compute_type,
-                batch_size
+                batch_size,
+                (
+                    "l_unit"
+                    if text_segmentation_scale in ["word", "character"]
+                    and subtitle_file
+                    else "sentence"
+                )
             ], {}):
                 if subtitle_file:
                     prog_disp(
@@ -584,7 +605,10 @@ class SoniTranslate(SoniTrCache):
                 )
 
                 self.align_language = self.result["language"]
-                if not subtitle_file:
+                if (
+                    not subtitle_file
+                    or text_segmentation_scale in ["word", "character"]
+                ):
                     prog_disp("Aligning...", 0.45, is_gui, progress=progress)
                     try:
                         self.result = align_speech(audio, self.result)
@@ -600,6 +624,7 @@ class SoniTranslate(SoniTrCache):
 
             if not self.task_in_cache("break_align", [
                 divide_text_segments_by,
+                text_segmentation_scale,
                 self.align_language
             ], {
                 "result": self.result,
@@ -607,7 +632,12 @@ class SoniTranslate(SoniTrCache):
             }):
                 if self.align_language in ["ja", "zh", "zh-TW"]:
                     divide_text_segments_by += "|!|?|...|。"
-                if divide_text_segments_by:
+                if text_segmentation_scale in ["word", "character"]:
+                    self.result = linguistic_level_segments(
+                        self.result,
+                        text_segmentation_scale,
+                    )
+                elif divide_text_segments_by:
                     try:
                         self.result = break_aling_segments(
                             self.result,
@@ -1489,11 +1519,26 @@ def create_gui(theme, logs_in_gui=False):
                                 file_types=[".srt", ".ass"],
                                 height=130,
                             )
+
+                            gr.HTML("<hr></h2>")
+                            text_segmentation_options = [
+                                "sentence",
+                                "word",
+                                "character"
+                            ]
+                            text_segmentation_scale_gui = gr.Dropdown(
+                                text_segmentation_options,
+                                value=text_segmentation_options[0],
+                                label="Text Segmentation Scale",
+                                info="Divide text into segments by sentences, words, or characters. Word and character segmentation offer finer granularity, useful for subtitles; disabling translation preserves original structure.",
+                            )
                             divide_text_segments_by_gui = gr.Textbox(
                                 label=lg_conf["divide_text_label"],
                                 value="",
                                 info=lg_conf["divide_text_info"],
                             )
+
+                            gr.HTML("<hr></h2>")
                             pyannote_models_list = list(
                                 diarization_models.keys()
                             )
@@ -2317,6 +2362,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_remove_previous_gui,
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
+                text_segmentation_scale_gui,
                 divide_text_segments_by_gui,
                 soft_subtitles_to_video_gui,
                 burn_subtitles_to_video_gui,
@@ -2372,6 +2418,7 @@ def create_gui(theme, logs_in_gui=False):
                 voice_imitation_remove_previous_gui,
                 voice_imitation_method_gui,
                 wav_speaker_dereverb,
+                text_segmentation_scale_gui,
                 divide_text_segments_by_gui,
                 soft_subtitles_to_video_gui,
                 burn_subtitles_to_video_gui,
