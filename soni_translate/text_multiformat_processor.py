@@ -230,6 +230,49 @@ def segments_to_plain_text(result_diarize):
 # subtitles
 
 
+def get_subtitle(
+    language,
+    segments_data,
+    extension,
+    filename=None,
+    highlight_words=False,
+):
+    if not filename:
+        filename = "task_subtitle"
+
+    sub_file = filename + "." + extension
+    support_name = filename + ".mp3"
+    remove_files(sub_file)
+
+    writer = get_writer(extension, output_dir=".")
+    word_options = {
+        "highlight_words": highlight_words,
+        "max_line_count": None,
+        "max_line_width": None,
+    }
+
+    # Get data subs
+    subtitle_data = copy.deepcopy(segments_data)
+    subtitle_data["language"] = (
+        "ja" if language in ["ja", "zh", "zh-TW"] else language
+    )
+
+    # Clean
+    if not highlight_words:
+        subtitle_data.pop("word_segments", None)
+        for segment in subtitle_data["segments"]:
+            for key in ["speaker", "chars", "words"]:
+                segment.pop(key, None)
+
+    writer(
+        subtitle_data,
+        support_name,
+        word_options,
+    )
+
+    return sub_file
+
+
 def process_subtitles(
     deep_copied_result,
     align_language,

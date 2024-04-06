@@ -161,6 +161,13 @@ cython_debug/
 # Ignore
 sub_tra.*
 sub_ori.*
+SPEAKER_00.*
+SPEAKER_01.*
+SPEAKER_02.*
+SPEAKER_03.*
+SPEAKER_04.*
+SPEAKER_05.*
+task_subtitle.*
 *.mp3
 *.mp4
 *.ogg
@@ -170,6 +177,9 @@ list.txt
 text_preprocessor.txt
 text_translation.txt
 *.srt
+*.vtt
+*.tsv
+*.aud
 mdx_models/*.onnx
 _XTTS_/
 downloads/

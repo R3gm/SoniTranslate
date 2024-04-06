@@ -25,7 +25,12 @@ from soni_translate.preprocessor import (
     audio_video_preprocessor,
     audio_preprocessor,
 )
-from soni_translate.postprocessor import media_out
+from soni_translate.postprocessor import (
+    OUTPUT_TYPE_OPTIONS,
+    DOCS_OUTPUT_TYPE_OPTIONS,
+    media_out,
+    get_subtitle_speaker,
+)
 from soni_translate.language_configuration import (
     LANGUAGES,
     UNIDIRECTIONAL_L_LIST,
@@ -346,10 +351,13 @@ class SoniTranslate(SoniTrCache):
             output_file = self.multilingual_media_conversion(
                 media, "", "", *kwargs
             )
-            result.append(output_file)
+
+            if isinstance(output_file, str):
+                output_file = [output_file]
+            result.extend(output_file)
 
             if is_gui_arg and len(media_batch) > 1:
-                gr.Info(f"Done: {os.path.basename(output_file)}")
+                gr.Info(f"Done: {os.path.basename(output_file[0])}")
 
         return result
 
@@ -713,6 +721,17 @@ class SoniTranslate(SoniTrCache):
                 file_obj=self.sub_file,
             )
             logger.info(f"Done: {output}")
+            return output
+
+        if output_type == "subtitle [by speaker]":
+            output = get_subtitle_speaker(
+                media_file,
+                result=self.result_diarize,
+                language=TRANSLATE_AUDIO_TO,
+                extension=output_format_subtitle,
+                base_name=video_output_name,
+            )
+            logger.info(f"Done: {str(output)}")
             return output
 
         if not self.task_in_cache("tts", [
@@ -1490,17 +1509,9 @@ def create_gui(theme, logs_in_gui=False):
                             )
 
                             gr.HTML("<hr></h2>")
-                            main_output_type_opt = [
-                                "video (mp4)",
-                                "video (mkv)",
-                                "audio (mp3)",
-                                "audio (ogg)",
-                                "audio (wav)",
-                                "subtitle",
-                            ]
                             main_output_type = gr.Dropdown(
-                                main_output_type_opt,
-                                value=main_output_type_opt[0],
+                                OUTPUT_TYPE_OPTIONS,
+                                value=OUTPUT_TYPE_OPTIONS[0],
                                 label=lg_conf["out_type_label"],
                             )
                             VIDEO_OUTPUT_NAME = gr.Textbox(
@@ -1791,13 +1802,9 @@ def create_gui(theme, logs_in_gui=False):
 
                                     gr.HTML("<hr></h2>")
 
-                                    docs_output_type_opt = [
-                                        "audio",
-                                        "text",
-                                    ]  # Add DOCX and etc.
                                     docs_output_type = gr.Dropdown(
-                                        docs_output_type_opt,
-                                        value=docs_output_type_opt[0],
+                                        DOCS_OUTPUT_TYPE_OPTIONS,
+                                        value=DOCS_OUTPUT_TYPE_OPTIONS[0],
                                         label="Output type",
                                     )
                                     docs_OUTPUT_NAME = gr.Textbox(
