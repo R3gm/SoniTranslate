@@ -56,6 +56,10 @@ from soni_translate.mdx_net import (
     mdxnet_models_dir,
 )
 from soni_translate.speech_segmentation import (
+    ASR_MODEL_OPTIONS,
+    COMPUTE_TYPE_GPU,
+    COMPUTE_TYPE_CPU,
+    find_whisper_models,
     transcribe_speech,
     align_speech,
     diarize_speech,
@@ -393,6 +397,8 @@ class SoniTranslate(SoniTrCache):
         get_video_from_text_json=False,
         text_json="{}",
         avoid_overlap=False,
+        literalize_numbers=True,
+        segment_duration_limit=15,
         diarization_model="pyannote_2.1",
         translate_process="google_translator_batch",
         subtitle_file=None,
@@ -523,7 +529,9 @@ class SoniTranslate(SoniTrCache):
             )
 
         # Check GPU
-        compute_type = "float32" if self.device == "cpu" else compute_type
+        if self.device == "cpu" and compute_type not in COMPUTE_TYPE_CPU:
+            logger.info("Compute type changed to float32")
+            compute_type = "float32"
 
         base_video_file = "Video.mp4"
         base_audio_wav = "audio.wav"
@@ -564,6 +572,8 @@ class SoniTranslate(SoniTrCache):
                 WHISPER_MODEL_SIZE,
                 compute_type,
                 batch_size,
+                literalize_numbers,
+                segment_duration_limit,
                 (
                     "l_unit"
                     if text_segmentation_scale in ["word", "character"]
@@ -598,6 +608,8 @@ class SoniTranslate(SoniTrCache):
                         compute_type,
                         batch_size,
                         SOURCE_LANGUAGE,
+                        literalize_numbers,
+                        segment_duration_limit,
                     )
                 logger.debug(
                     "Transcript complete, "
@@ -1482,41 +1494,49 @@ def create_gui(theme, logs_in_gui=False):
 
                             gr.HTML("<hr></h2>")
                             gr.Markdown(lg_conf["whisper_title"])
-                            whisper_model_options = [
-                                "tiny",
-                                "base",
-                                "small",
-                                "medium",
-                                "large-v1",
-                                "large-v2",
-                                "large-v3",
-                            ]
+                            literalize_numbers_gui = gr.Checkbox(
+                                True,
+                                label="Literalize Numbers",
+                                info="Literalize Numbers: Replace numerical representations with their written equivalents in the transcript.",
+                            )
+                            segment_duration_limit_gui = gr.Slider(
+                                label="Segment Duration Limit",
+                                info="Specify the maximum duration (in seconds) for each segment. The audio will be processed using VAD, limiting the duration for each segment chunk.",
+                                value=15,
+                                step=1,
+                                minimum=1,
+                                maximum=30,
+                            )
                             whisper_model_default = (
                                 "large-v3"
                                 if torch.cuda.is_available()
                                 else "medium"
                             )
+
                             WHISPER_MODEL_SIZE = gr.Dropdown(
-                                whisper_model_options,
+                                ASR_MODEL_OPTIONS + find_whisper_models(),
                                 value=whisper_model_default,
-                                label="Whisper model",
+                                label="Whisper ASR model",
+                                info="It converts spoken language to text using the Whisper model by default. Use a custom model, for example, by inputting the repository name 'BELLE-2/Belle-whisper-large-v3-zh' in the dropdown to utilize a Chinese language finetuned model. Find finetuned models on Hugging Face.",
+                                allow_custom_value=True,
+                            )
+                            com_t_opt, com_t_default = (
+                                [COMPUTE_TYPE_GPU, "float16"]
+                                if torch.cuda.is_available()
+                                else [COMPUTE_TYPE_CPU, "float32"]
+                            )
+                            compute_type = gr.Dropdown(
+                                com_t_opt,
+                                value=com_t_default,
+                                label="Compute type",
+                                info="Choosing smaller types like int8 or float16 can improve performance by reducing memory usage and increasing computational throughput, but may sacrifice precision compared to larger data types like float32.",
                             )
                             batch_size = gr.Slider(
                                 1, 32, value=16, label="Batch size", step=1
                             )
-                            list_compute_type = (
-                                ["int8", "float16", "float32"]
-                                if torch.cuda.is_available()
-                                else ["int8", "float32"]
-                            )
-                            compute_type = gr.Dropdown(
-                                list_compute_type,
-                                value=list_compute_type[1],
-                                label="Compute type",
-                            )
                             input_srt = gr.File(
                                 label=lg_conf["srt_file_label"],
-                                file_types=[".srt", ".ass"],
+                                file_types=[".srt", ".ass" ".vtt"],
                                 height=130,
                             )
 
@@ -1671,7 +1691,7 @@ def create_gui(theme, logs_in_gui=False):
                                 False,
                                 whisper_model_default,
                                 16,
-                                list_compute_type[1],
+                                com_t_default,
                                 "Spanish (es)",
                                 "English (en)",
                                 1,
@@ -1693,7 +1713,7 @@ def create_gui(theme, logs_in_gui=False):
                                 False,
                                 whisper_model_default,
                                 16,
-                                list_compute_type[1],
+                                com_t_default,
                                 "Japanese (ja)",
                                 "English (en)",
                                 1,
@@ -2351,6 +2371,8 @@ def create_gui(theme, logs_in_gui=False):
                 dummy_false_check,  # dummy false
                 subs_edit_space,
                 avoid_overlap_gui,
+                literalize_numbers_gui,
+                segment_duration_limit_gui,
                 diarization_process_dropdown,
                 translate_process_dropdown,
                 input_srt,
@@ -2407,6 +2429,8 @@ def create_gui(theme, logs_in_gui=False):
                 edit_sub_check,
                 subs_edit_space,
                 avoid_overlap_gui,
+                literalize_numbers_gui,
+                segment_duration_limit_gui,
                 diarization_process_dropdown,
                 translate_process_dropdown,
                 input_srt,

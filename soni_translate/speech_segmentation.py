@@ -5,22 +5,84 @@ from whisperx.alignment import (
 import whisperx
 import torch
 import gc
+import os
 from IPython.utils import capture # noqa
 from .language_configuration import EXTRA_ALIGN, INVERTED_LANGUAGES
 from .logging_setup import logger
+from .postprocessor import sanitize_file_name
+
+ASR_MODEL_OPTIONS = [
+    "tiny",
+    "base",
+    "small",
+    "medium",
+    "large",
+    "large-v1",
+    "large-v2",
+    "large-v3",
+    "distil-large-v2",
+    "Systran/faster-distil-whisper-large-v3",
+    "tiny.en",
+    "base.en",
+    "small.en",
+    "medium.en",
+    "distil-small.en",
+    "distil-medium.en",
+]
+
+COMPUTE_TYPE_GPU = [
+    "int8",
+    "int8_float32",
+    "int8_float16",
+    "int8_bfloat16",
+    "int16",
+    "float16",
+    "bfloat16",
+    "float32"
+]
+
+COMPUTE_TYPE_CPU = [
+    "int8",
+    "int8_float32",
+    "int16",
+    "float32",
+]
+
+WHISPER_MODELS_PATH = './WHISPER_MODELS'
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
+def find_whisper_models():
+    path = WHISPER_MODELS_PATH
+    folders = []
+
+    if os.path.exists(path):
+        for folder in os.listdir(path):
+            folder_path = os.path.join(path, folder)
+            if (
+                os.path.isdir(folder_path)
+                and 'model.bin' in os.listdir(folder_path)
+            ):
+                folders.append(folder)
+    return folders
+
+
 def transcribe_speech(
-    audio_wav, WHISPER_MODEL_SIZE, compute_type, batch_size, SOURCE_LANGUAGE
+    audio_wav,
+    asr_model,
+    compute_type,
+    batch_size,
+    SOURCE_LANGUAGE,
+    literalize_numbers=True,
+    segment_duration_limit=15,
 ):
     """
     Transcribe speech using a whisper model.
 
     Parameters:
     - audio_wav (str): Path to the audio file in WAV format.
-    - WHISPER_MODEL_SIZE (str): The whisper model to be loaded.
+    - asr_model (str): The whisper model to be loaded.
     - compute_type (str): Type of compute to be used (e.g., 'int8', 'float16').
     - batch_size (int): Batch size for transcription.
     - SOURCE_LANGUAGE (str): Source language for transcription.
@@ -37,11 +99,53 @@ def transcribe_speech(
         SOURCE_LANGUAGE if SOURCE_LANGUAGE != "zh-TW" else "zh"
     )
     asr_options = {
-        "initial_prompt": prompt
+        "initial_prompt": prompt,
+        "suppress_numerals": literalize_numbers
     }
 
+    if asr_model not in ASR_MODEL_OPTIONS:
+
+        base_dir = WHISPER_MODELS_PATH
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
+        model_dir = os.path.join(base_dir, sanitize_file_name(asr_model))
+
+        if not os.path.exists(model_dir):
+            from ctranslate2.converters import TransformersConverter
+
+            quantization = "float32"
+            # Download new model
+            try:
+                converter = TransformersConverter(
+                    asr_model,
+                    low_cpu_mem_usage=True,
+                    copy_files=[
+                        "tokenizer_config.json", "preprocessor_config.json"
+                    ]
+                )
+                converter.convert(
+                    model_dir,
+                    quantization=quantization,
+                    force=False
+                )
+            except Exception as error:
+                if "File tokenizer_config.json does not exist" in str(error):
+                    converter._copy_files = [
+                        "tokenizer.json", "preprocessor_config.json"
+                    ]
+                    converter.convert(
+                        model_dir,
+                        quantization=quantization,
+                        force=False
+                    )
+                else:
+                    raise error
+
+        asr_model = model_dir
+        logger.info(f"ASR Model: {str(model_dir)}")
+
     model = whisperx.load_model(
-        WHISPER_MODEL_SIZE,
+        asr_model,
         device,
         compute_type=compute_type,
         language=SOURCE_LANGUAGE,
@@ -49,7 +153,11 @@ def transcribe_speech(
     )
 
     audio = whisperx.load_audio(audio_wav)
-    result = model.transcribe(audio, batch_size=batch_size)
+    result = model.transcribe(
+        audio,
+        batch_size=batch_size,
+        chunk_size=segment_duration_limit,
+    )
 
     if result["language"] == "zh" and not prompt:
         result["language"] = "zh-TW"

@@ -111,9 +111,9 @@ def create_translated_audio(
                     if (last_end_time - 0.500) > start:
                         overlap_time = last_end_time - start
                         if previous_speaker and previous_speaker != speaker:
-                            start = (last_end_time - 0.600)
+                            start = (last_end_time - 0.500)
                         else:
-                            start = (last_end_time - 0.250)
+                            start = (last_end_time - 0.200)
                         if overlap_time > 2.5:
                             start = start - 0.3
                         logger.info(
