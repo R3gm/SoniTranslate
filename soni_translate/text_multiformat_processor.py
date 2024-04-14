@@ -1,6 +1,6 @@
 from .logging_setup import logger
 from whisperx.utils import get_writer
-from .utils import remove_files
+from .utils import remove_files, run_command
 import srt
 import re
 import os
@@ -53,7 +53,15 @@ def clean_text(text):
 
 
 def srt_file_to_segments(file_path, speaker=False):
-    srt_content_list = extract_from_srt(file_path)
+    try:
+        srt_content_list = extract_from_srt(file_path)
+    except Exception as error:
+        logger.error(str(error))
+        fixed_file = "fixed_sub.srt"
+        remove_files(fixed_file)
+        fix_sub = f'ffmpeg -i "{file_path}" "{fixed_file}" -y'
+        run_command(fix_sub)
+        srt_content_list = extract_from_srt(fixed_file)
 
     segments = []
     for segment in srt_content_list:
@@ -240,6 +248,11 @@ def get_subtitle(
     if not filename:
         filename = "task_subtitle"
 
+    is_ass_extension = False
+    if extension == "ass":
+        is_ass_extension = True
+        extension = "srt"
+
     sub_file = filename + "." + extension
     support_name = filename + ".mp3"
     remove_files(sub_file)
@@ -269,6 +282,13 @@ def get_subtitle(
         support_name,
         word_options,
     )
+
+    if is_ass_extension:
+        temp_name = filename + ".ass"
+        remove_files(temp_name)
+        convert_sub = f'ffmpeg -i "{sub_file}" "{temp_name}" -y'
+        run_command(convert_sub)
+        sub_file = temp_name
 
     return sub_file
 

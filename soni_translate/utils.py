@@ -60,17 +60,17 @@ def upload_model_list():
     models = []
     for name in os.listdir(weight_root):
         if name.endswith(".pth"):
-            models.append(name)
+            models.append("weights/" + name)
     if models:
-        logger.info(models)
+        logger.debug(models)
 
     index_root = "logs"
-    index_paths = []
+    index_paths = [None]
     for name in os.listdir(index_root):
         if name.endswith(".index"):
             index_paths.append("logs/" + name)
     if index_paths:
-        logger.info(index_paths)
+        logger.debug(index_paths)
 
     return models, index_paths
 

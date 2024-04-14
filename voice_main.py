@@ -1,187 +1,107 @@
-import torch
 from soni_translate.logging_setup import logger
+import torch
+import gc
+import numpy as np
+import os
+import shutil
+import warnings
+import threading
+from tqdm import tqdm
 from lib.infer_pack.models import (
     SynthesizerTrnMs256NSFsid,
     SynthesizerTrnMs256NSFsid_nono,
     SynthesizerTrnMs768NSFsid,
     SynthesizerTrnMs768NSFsid_nono,
 )
-from vci_pipeline import VC
-import traceback, pdb
 from lib.audio import load_audio
-import numpy as np
-import os, shutil
-from fairseq import checkpoint_utils
 import soundfile as sf
-from gtts import gTTS
 import edge_tts
 import asyncio
 from soni_translate.utils import remove_directory_contents, create_directories
+from scipy import signal
+from time import time as ttime
+import faiss
+from vci_pipeline import VC, change_rms, bh, ah
+import librosa
+
+warnings.filterwarnings("ignore")
 
 
-def generate_inference(sid, to_return_protect0, to_return_protect1):
-    global n_spk, tgt_sr, net_g, vc, cpt, version
-    if sid == "" or sid == []:
-        global hubert_model
-        if hubert_model is not None:  # change model or not
-            logger.debug("Clean empty cache")
-            del net_g, n_spk, vc, hubert_model, tgt_sr  # ,cpt
-            hubert_model = net_g = n_spk = vc = hubert_model = tgt_sr = None
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-            # if clean
-            if_f0 = cpt.get("f0", 1)
-            version = cpt.get("version", "v1")
-            if version == "v1":
-                if if_f0 == 1:
-                    net_g = SynthesizerTrnMs256NSFsid(
-                        *cpt["config"], is_half=config.is_half
-                    )
-                else:
-                    net_g = SynthesizerTrnMs256NSFsid_nono(*cpt["config"])
-            elif version == "v2":
-                if if_f0 == 1:
-                    net_g = SynthesizerTrnMs768NSFsid(
-                        *cpt["config"], is_half=config.is_half
-                    )
-                else:
-                    net_g = SynthesizerTrnMs768NSFsid_nono(*cpt["config"])
-            del net_g, cpt
-            if torch.cuda.is_available():
-                torch.cuda.empty_cache()
-        return {"visible": False, "__type__": "update"}
-    person = "%s/%s" % (weight_root, sid)
-    logger.info("Loading %s" % person)
-    cpt = torch.load(person, map_location="cpu")
-    tgt_sr = cpt["config"][-1]
-    cpt["config"][-3] = cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
-    if_f0 = cpt.get("f0", 1)
-    if if_f0 == 0:
-        to_return_protect0 = to_return_protect1 = {
-            "visible": False,
-            "value": 0.5,
-            "__type__": "update",
-        }
-    else:
-        to_return_protect0 = {
-            "visible": True,
-            "value": to_return_protect0,
-            "__type__": "update",
-        }
-        to_return_protect1 = {
-            "visible": True,
-            "value": to_return_protect1,
-            "__type__": "update",
-        }
-    version = cpt.get("version", "v1")
-    if version == "v1":
-        if if_f0 == 1:
-            net_g = SynthesizerTrnMs256NSFsid(*cpt["config"], is_half=config.is_half)
-        else:
-            net_g = SynthesizerTrnMs256NSFsid_nono(*cpt["config"])
-    elif version == "v2":
-        if if_f0 == 1:
-            net_g = SynthesizerTrnMs768NSFsid(*cpt["config"], is_half=config.is_half)
-        else:
-            net_g = SynthesizerTrnMs768NSFsid_nono(*cpt["config"])
-    del net_g.enc_q
-    print(net_g.load_state_dict(cpt["weight"], strict=False))
-    net_g.eval().to(config.device)
-    if config.is_half:
-        net_g = net_g.half()
-    else:
-        net_g = net_g.float()
-    vc = VC(tgt_sr, config)
-    n_spk = cpt["config"][-3]
-    return (
-        {"visible": True, "maximum": n_spk, "__type__": "update"},
-        to_return_protect0,
-        to_return_protect1,
-    )
+class Config:
+    def __init__(self, only_cpu=False):
+        self.device = "cuda:0"
+        self.is_half = True
+        self.n_cpu = 0
+        self.gpu_name = None
+        self.gpu_mem = None
+        (
+            self.x_pad,
+            self.x_query,
+            self.x_center,
+            self.x_max
+        ) = self.device_config(only_cpu)
 
-
-# inference
-def vc_single(
-    sid,
-    input_audio_path,
-    f0_up_key,
-    f0_file,
-    f0_method,
-    file_index,
-    file_index2,
-    # file_big_npy,
-    index_rate,
-    filter_radius,
-    resample_sr,
-    rms_mix_rate,
-    protect,
-):  
-    global tgt_sr, net_g, vc, hubert_model, version, cpt
-    if input_audio_path is None:
-        return "You need to upload an audio", None
-    f0_up_key = int(f0_up_key)
-    try:
-        audio = load_audio(input_audio_path, 16000)
-        audio_max = np.abs(audio).max() / 0.95
-        if audio_max > 1:
-            audio /= audio_max
-        times = [0, 0, 0]
-        if not hubert_model:
-            load_hubert()
-        if_f0 = cpt.get("f0", 1)
-        file_index = (
-            (
-                file_index.strip(" ")
-                .strip('"')
-                .strip("\n")
-                .strip('"')
-                .strip(" ")
-                .replace("trained", "added")
+    def device_config(self, only_cpu) -> tuple:
+        if torch.cuda.is_available() and not only_cpu:
+            i_device = int(self.device.split(":")[-1])
+            self.gpu_name = torch.cuda.get_device_name(i_device)
+            if (
+                ("16" in self.gpu_name and "V100" not in self.gpu_name.upper())
+                or "P40" in self.gpu_name.upper()
+                or "1060" in self.gpu_name
+                or "1070" in self.gpu_name
+                or "1080" in self.gpu_name
+            ):
+                logger.info(
+                    "16/10 Series GPUs and P40 excel "
+                    "in single-precision tasks."
+                )
+                self.is_half = False
+            else:
+                self.gpu_name = None
+            self.gpu_mem = int(
+                torch.cuda.get_device_properties(i_device).total_memory
+                / 1024
+                / 1024
+                / 1024
+                + 0.4
             )
-            if file_index != ""
-            else file_index2
-        )  # reemplace for 2
-        # file_big_npy = (
-        #     file_big_npy.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
-        # )
-        audio_opt = vc.pipeline(
-            hubert_model,
-            net_g,
-            sid,
-            audio,
-            input_audio_path,
-            times,
-            f0_up_key,
-            f0_method,
-            file_index,
-            # file_big_npy,
-            index_rate,
-            if_f0,
-            filter_radius,
-            tgt_sr,
-            resample_sr,
-            rms_mix_rate,
-            version,
-            protect,
-            f0_file=f0_file,
+        elif torch.backends.mps.is_available() and not only_cpu:
+            logger.info("Supported N-card not found, using MPS for inference")
+            self.device = "mps"
+        else:
+            logger.info("No supported N-card found, using CPU for inference")
+            self.device = "cpu"
+            self.is_half = False
+
+        if self.n_cpu == 0:
+            self.n_cpu = os.cpu_count()
+
+        if self.is_half:
+            # 6GB VRAM configuration
+            x_pad = 3
+            x_query = 10
+            x_center = 60
+            x_max = 65
+        else:
+            # 5GB VRAM configuration
+            x_pad = 1
+            x_query = 6
+            x_center = 38
+            x_max = 41
+
+        if self.gpu_mem is not None and self.gpu_mem <= 4:
+            x_pad = 1
+            x_query = 5
+            x_center = 30
+            x_max = 32
+
+        logger.info(
+            f"Config: Device is {self.device}, "
+            f"half precision is {self.is_half}"
         )
-        if tgt_sr != resample_sr >= 16000:
-            tgt_sr = resample_sr
-        index_info = (
-            "Using index:%s." % file_index
-            if os.path.exists(file_index)
-            else "Index not used."
-        )
-        return "Success.\n %s\nTime:\n npy:%ss, f0:%ss, infer:%ss" % (
-            index_info,
-            times[0],
-            times[1],
-            times[2],
-        ), (tgt_sr, audio_opt)
-    except:
-        info = traceback.format_exc()
-        logger.error(str(info))
-        return info, (None, None)
+
+        return x_pad, x_query, x_center, x_max
 
 
 BASE_DOWNLOAD_LINK = "https://huggingface.co/r3gm/sonitranslate_voice_models/resolve/main/"
@@ -191,11 +111,11 @@ BASE_MODELS = [
 ]
 BASE_DIR = "."
 
-# hubert model
-def load_hubert():
-    global hubert_model
 
+def load_hu_bert(config):
+    from fairseq import checkpoint_utils
     from soni_translate.utils import download_manager
+
     for id_model in BASE_MODELS:
         download_manager(
             os.path.join(BASE_DOWNLOAD_LINK, id_model), BASE_DIR
@@ -213,355 +133,578 @@ def load_hubert():
         hubert_model = hubert_model.float()
     hubert_model.eval()
 
-# config cpu
-def use_fp32_config():
-    for config_file in [
-        "32k.json",
-        "40k.json",
-        "48k.json",
-        "48k_v2.json",
-        "32k_v2.json",
-    ]:
-        with open(f"configs/{config_file}", "r") as f:
-            strr = f.read().replace("true", "false")
-        with open(f"configs/{config_file}", "w") as f:
-            f.write(strr)
+    return hubert_model
 
-# config device and torch type
-class Config:
-    def __init__(self, device, is_half):
-        self.device = device
-        self.is_half = is_half
-        self.n_cpu = 2 # set cpu cores ####################
-        self.gpu_name = None
-        self.gpu_mem = None
-        self.x_pad, self.x_query, self.x_center, self.x_max = self.device_config()
 
-    def device_config(self) -> tuple:
-        if torch.cuda.is_available():
-            i_device = int(self.device.split(":")[-1])
-            self.gpu_name = torch.cuda.get_device_name(i_device)
-            if (
-                ("16" in self.gpu_name and "V100" not in self.gpu_name.upper())
-                or "P40" in self.gpu_name.upper()
-                or "1060" in self.gpu_name
-                or "1070" in self.gpu_name
-                or "1080" in self.gpu_name
-            ):
-                logger.info("16/10 Series GPUs and P40 excel in single-precision tasks.")
-                self.is_half = False
-                for config_file in ["32k.json", "40k.json", "48k.json"]:
-                    with open(f"configs/{config_file}", "r") as f:
-                        strr = f.read().replace("true", "false")
-                    with open(f"configs/{config_file}", "w") as f:
-                        f.write(strr)
-                with open("trainset_preprocess_pipeline_print.py", "r") as f:
-                    strr = f.read().replace("3.7", "3.0")
-                with open("trainset_preprocess_pipeline_print.py", "w") as f:
-                    f.write(strr)
-            else:
-                self.gpu_name = None
-            self.gpu_mem = int(
-                torch.cuda.get_device_properties(i_device).total_memory
-                / 1024
-                / 1024
-                / 1024
-                + 0.4
+def load_trained_model(model_path, config):
+
+    if not model_path:
+        raise ValueError("No model found")
+
+    logger.info("Loading %s" % model_path)
+    cpt = torch.load(model_path, map_location="cpu")
+    tgt_sr = cpt["config"][-1]
+    cpt["config"][-3] = cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
+    if_f0 = cpt.get("f0", 1)
+    if if_f0 == 0:
+        # protect to 0.5 need?
+        pass
+
+    version = cpt.get("version", "v1")
+    if version == "v1":
+        if if_f0 == 1:
+            net_g = SynthesizerTrnMs256NSFsid(
+                *cpt["config"], is_half=config.is_half
             )
-            if self.gpu_mem <= 4:
-                with open("trainset_preprocess_pipeline_print.py", "r") as f:
-                    strr = f.read().replace("3.7", "3.0")
-                with open("trainset_preprocess_pipeline_print.py", "w") as f:
-                    f.write(strr)
-        elif torch.backends.mps.is_available():
-            logger.info("Supported N-card not found, using MPS for inference")
-            self.device = "mps"
         else:
-            logger.info("No supported N-card found, using CPU for inference")
-            self.device = "cpu"
-            self.is_half = False
-            use_fp32_config()
-
-        if self.n_cpu == 0:
-            self.n_cpu = cpu_count()
-
-        if self.is_half:
-            # 6GB VRAM configuration
-            x_pad = 3
-            x_query = 10
-            x_center = 60
-            x_max = 65
+            net_g = SynthesizerTrnMs256NSFsid_nono(*cpt["config"])
+    elif version == "v2":
+        if if_f0 == 1:
+            net_g = SynthesizerTrnMs768NSFsid(
+                *cpt["config"], is_half=config.is_half
+            )
         else:
-            # 5GB VRAM configuration
-            x_pad = 1
-            x_query = 6
-            x_center = 38
-            x_max = 41
+            net_g = SynthesizerTrnMs768NSFsid_nono(*cpt["config"])
+    del net_g.enc_q
 
-        if self.gpu_mem != None and self.gpu_mem <= 4:
-            x_pad = 1
-            x_query = 5
-            x_center = 30
-            x_max = 32
+    net_g.load_state_dict(cpt["weight"], strict=False)
+    net_g.eval().to(config.device)
+
+    if config.is_half:
+        net_g = net_g.half()
+    else:
+        net_g = net_g.float()
+
+    vc = VC(tgt_sr, config)
+    n_spk = cpt["config"][-3]
+
+    return n_spk, tgt_sr, net_g, vc, cpt, version
 
 
-
-
-        logger.info(f"Config: Device is {self.device}, half precision is {self.is_half}")
-
-        return x_pad, x_query, x_center, x_max
-
-# call inference
 class ClassVoices:
-    def __init__(self):
-        self.file_index = "" # root
+    def __init__(self, only_cpu=False):
+        self.model_config = {}
+        self.config = None
+        self.only_cpu = only_cpu
 
-    def apply_conf(self, f0method,
-                   model_voice_path00, transpose00, file_index2_00,
-                   model_voice_path01="", transpose01=0, file_index2_01="",
-                   model_voice_path02="", transpose02=0, file_index2_02="",
-                   model_voice_path03="", transpose03=0, file_index2_03="",
-                   model_voice_path04="", transpose04=0, file_index2_04="",
-                   model_voice_path05="", transpose05=0, file_index2_05="",
-                   model_voice_path99="", transpose99=0, file_index2_99=""):
+    def apply_conf(
+        self,
+        tag="base_model",
+        file_model="",
+        pitch_algo="pm",
+        pitch_lvl=0,
+        file_index="",
+        index_influence=0.66,
+        respiration_median_filtering=3,
+        envelope_ratio=0.25,
+        consonant_breath_protection=0.33,
+        resample_sr=0,
+        file_pitch_algo="",
+    ):
 
-        #self.filename = filename
-        self.f0method = f0method
-        
-        self.model_voice_path00 = model_voice_path00
-        self.transpose00 = transpose00
-        self.file_index200 = file_index2_00
+        if not file_model:
+            raise ValueError("Model not found")
 
-        self.model_voice_path01 = model_voice_path01
-        self.transpose01 = transpose01
-        self.file_index201 = file_index2_01
+        if file_index is None:
+            file_index = ""
 
-        self.model_voice_path02 = model_voice_path02
-        self.transpose02 = transpose02
-        self.file_index202 = file_index2_02
+        if file_pitch_algo is None:
+            file_pitch_algo = ""
 
-        self.model_voice_path03 = model_voice_path03
-        self.transpose03 = transpose03
-        self.file_index203 = file_index2_03
+        if not self.config:
+            self.config = Config(self.only_cpu)
+            self.hu_bert_model = None
 
-        self.model_voice_path04 = model_voice_path04
-        self.transpose04 = transpose04
-        self.file_index204 = file_index2_04
+        self.model_config[tag] = {
+            "file_model": file_model,
+            "pitch_algo": pitch_algo,
+            "pitch_lvl": pitch_lvl,  # no decimal
+            "file_index": file_index,
+            "index_influence": index_influence,
+            "respiration_median_filtering": respiration_median_filtering,
+            "envelope_ratio": envelope_ratio,
+            "consonant_breath_protection": consonant_breath_protection,
+            "resample_sr": resample_sr,
+            "file_pitch_algo": file_pitch_algo,
+        }
+        return f"CONFIGURATION APPLIED FOR {tag}: {file_model}"
 
-        self.model_voice_path05 = model_voice_path05
-        self.transpose05 = transpose05
-        self.file_index205 = file_index2_05
+    def infer(
+        self,
+        params,
+        # load model
+        n_spk,
+        tgt_sr,
+        net_g,
+        pipe,
+        cpt,
+        version,
+        if_f0,
+        # load index
+        index_rate,
+        index,
+        big_npy,
+        # load f0 file
+        inp_f0,
+        # audio file
+        input_audio_path,
+        overwrite,
+    ):
 
-        self.model_voice_path99 = model_voice_path99
-        self.transpose99 = transpose99
-        self.file_index299 = file_index2_99
-        return "CONFIGURATION APPLIED"
+        f0_method = params["pitch_algo"]
+        f0_up_key = params["pitch_lvl"]
+        filter_radius = params["respiration_median_filtering"]
+        resample_sr = params["resample_sr"]
+        rms_mix_rate = params["envelope_ratio"]
+        protect = params["consonant_breath_protection"]
 
-    def custom_voice(self,
-        _values, # filter indices
-        audio_files, # all audio files
-        model_voice_path='',
-        transpose=0,
-        f0method='pm',
-        file_index='',
-        file_index2='',
-        ):
+        if not os.path.exists(input_audio_path):
+            raise ValueError(
+                "The audio file was not found or is not "
+                f"a valid file: {input_audio_path}"
+            )
 
-        #hubert_model = None
+        f0_up_key = int(f0_up_key)
 
-        generate_inference(
-            sid=model_voice_path,  # model path
-            to_return_protect0=0.33,
-            to_return_protect1=0.33
+        audio = load_audio(input_audio_path, 16000)
+
+        # Normalize audio
+        audio_max = np.abs(audio).max() / 0.95
+        if audio_max > 1:
+            audio /= audio_max
+
+        times = [0, 0, 0]
+
+        # filters audio signal, pads it, computes sliding window sums,
+        # and extracts optimized time indices
+        audio = signal.filtfilt(bh, ah, audio)
+        audio_pad = np.pad(
+            audio, (pipe.window // 2, pipe.window // 2), mode="reflect"
+        )
+        opt_ts = []
+        if audio_pad.shape[0] > pipe.t_max:
+            audio_sum = np.zeros_like(audio)
+            for i in range(pipe.window):
+                audio_sum += audio_pad[i:i - pipe.window]
+            for t in range(pipe.t_center, audio.shape[0], pipe.t_center):
+                opt_ts.append(
+                    t
+                    - pipe.t_query
+                    + np.where(
+                        np.abs(audio_sum[t - pipe.t_query: t + pipe.t_query])
+                        == np.abs(audio_sum[t - pipe.t_query: t + pipe.t_query]).min()
+                    )[0][0]
+                )
+
+        s = 0
+        audio_opt = []
+        t = None
+        t1 = ttime()
+
+        sid_value = 0
+        sid = torch.tensor(sid_value, device=pipe.device).unsqueeze(0).long()
+
+        # Pads audio symmetrically, calculates length divided by window size.
+        audio_pad = np.pad(audio, (pipe.t_pad, pipe.t_pad), mode="reflect")
+        p_len = audio_pad.shape[0] // pipe.window
+
+        # Estimates pitch from audio signal
+        pitch, pitchf = None, None
+        if if_f0 == 1:
+            pitch, pitchf = pipe.get_f0(
+                input_audio_path,
+                audio_pad,
+                p_len,
+                f0_up_key,
+                f0_method,
+                filter_radius,
+                inp_f0,
+            )
+            pitch = pitch[:p_len]
+            pitchf = pitchf[:p_len]
+            if pipe.device == "mps":
+                pitchf = pitchf.astype(np.float32)
+            pitch = torch.tensor(
+                pitch, device=pipe.device
+            ).unsqueeze(0).long()
+            pitchf = torch.tensor(
+                pitchf, device=pipe.device
+            ).unsqueeze(0).float()
+
+        t2 = ttime()
+        times[1] += t2 - t1
+        for t in opt_ts:
+            t = t // pipe.window * pipe.window
+            if if_f0 == 1:
+                pitch_slice = pitch[
+                    :, s // pipe.window: (t + pipe.t_pad2) // pipe.window
+                ]
+                pitchf_slice = pitchf[
+                    :, s // pipe.window: (t + pipe.t_pad2) // pipe.window
+                ]
+            else:
+                pitch_slice = None
+                pitchf_slice = None
+
+            audio_slice = audio_pad[s:t + pipe.t_pad2 + pipe.window]
+            audio_opt.append(
+                pipe.vc(
+                    self.hu_bert_model,
+                    net_g,
+                    sid,
+                    audio_slice,
+                    pitch_slice,
+                    pitchf_slice,
+                    times,
+                    index,
+                    big_npy,
+                    index_rate,
+                    version,
+                    protect,
+                )[pipe.t_pad_tgt:-pipe.t_pad_tgt]
+            )
+            s = t
+
+        pitch_end_slice = pitch[
+            :, t // pipe.window:
+        ] if t is not None else pitch
+        pitchf_end_slice = pitchf[
+            :, t // pipe.window:
+        ] if t is not None else pitchf
+
+        audio_opt.append(
+            pipe.vc(
+                self.hu_bert_model,
+                net_g,
+                sid,
+                audio_pad[t:],
+                pitch_end_slice,
+                pitchf_end_slice,
+                times,
+                index,
+                big_npy,
+                index_rate,
+                version,
+                protect,
+            )[pipe.t_pad_tgt:-pipe.t_pad_tgt]
         )
 
-        for _value_item in _values:
-            filename = audio_files[_value_item] if _value_item != "test" else audio_files[0]
-            #filename = audio_files[_value_item]
-            try:
-                logger.info(f"{audio_files[_value_item]}, {model_voice_path}")
-            except:
-                pass
-
-            info_, (sample_, audio_output_) = vc_single(
-                sid=0,
-                input_audio_path=filename, # Original file
-                f0_up_key=transpose, # transpose for m to f and reverse 0 12
-                f0_file=None,
-                f0_method= f0method,
-                file_index= file_index, # dir pwd?
-                file_index2= file_index2,
-                # file_big_npy1,
-                index_rate= float(0.66),
-                filter_radius= int(3),
-                resample_sr= int(0),
-                rms_mix_rate= float(0.25),
-                protect= float(0.33),
+        audio_opt = np.concatenate(audio_opt)
+        if rms_mix_rate != 1:
+            audio_opt = change_rms(
+                audio, 16000, audio_opt, tgt_sr, rms_mix_rate
             )
-
-            sf.write(
-                file= filename, # Overwrite
-                samplerate=sample_,
-                data=audio_output_
+        if resample_sr >= 16000 and tgt_sr != resample_sr:
+            audio_opt = librosa.resample(
+                audio_opt, orig_sr=tgt_sr, target_sr=resample_sr
             )
+        audio_max = np.abs(audio_opt).max() / 0.99
+        max_int16 = 32768
+        if audio_max > 1:
+            max_int16 /= audio_max
+        audio_opt = (audio_opt * max_int16).astype(np.int16)
+        del pitch, pitchf, sid
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
-        # detele the model
+        if tgt_sr != resample_sr >= 16000:
+            final_sr = resample_sr
+        else:
+            final_sr = tgt_sr
 
-    def make_test(self, 
-        tts_text, 
-        tts_voice, 
+        """
+        "Success.\n %s\nTime:\n npy:%ss, f0:%ss, infer:%ss" % (
+            times[0],
+            times[1],
+            times[2],
+        ), (final_sr, audio_opt)
+
+        """
+
+        if overwrite:
+            output_audio_path = input_audio_path  # Overwrite
+        else:
+            basename = os.path.basename(input_audio_path)
+            dirname = os.path.dirname(input_audio_path)
+
+            new_basename = basename.split(
+                '.')[0] + "_edited." + basename.split('.')[-1]
+            new_path = os.path.join(dirname, new_basename)
+            logger.info(str(new_path))
+
+            output_audio_path = new_path
+
+        # Save file
+        sf.write(
+            file=output_audio_path,
+            samplerate=final_sr,
+            data=audio_opt
+        )
+
+        self.output_list.append(output_audio_path)
+
+    def make_test(
+        self,
+        tts_text,
+        tts_voice,
         model_path,
         index_path,
         transpose,
         f0_method,
-        ):
+    ):
 
-        create_directories("test")
-        remove_directory_contents("test")
-        filename = "test/test.wav"
+        folder_test = "test"
+        tag = "test_edge"
+        tts_file = "test/test.wav"
+        tts_edited = "test/test_edited.wav"
+
+        create_directories(folder_test)
+        remove_directory_contents(folder_test)
 
         if "SET_LIMIT" == os.getenv("DEMO"):
-          if len(tts_text) > 60:
-            tts_text = tts_text[:60]
-            logger.warning("DEMO; limit to 60 characters")
+            if len(tts_text) > 60:
+                tts_text = tts_text[:60]
+                logger.warning("DEMO; limit to 60 characters")
 
-        language = tts_voice[:2]
         try:
-          asyncio.run(edge_tts.Communicate(tts_text, "-".join(tts_voice.split('-')[:-1])).save(filename))
-        except:
-          try:
-              tts = gTTS(tts_text, lang=language)
-              tts.save(filename)
-              tts.save
-              logger.warning(f'No audio was received. Please change the tts voice for {tts_voice}. USING gTTS.')
-          except:
-            tts = gTTS('a', lang=language)
-            tts.save(filename)
-            logger.error('Audio will be replaced.')
+            asyncio.run(edge_tts.Communicate(
+                tts_text, "-".join(tts_voice.split('-')[:-1])
+            ).save(tts_file))
+        except Exception as e:
+            raise ValueError(
+                "No audio was received. Please change the "
+                f"tts voice for {tts_voice}. Error: {str(e)}"
+            )
 
-        shutil.copy("test/test.wav", "test/real_test.wav")
+        shutil.copy(tts_file, tts_edited)
 
-        self([],[]) # start modules
-
-        self.custom_voice(
-            ["test"], # filter indices
-            ["test/test.wav"], # all audio files
-            model_voice_path=model_path,
-            transpose=transpose,
-            f0method=f0_method,
-            file_index='',
-            file_index2=index_path,
+        self.apply_conf(
+            tag=tag,
+            file_model=model_path,
+            pitch_algo=f0_method,
+            pitch_lvl=transpose,
+            file_index=index_path,
+            index_influence=0.66,
+            respiration_median_filtering=3,
+            envelope_ratio=0.25,
+            consonant_breath_protection=0.33,
         )
-        return "test/test.wav", "test/real_test.wav"
 
-    def __call__(self, speakers_list, audio_files):
+        self(
+            audio_files=tts_edited,
+            tag_list=tag,
+            overwrite=True
+        )
 
-        speakers_indices = {}
+        return tts_edited, tts_file
 
-        for index, speak_ in enumerate(speakers_list):
-            if speak_ in speakers_indices:
-                speakers_indices[speak_].append(index)
-            else:
-                speakers_indices[speak_] = [index]
+    def run_threads(self, threads):
+        # Start threads
+        for thread in threads:
+            thread.start()
 
-        
-        # find models and index
-        global weight_root, index_root, config, hubert_model
-        weight_root = "weights"
-        names = []
-        for name in os.listdir(weight_root):
-            if name.endswith(".pth"):
-                names.append(name)
+        # Wait for all threads to finish
+        for thread in threads:
+            thread.join()
 
-        index_root = "logs"
-        index_paths = []
-        for name in os.listdir(index_root):
-            if name.endswith(".index"):
-                index_paths.append(name)
+        gc.collect()
+        torch.cuda.empty_cache()
 
-        logger.info(f"{names}, {index_paths}")
-        # config machine
-        hubert_model = None
-        config = Config('cuda:0', is_half=True) # config = Config('cpu', is_half=False) # cpu
+    def __call__(
+        self,
+        audio_files=[],
+        tag_list=[],
+        overwrite=False,
+        parallel_workers=1,
+    ):
+        logger.info(f"Parallel workers: {str(parallel_workers)}")
 
-        # filter by speaker
-        for _speak, _values in speakers_indices.items():
-            logger.debug(f"{_speak}, {_values}")
-            #for _value_item in _values:
-            #  self.filename = "audio2/"+audio_files[_value_item]
-            ###print(audio_files[_value_item])
+        self.output_list = []
 
-            #vc(_speak, _values, audio_files)
+        if not self.model_config:
+            raise ValueError("No model has been configured for inference")
 
-            if _speak == "SPEAKER_00":
-              self.custom_voice(
-                    _values, # filteredd
-                    audio_files,
-                    model_voice_path=self.model_voice_path00,
-                    file_index2=self.file_index200,
-                    transpose=self.transpose00,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
-                    )
-            elif _speak == "SPEAKER_01":
-                self.custom_voice(
-                    _values,
-                    audio_files,
-                    model_voice_path=self.model_voice_path01,
-                    file_index2=self.file_index201,
-                    transpose=self.transpose01,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
+        if isinstance(audio_files, str):
+            audio_files = [audio_files]
+        if isinstance(tag_list, str):
+            tag_list = [tag_list]
+
+        if not audio_files:
+            raise ValueError("No audio found to convert")
+        if not tag_list:
+            tag_list = [list(self.model_config.keys())[-1]] * len(audio_files)
+
+        if len(audio_files) > len(tag_list):
+            logger.info("Extend tag list to match audio files")
+            extend_number = len(audio_files) - len(tag_list)
+            tag_list.extend([tag_list[0]] * extend_number)
+
+        if len(audio_files) < len(tag_list):
+            logger.info("Cut list tags")
+            tag_list = tag_list[:len(audio_files)]
+
+        tag_file_pairs = list(zip(tag_list, audio_files))
+        sorted_tag_file = sorted(tag_file_pairs, key=lambda x: x[0])
+
+        # Base params
+        if not self.hu_bert_model:
+            self.hu_bert_model = load_hu_bert(self.config)
+
+        cache_params = None
+        threads = []
+        progress_bar = tqdm(total=len(tag_list), desc="Progress")
+        for i, (id_tag, input_audio_path) in enumerate(sorted_tag_file):
+
+            if id_tag not in self.model_config.keys():
+                logger.info(
+                    f"No configured model for {id_tag} with {input_audio_path}"
                 )
-            elif _speak == "SPEAKER_02":
-                self.custom_voice(
-                    _values,
-                    audio_files,
-                    model_voice_path=self.model_voice_path02,
-                    file_index2=self.file_index202,
-                    transpose=self.transpose02,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
+                continue
+
+            if (
+                len(threads) >= parallel_workers
+                or cache_params != id_tag
+                and cache_params is not None
+            ):
+
+                self.run_threads(threads)
+                progress_bar.update(len(threads))
+
+                threads = []
+
+            if cache_params != id_tag:
+
+                # Unload previous
+                (
+                    n_spk,
+                    tgt_sr,
+                    net_g,
+                    pipe,
+                    cpt,
+                    version,
+                    if_f0,
+                    index_rate,
+                    index,
+                    big_npy,
+                    inp_f0,
+                ) = [None] * 11
+                gc.collect()
+                torch.cuda.empty_cache()
+
+                # Model params
+                params = self.model_config[id_tag]
+
+                model_path = params["file_model"]
+                f0_method = params["pitch_algo"]
+                file_index = params["file_index"]
+                index_rate = params["index_influence"]
+                f0_file = params["file_pitch_algo"]
+
+                # Load model
+                (
+                    n_spk,
+                    tgt_sr,
+                    net_g,
+                    pipe,
+                    cpt,
+                    version
+                ) = load_trained_model(model_path, self.config)
+                if_f0 = cpt.get("f0", 1)  # pitch data
+
+                # Load index
+                if os.path.exists(file_index) and index_rate != 0:
+                    try:
+                        index = faiss.read_index(file_index)
+                        big_npy = index.reconstruct_n(0, index.ntotal)
+                    except Exception as error:
+                        logger.error(f"Index: {str(error)}")
+                        index_rate = 0
+                        index = big_npy = None
+                else:
+                    logger.warning("File index not found")
+                    index_rate = 0
+                    index = big_npy = None
+
+                # Load f0 file
+                inp_f0 = None
+                if os.path.exists(f0_file):
+                    try:
+                        with open(f0_file, "r") as f:
+                            lines = f.read().strip("\n").split("\n")
+                        inp_f0 = []
+                        for line in lines:
+                            inp_f0.append([float(i) for i in line.split(",")])
+                        inp_f0 = np.array(inp_f0, dtype="float32")
+                    except Exception as error:
+                        logger.error(f"f0 file: {str(error)}")
+
+                if "rmvpe" in f0_method:
+                    if not hasattr(self, "model_pitch_estimator"):
+                        from lib.rmvpe import RMVPE
+
+                        logger.info("Loading vocal pitch estimator model")
+                        self.model_pitch_estimator = RMVPE(
+                            "rmvpe.pt",
+                            is_half=self.config.is_half,
+                            device=self.config.device
+                        )
+
+                    pipe.model_rmvpe = self.model_pitch_estimator
+
+                cache_params = id_tag
+
+            # self.infer(
+            #     params,
+            #     # load model
+            #     n_spk,
+            #     tgt_sr,
+            #     net_g,
+            #     pipe,
+            #     cpt,
+            #     version,
+            #     if_f0,
+            #     # load index
+            #     index_rate,
+            #     index,
+            #     big_npy,
+            #     # load f0 file
+            #     inp_f0,
+            #     # output file
+            #     input_audio_path,
+            #     overwrite,
+            # )
+
+            thread = threading.Thread(
+                target=self.infer,
+                args=(
+                    params,
+                    # loaded model
+                    n_spk,
+                    tgt_sr,
+                    net_g,
+                    pipe,
+                    cpt,
+                    version,
+                    if_f0,
+                    # loaded index
+                    index_rate,
+                    index,
+                    big_npy,
+                    # loaded f0 file
+                    inp_f0,
+                    # audio file
+                    input_audio_path,
+                    overwrite,
                 )
-            elif _speak == "SPEAKER_03":
-                self.custom_voice(
-                    _values,
-                    audio_files,
-                    model_voice_path=self.model_voice_path03,
-                    file_index2=self.file_index203,
-                    transpose=self.transpose03,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
-                )
-            elif _speak == "SPEAKER_04":
-                self.custom_voice(
-                    _values,
-                    audio_files,
-                    model_voice_path=self.model_voice_path04,
-                    file_index2=self.file_index204,
-                    transpose=self.transpose04,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
-                )
-            elif _speak == "SPEAKER_05":
-                self.custom_voice(
-                    _values,
-                    audio_files,
-                    model_voice_path=self.model_voice_path05,
-                    file_index2=self.file_index205,
-                    transpose=self.transpose05,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
-                )
-            elif _speak == "SPEAKER_99":
-                self.custom_voice(
-                    _values,
-                    audio_files,
-                    model_voice_path=self.model_voice_path99,
-                    file_index2=self.file_index299,
-                    transpose=self.transpose99,
-                    f0method=self.f0method,
-                    file_index=self.file_index,
-                )
-            else:
-                pass
+            )
+
+            threads.append(thread)
+
+        # Run last
+        if threads:
+            self.run_threads(threads)
+
+        progress_bar.update(len(threads))
+        progress_bar.close()
+
+        return self.output_list

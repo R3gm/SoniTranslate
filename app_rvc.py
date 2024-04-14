@@ -133,6 +133,11 @@ def custom_model_voice_enable(enable_custom_voice):
     )
 
 
+def custom_model_voice_workers(workers):
+    # os.environ["VOICES_MODELS_WORKERS"] = str(workers)
+    pass
+
+
 def prog_disp(msg, percent, is_gui, progress=None):
     logger.info(msg)
     if is_gui:
@@ -271,6 +276,7 @@ class SoniTranslate(SoniTrCache):
         self.burn_subs_id = None
 
         os.environ["VOICES_MODELS"] = "DISABLE"
+        os.environ["VOICES_MODELS_WORKERS"] = "1"
         self.vci = ClassVoices()
 
         self.tts_voices = self.get_tts_voice_list()
@@ -309,8 +315,9 @@ class SoniTranslate(SoniTrCache):
 
         return self.tts_info.tts_list()
 
-    def enable_custom_model_voice(self):
+    def enable_custom_model_voice(self, workers=1):
         os.environ["VOICES_MODELS"] = "ENABLE"
+        os.environ["VOICES_MODELS_WORKERS"] = str(workers)
 
     def disable_custom_model_voice(self):
         os.environ["VOICES_MODELS"] = "DISABLE"
@@ -502,6 +509,12 @@ class SoniTranslate(SoniTrCache):
                 else subtitle_file.name
             )
 
+        if subtitle_file and SOURCE_LANGUAGE == "Automatic detection":
+            raise Exception(
+                "To use an SRT file, you need to specify its "
+                "original language (Source language)"
+            )
+
         if not media_file and subtitle_file:
             diarization_model = "disable"
             media_file = "audio_support.wav"
@@ -585,11 +598,6 @@ class SoniTranslate(SoniTrCache):
                     prog_disp(
                         "From SRT file...", 0.30, is_gui, progress=progress
                     )
-                    if SOURCE_LANGUAGE == "Automatic detection":
-                        raise Exception(
-                            "To use an SRT file, you need to specify its "
-                            "original language (Source language)"
-                        )
                     audio = whisperx.load_audio(base_audio_wav)
                     self.result = srt_file_to_segments(subtitle_file)
                     self.result["language"] = SOURCE_LANGUAGE
@@ -738,13 +746,14 @@ class SoniTranslate(SoniTrCache):
         ], {
             "result_diarize": self.result_diarize
         }):
-            self.sub_file = process_subtitles(
-                self.result_source_lang,
-                self.align_language,
-                self.result_diarize,
-                output_format_subtitle,
-                TRANSLATE_AUDIO_TO,
-            )
+            if output_format_subtitle != "ass":
+                self.sub_file = process_subtitles(
+                    self.result_source_lang,
+                    self.align_language,
+                    self.result_diarize,
+                    output_format_subtitle,
+                    TRANSLATE_AUDIO_TO,
+                )
             if output_format_subtitle != "srt":
                 _ = process_subtitles(
                     self.result_source_lang,
@@ -753,6 +762,12 @@ class SoniTranslate(SoniTrCache):
                     "srt",
                     TRANSLATE_AUDIO_TO,
                 )
+            if output_format_subtitle == "ass":
+                convert_ori = "ffmpeg -i sub_ori.srt sub_ori.ass -y"
+                convert_tra = "ffmpeg -i sub_tra.srt sub_tra.ass -y"
+                self.sub_file = "sub_tra.ass"
+                run_command(convert_ori)
+                run_command(convert_tra)
 
         if output_type == "subtitle":
             output = media_out(
@@ -802,40 +817,6 @@ class SoniTranslate(SoniTrCache):
                 dereverb_automatic_xtts,
             )
 
-        if not hasattr(self.vci, 'model_voice_path00'):
-            cc_transpose_values = cc_index_values = cc_model_paths = None
-        else:
-            cc_model_paths = [
-                self.vci.model_voice_path00,
-                self.vci.model_voice_path01,
-                self.vci.model_voice_path02,
-                self.vci.model_voice_path03,
-                self.vci.model_voice_path04,
-                self.vci.model_voice_path05,
-                self.vci.model_voice_path99
-            ]
-
-            cc_index_values = [
-                self.vci.file_index200,
-                self.vci.file_index201,
-                self.vci.file_index202,
-                self.vci.file_index203,
-                self.vci.file_index204,
-                self.vci.file_index205,
-                self.vci.file_index299
-            ]
-
-            cc_transpose_values = [
-                self.vci.f0method,
-                self.vci.transpose00,
-                self.vci.transpose01,
-                self.vci.transpose02,
-                self.vci.transpose03,
-                self.vci.transpose04,
-                self.vci.transpose05,
-                self.vci.transpose99
-            ]
-
         if not self.task_in_cache("acc_and_vc", [
             max_accelerate_audio,
             acceleration_rate_regulation,
@@ -845,9 +826,8 @@ class SoniTranslate(SoniTrCache):
             voice_imitation_vocals_dereverb,
             voice_imitation_method,
             os.getenv("VOICES_MODELS"),
-            cc_model_paths,
-            cc_index_values,
-            cc_transpose_values,
+            os.getenv("VOICES_MODELS_WORKERS"),
+            copy.deepcopy(self.vci.model_config),
             avoid_overlap
         ], {
             "valid_speakers": self.valid_speakers
@@ -885,11 +865,16 @@ class SoniTranslate(SoniTrCache):
                     is_gui,
                     progress=progress,
                 )
-                if cc_model_paths is None:
-                    logger.error("Apply the configuration!")
 
                 try:
-                    self.vci(speakers_list, audio_files)
+                    self.vci(
+                        audio_files,
+                        speakers_list,
+                        overwrite=True,
+                        parallel_workers=int(
+                            os.getenv("VOICES_MODELS_WORKERS")
+                        ),
+                    )
                 except Exception as error:
                     logger.error(str(error))
 
@@ -1131,7 +1116,14 @@ class SoniTranslate(SoniTrCache):
                 is_gui,
                 progress=progress,
             )
-            self.vci(speakers_list, audio_files)
+            self.vci(
+                audio_files,
+                speakers_list,
+                overwrite=True,
+                parallel_workers=int(
+                    os.getenv("VOICES_MODELS_WORKERS")
+                ),
+            )
 
         prog_disp(
             "Creating final audio file...", 0.90, is_gui, progress=progress
@@ -1461,6 +1453,7 @@ def create_gui(theme, logs_in_gui=False):
                             sub_type_options = [
                                 "srt",
                                 "vtt",
+                                "ass",
                                 "txt",
                                 "tsv",
                                 "json",
@@ -1536,7 +1529,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             input_srt = gr.File(
                                 label=lg_conf["srt_file_label"],
-                                file_types=[".srt", ".ass" ".vtt"],
+                                file_types=[".srt", ".ass", ".vtt"],
                                 height=130,
                             )
 
@@ -1900,6 +1893,7 @@ def create_gui(theme, logs_in_gui=False):
                                 )
 
         with gr.Tab("Custom voice R.V.C. (Optional)"):
+
             with gr.Column():
                 with gr.Accordion("Get the R.V.C. Models", open=True):
                     url_links = gr.Textbox(
@@ -1913,22 +1907,22 @@ def create_gui(theme, logs_in_gui=False):
                     download_button = gr.Button("DOWNLOAD MODELS")
 
                     def update_models():
-                        models, index_paths = upload_model_list()
-                        for i in range(8):
-                            dict_models = {
-                                f"model_voice_path{i:02d}": gr.update(
-                                    choices=models
-                                )
-                                for i in range(8)
-                            }
-                            dict_index = {
-                                f"file_index2_{i:02d}": gr.update(
-                                    choices=index_paths
-                                )
-                                for i in range(8)
-                            }
-                            dict_changes = {**dict_models, **dict_index}
-                            return [value for value in dict_changes.values()]
+                        models_path, index_path = upload_model_list()
+
+                        dict_models = {
+                            f"fmodel{i:02d}": gr.update(
+                                choices=models_path
+                            )
+                            for i in range(7)
+                        }
+                        dict_index = {
+                            f"findex{i:02d}": gr.update(
+                                choices=index_path, value=None
+                            )
+                            for i in range(7)
+                        }
+                        dict_changes = {**dict_models, **dict_index}
+                        return [value for value in dict_changes.values()]
 
             with gr.Column():
                 with gr.Accordion(lg_conf["replace_title"], open=False):
@@ -1943,207 +1937,168 @@ def create_gui(theme, logs_in_gui=False):
                                 [enable_custom_voice],
                                 [],
                             )
-
+                            workers_custom_voice = gr.Number(
+                                step=1,
+                                value=1,
+                                minimum=1,
+                                maximum=50,
+                                label="workers",
+                                visible=False,
+                            )
+                            workers_custom_voice.change(
+                                custom_model_voice_workers,
+                                [workers_custom_voice],
+                                [],
+                            )
                             gr.Markdown(lg_conf["sec2_title"])
                             gr.Markdown(lg_conf["sec2_subtitle"])
-                            gr.Markdown(lg_conf["cv_tts1"])
-                            with gr.Row():
-                                model_voice_path00 = gr.Dropdown(
-                                    models,
-                                    label="Model-1",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_00 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-1",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose00 = gr.Number(
-                                    label="Transpose-1",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            gr.Markdown(lg_conf["cv_tts2"])
-                            with gr.Row():
-                                model_voice_path01 = gr.Dropdown(
-                                    models,
-                                    label="Model-2",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_01 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-2",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose01 = gr.Number(
-                                    label="Transpose-2",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            gr.Markdown(lg_conf["cv_tts3"])
-                            with gr.Row():
-                                model_voice_path02 = gr.Dropdown(
-                                    models,
-                                    label="Model-3",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_02 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-3",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose02 = gr.Number(
-                                    label="Transpose-3",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            gr.Markdown(lg_conf["cv_tts4"])
-                            with gr.Row():
-                                model_voice_path03 = gr.Dropdown(
-                                    models,
-                                    label="Model-4",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_03 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-4",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose03 = gr.Number(
-                                    label="Transpose-4",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            gr.Markdown(lg_conf["cv_tts5"])
-                            with gr.Row():
-                                model_voice_path04 = gr.Dropdown(
-                                    models,
-                                    label="Model-5",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_04 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-5",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose04 = gr.Number(
-                                    label="Transpose-5",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            gr.Markdown(lg_conf["cv_tts6"])
-                            with gr.Row():
-                                model_voice_path05 = gr.Dropdown(
-                                    models,
-                                    label="Model-6",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_05 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-6",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose05 = gr.Number(
-                                    label="Transpose-6",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            gr.Markdown(lg_conf["cv_aux"])
-                            with gr.Row():
-                                model_voice_path06 = gr.Dropdown(
-                                    models,
-                                    label="Model-Aux",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                file_index2_06 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index-Aux",
-                                    visible=True,
-                                    interactive=True,
-                                )
-                                name_transpose06 = gr.Number(
-                                    label="Transpose-Aux",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                )
-                            gr.HTML("<hr></h2>")
-                            with gr.Row():
-                                f0_methods_voice = [
-                                    "pm",
-                                    "harvest",
-                                    "crepe",
-                                    "rmvpe",
-                                ]
-                                f0_method_global = gr.Dropdown(
-                                    f0_methods_voice,
-                                    value="pm",
-                                    label="Global F0 method",
+
+                            PITCH_ALGO_OPT = [
+                                "pm",
+                                "harvest",
+                                "crepe",
+                                "rmvpe",
+                            ]
+
+                            def model_conf():
+                                return gr.Dropdown(
+                                    models_path,
+                                    # value="",
+                                    label="Model",
                                     visible=True,
                                     interactive=True,
                                 )
 
-                    with gr.Row(variant="compact"):
-                        button_config = gr.Button(
-                            lg_conf["cv_button_apply"],
-                            variant="primary",
-                        )
+                            def pitch_algo_conf():
+                                return gr.Dropdown(
+                                    PITCH_ALGO_OPT,
+                                    value=PITCH_ALGO_OPT[3],
+                                    label="Pitch algorithm",
+                                    visible=True,
+                                    interactive=True,
+                                )
 
-                        confirm_conf = gr.HTML()
+                            def pitch_lvl_conf():
+                                return gr.Slider(
+                                    label="Pitch level",
+                                    minimum=-24,
+                                    maximum=24,
+                                    step=1,
+                                    value=0,
+                                    visible=True,
+                                    interactive=True,
+                                )
 
-                    button_config.click(
-                        SoniTr.vci.apply_conf,
-                        inputs=[
-                            f0_method_global,
-                            model_voice_path00,
-                            name_transpose00,
-                            file_index2_00,
-                            model_voice_path01,
-                            name_transpose01,
-                            file_index2_01,
-                            model_voice_path02,
-                            name_transpose02,
-                            file_index2_02,
-                            model_voice_path03,
-                            name_transpose03,
-                            file_index2_03,
-                            model_voice_path04,
-                            name_transpose04,
-                            file_index2_04,
-                            model_voice_path05,
-                            name_transpose05,
-                            file_index2_05,
-                            model_voice_path06,
-                            name_transpose06,
-                            file_index2_06,
-                        ],
-                        outputs=[confirm_conf],
-                    )
+                            def index_conf():
+                                return gr.Dropdown(
+                                    index_path,
+                                    value=None,
+                                    label="Index",
+                                    visible=True,
+                                    interactive=True,
+                                )
+
+                            def index_inf_conf():
+                                return gr.Slider(
+                                    minimum=0,
+                                    maximum=1,
+                                    label="Index influence",
+                                    value=0.75,
+                                )
+
+                            def respiration_filter_conf():
+                                return gr.Slider(
+                                    minimum=0,
+                                    maximum=7,
+                                    label="Respiration median filtering",
+                                    value=3,
+                                    step=1,
+                                    interactive=True,
+                                )
+
+                            def envelope_ratio_conf():
+                                return gr.Slider(
+                                    minimum=0,
+                                    maximum=1,
+                                    label="Envelope ratio",
+                                    value=0.25,
+                                    interactive=True,
+                                )
+
+                            def consonant_protec_conf():
+                                return gr.Slider(
+                                    minimum=0,
+                                    maximum=0.5,
+                                    label="Consonant breath protection",
+                                    value=0.5,
+                                    interactive=True,
+                                )
+
+                            def button_conf(tts_name):
+                                return gr.Button(
+                                    lg_conf["cv_button_apply"]+" "+tts_name,
+                                    variant="primary",
+                                )
+
+                            TTS_TABS = [
+                                'TTS Speaker {}'.format(i) for i in range(1, 7)
+                            ]
+
+                            CV_SUBTITLES = [
+                                lg_conf["cv_tts1"],
+                                lg_conf["cv_tts2"],
+                                lg_conf["cv_tts3"],
+                                lg_conf["cv_tts4"],
+                                lg_conf["cv_tts5"],
+                                lg_conf["cv_tts6"],
+                            ]
+
+                            configs_storage = []
+
+                            for i in range(6):  # Loop from 00 to 05
+                                with gr.Accordion(CV_SUBTITLES[i], open=False):
+                                    gr.Markdown(TTS_TABS[i])
+                                    with gr.Column():
+                                        tag_gui = gr.Textbox(
+                                            value=TTS_TABS[i], visible=False
+                                        )
+                                        model_gui = model_conf()
+                                        pitch_algo_gui = pitch_algo_conf()
+                                        pitch_lvl_gui = pitch_lvl_conf()
+                                        index_gui = index_conf()
+                                        index_inf_gui = index_inf_conf()
+                                        rmf_gui = respiration_filter_conf()
+                                        er_gui = envelope_ratio_conf()
+                                        cbp_gui = consonant_protec_conf()
+
+                                        with gr.Row(variant="compact"):
+                                            button_config = button_conf(
+                                                TTS_TABS[i]
+                                            )
+
+                                            confirm_conf = gr.HTML()
+
+                                        button_config.click(
+                                            SoniTr.vci.apply_conf,
+                                            inputs=[
+                                                tag_gui,
+                                                model_gui,
+                                                pitch_algo_gui,
+                                                pitch_lvl_gui,
+                                                index_gui,
+                                                index_inf_gui,
+                                                rmf_gui,
+                                                er_gui,
+                                                cbp_gui,
+                                            ],
+                                            outputs=[confirm_conf],
+                                        )
+
+                                        configs_storage.append({
+                                            "tag": tag_gui,
+                                            "model": model_gui,
+                                            "index": index_gui,
+                                        })
 
                 with gr.Column():
                     with gr.Accordion("Test R.V.C.", open=False):
@@ -2163,32 +2118,10 @@ def create_gui(theme, logs_in_gui=False):
                                     visible=True,
                                     interactive=True,
                                 )
-                                model_voice_path07 = gr.Dropdown(
-                                    models,
-                                    label="Model",
-                                    visible=True,
-                                    interactive=True,
-                                )  # value=''
-                                file_index2_07 = gr.Dropdown(
-                                    index_paths,
-                                    label="Index",
-                                    visible=True,
-                                    interactive=True,
-                                )  # value=''
-                                transpose_test = gr.Number(
-                                    label="Transpose",
-                                    value=0,
-                                    visible=True,
-                                    interactive=True,
-                                    info="integer, number of semitones, raise by an octave: 12, lower by an octave: -12",
-                                )
-                                f0method_test = gr.Dropdown(
-                                    f0_methods_voice,
-                                    value="pm",
-                                    label="F0 method",
-                                    visible=True,
-                                    interactive=True,
-                                )
+                                model_test = model_conf()
+                                index_test = index_conf()
+                                pitch_test = pitch_lvl_conf()
+                                pitch_alg_test = pitch_algo_conf()
                         with gr.Row(variant="compact"):
                             button_test = gr.Button("Test audio")
 
@@ -2202,10 +2135,10 @@ def create_gui(theme, logs_in_gui=False):
                                 inputs=[
                                     text_test,
                                     tts_test,
-                                    model_voice_path07,
-                                    file_index2_07,
-                                    transpose_test,
-                                    f0method_test,
+                                    model_test,
+                                    index_test,
+                                    pitch_test,
+                                    pitch_alg_test,
                                 ],
                                 outputs=[ttsvoice, original_ttsvoice],
                             )
@@ -2219,23 +2152,10 @@ def create_gui(theme, logs_in_gui=False):
                         update_models,
                         [],
                         [
-                            model_voice_path00,
-                            model_voice_path01,
-                            model_voice_path02,
-                            model_voice_path03,
-                            model_voice_path04,
-                            model_voice_path05,
-                            model_voice_path06,
-                            model_voice_path07,
-                            file_index2_00,
-                            file_index2_01,
-                            file_index2_02,
-                            file_index2_03,
-                            file_index2_04,
-                            file_index2_05,
-                            file_index2_06,
-                            file_index2_07,
-                        ],
+                            elem["model"] for elem in configs_storage
+                        ] + [model_test] + [
+                            elem["index"] for elem in configs_storage
+                        ] + [index_test],
                     )
 
         with gr.Tab(lg_conf["tab_help"]):
@@ -2557,7 +2477,7 @@ if __name__ == "__main__":
             os.path.join(MDX_DOWNLOAD_LINK, id_model), mdxnet_models_dir
         )
 
-    models, index_paths = upload_model_list()
+    models_path, index_path = upload_model_list()
 
     SoniTr = SoniTranslate()
 

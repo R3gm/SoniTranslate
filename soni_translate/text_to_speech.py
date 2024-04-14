@@ -484,13 +484,16 @@ def create_wav_file_vc(
 
     from .mdx_net import process_uvr_task
 
-    _, _, _, _, vocals_dereverb_path = process_uvr_task(
-        orig_song_path=audio_segment,
-        main_vocals=True,
-        dereverb=get_vocals_dereverb,
-    )
+    try:
+        _, _, _, _, audio_segment = process_uvr_task(
+            orig_song_path=audio_segment,
+            main_vocals=True,
+            dereverb=get_vocals_dereverb,
+        )
+    except Exception as error:
+        logger.error(str(error))
 
-    sample = convert_to_xtts_good_sample(vocals_dereverb_path)
+    sample = convert_to_xtts_good_sample(audio_segment)
 
     sample_name = f"{sample_name}.wav"
     sample_rename = rename_file(sample, sample_name)
@@ -1092,6 +1095,7 @@ def accelerate_segments(
             )
 
         audio_files.append(f"{folder_output}/{filename}")
+        speaker = "TTS Speaker " + str(int(speaker[-1]) + 1)
         speakers_list.append(speaker)
 
     return audio_files, speakers_list

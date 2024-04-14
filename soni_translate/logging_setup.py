@@ -10,6 +10,7 @@ def configure_logging_libs(debug=False):
     )
     modules = [
       "numba", "httpx", "markdown_it", "speechbrain", "fairseq", "pyannote",
+      "faiss",
       "pytorch_lightning.utilities.migration.utils",
       "pytorch_lightning.utilities.migration",
       "pytorch_lightning",

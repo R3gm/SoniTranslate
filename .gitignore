@@ -180,6 +180,8 @@ text_translation.txt
 *.vtt
 *.tsv
 *.aud
+*.ass
+*.pt
 mdx_models/*.onnx
 _XTTS_/
 downloads/
@@ -189,5 +191,6 @@ clean_song_output/
 audio2/
 audio/
 outputs/
+processed/
 PIPER_MODELS/
 WHISPER_MODELS/
