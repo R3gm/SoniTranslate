@@ -15,6 +15,14 @@ OUTPUT_TYPE_OPTIONS = [
     "audio (wav)",
     "subtitle",
     "subtitle [by speaker]",
+    "video [subtitled] (mp4)",
+    "video [subtitled] (mkv)",
+    "audio [original vocal sound]",
+    "audio [original background sound]",
+    "audio [original vocal and background sound]",
+    "audio [original vocal-dereverb sound]",
+    "audio [original vocal-dereverb and background sound]",
+    "raw media",
 ]
 
 DOCS_OUTPUT_TYPE_OPTIONS = [
@@ -68,12 +76,12 @@ def get_output_file(
         soft_subtitles,
         output_directory="",
 ):
-    directory, filename = os.path.split(original_file)
+    directory_base = "." # default directory
 
     if output_directory and os.path.isdir(output_directory):
         new_file_path = os.path.join(output_directory, new_file_name)
     else:
-        new_file_path = os.path.join(directory, "outputs", new_file_name)
+        new_file_path = os.path.join(directory_base, "outputs", new_file_name)
     remove_files(new_file_path)
 
     cm = None
@@ -84,7 +92,7 @@ def get_output_file(
             cm = f'ffmpeg -y -i "{original_file}" -i sub_tra.srt -i sub_ori.srt -map 0:v -map 0:a -map 1 -map 2 -c:v copy -c:a copy -c:s srt -movflags use_metadata_tags -map_metadata 0 "{new_file_path}"'
     elif new_file_path.endswith(".mkv"):
         cm = f'ffmpeg -i "{original_file}" -c:v copy -c:a copy "{new_file_path}"'
-    elif new_file_path.endswith(".wav"):
+    elif new_file_path.endswith(".wav") and not original_file.endswith(".wav"):
         cm = f'ffmpeg -y -i "{original_file}" -acodec pcm_s16le -ar 44100 -ac 2 "{new_file_path}"'
     elif new_file_path.endswith(".ogg"):
         cm = f'ffmpeg -i "{original_file}" -c:a libvorbis "{new_file_path}"'
@@ -164,3 +172,39 @@ def get_subtitle_speaker(media_file, result, language, extension, base_name):
         files_subs.append(output)
 
     return files_subs
+
+
+def sound_separate(media_file, task_uvr):
+    from .mdx_net import process_uvr_task
+
+    outputs = []
+
+    if "vocal" in task_uvr:
+        try:
+            _, _, _, _, vocal_audio = process_uvr_task(
+                orig_song_path=media_file,
+                main_vocals=False,
+                dereverb=True if "dereverb" in task_uvr else False,
+                remove_files_output_dir=True,
+            )
+            outputs.append(vocal_audio)
+        except Exception as error:
+            logger.error(str(error))
+
+    if "background" in task_uvr:
+        try:
+            background_audio, _ = process_uvr_task(
+                orig_song_path=media_file,
+                song_id="voiceless",
+                only_voiceless=True,
+                remove_files_output_dir=False if "vocal" in task_uvr else True,
+            )
+            # copy_files(background_audio, ".")
+            outputs.append(background_audio)
+        except Exception as error:
+            logger.error(str(error))
+
+    if not outputs:
+        raise Exception("Error in uvr process")
+
+    return outputs

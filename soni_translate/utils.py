@@ -4,6 +4,46 @@ from urllib.parse import urlparse
 from IPython.utils import capture
 import re
 
+VIDEO_EXTENSIONS = [
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".mkv",
+    ".wmv",
+    ".flv",
+    ".webm",
+    ".m4v",
+    ".mpeg",
+    ".mpg",
+    ".3gp"
+]
+
+AUDIO_EXTENSIONS = [
+    ".mp3",
+    ".wav",
+    ".aiff",
+    ".aif",
+    ".flac",
+    ".aac",
+    ".ogg",
+    ".wma",
+    ".m4a",
+    ".alac",
+    ".pcm",
+    ".opus",
+    ".ape",
+    ".amr",
+    ".ac3",
+    ".vox",
+    ".caf"
+]
+
+SUBTITLE_EXTENSIONS = [
+    ".srt",
+    ".vtt",
+    ".ass"
+]
+
 
 def run_command(command):
     logger.debug(command)
@@ -167,62 +207,26 @@ def select_zip_and_rar_files(directory_path="downloads/"):
     return "Download complete"
 
 
-def is_video_file(string_path):
-    video_extensions = [
-        ".mp4",
-        ".avi",
-        ".mov",
-        ".mkv",
-        ".wmv",
-        ".flv",
-        ".webm",
-        ".m4v",
-        ".mpeg",
-        ".mpg",
-        ".3gp",
-    ]
+def is_file_with_extensions(string_path, extensions):
+    return any(string_path.lower().endswith(ext) for ext in extensions)
 
-    if any(
-        string_path.lower().endswith(ext) for ext in video_extensions
-    ) and os.path.exists(string_path):
-        return True
-    else:
-        return False
+
+def is_video_file(string_path):
+    return is_file_with_extensions(string_path, VIDEO_EXTENSIONS)
 
 
 def is_audio_file(string_path):
-    audio_extensions = [
-        ".mp3",
-        ".wav",
-        ".aiff",
-        ".aif",
-        ".flac",
-        ".aac",
-        ".ogg",
-        ".wma",
-        ".m4a",
-        ".alac",
-        ".pcm",
-        ".opus",
-        ".ape",
-        ".amr",
-        ".ac3",
-        ".vox",
-        ".caf",
-    ]
-
-    # Check if the string_path ends with any audio extension
-    if any(
-        string_path.lower().endswith(ext) for ext in audio_extensions
-    ) and os.path.exists(string_path):
-        return True
-    else:
-        return False
+    return is_file_with_extensions(string_path, AUDIO_EXTENSIONS)
 
 
-def get_audio_and_video_files(directory):
+def is_subtitle_file(string_path):
+    return is_file_with_extensions(string_path, SUBTITLE_EXTENSIONS)
+
+
+def get_directory_files(directory):
     audio_files = []
     video_files = []
+    sub_files = []
 
     for item in os.listdir(directory):
         item_path = os.path.join(directory, item)
@@ -235,20 +239,25 @@ def get_audio_and_video_files(directory):
             elif is_video_file(item_path):
                 video_files.append(item_path)
 
+            elif is_subtitle_file(item_path):
+                sub_files.append(item_path)
+
     logger.info(
-        f"Files in path ({directory}): {str(audio_files + video_files)}"
+        f"Files in path ({directory}): "
+        f"{str(audio_files + video_files + sub_files)}"
     )
 
-    return audio_files, video_files
+    return audio_files, video_files, sub_files
 
 
 def get_valid_files(paths):
     valid_paths = []
     for path in paths:
         if os.path.isdir(path):
-            audio_files, video_files = get_audio_and_video_files(path)
+            audio_files, video_files, sub_files = get_directory_files(path)
             valid_paths.extend(audio_files)
             valid_paths.extend(video_files)
+            valid_paths.extend(sub_files)
         else:
             valid_paths.append(path)
 

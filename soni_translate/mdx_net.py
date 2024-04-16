@@ -426,6 +426,7 @@ def run_mdx(
 
     del mdx_sess, wave_processed, wave
     gc.collect()
+    torch.cuda.empty_cache()
     return main_filepath, invert_filepath
 
 

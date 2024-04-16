@@ -28,6 +28,8 @@ from soni_translate.preprocessor import (
 from soni_translate.postprocessor import (
     OUTPUT_TYPE_OPTIONS,
     DOCS_OUTPUT_TYPE_OPTIONS,
+    sound_separate,
+    get_no_ext_filename,
     media_out,
     get_subtitle_speaker,
 )
@@ -45,6 +47,7 @@ from soni_translate.utils import (
     download_manager,
     run_command,
     is_audio_file,
+    is_subtitle_file,
     copy_files,
     get_valid_files,
     get_link_list,
@@ -154,6 +157,7 @@ class SoniTrCache:
     def __init__(self):
         self.cache = {
             'media': [[]],
+            'refine_vocals': [],
             'transcript_align': [],
             'break_align': [],
             'diarize': [],
@@ -167,6 +171,7 @@ class SoniTrCache:
 
         self.cache_data = {
             'media': [],
+            'refine_vocals': [],
             'transcript_align': [],
             'break_align': [],
             'diarize': [],
@@ -404,6 +409,7 @@ class SoniTranslate(SoniTrCache):
         get_video_from_text_json=False,
         text_json="{}",
         avoid_overlap=False,
+        vocal_refinement=False,
         literalize_numbers=True,
         segment_duration_limit=15,
         diarization_model="pyannote_2.1",
@@ -438,6 +444,23 @@ class SoniTranslate(SoniTrCache):
         if "gpt" in translate_process:
             check_openai_api_key()
 
+        if media_file is None:
+            media_file = (
+                directory_input
+                if os.path.exists(directory_input)
+                else link_media
+            )
+        media_file = (
+            media_file if isinstance(media_file, str) else media_file.name
+        )
+
+        if is_subtitle_file(media_file):
+            subtitle_file = media_file
+            media_file = ""
+
+        if media_file is None:
+            media_file = ""
+
         if SOURCE_LANGUAGE in UNIDIRECTIONAL_L_LIST and not subtitle_file:
             raise ValueError(
                 f"The language '{SOURCE_LANGUAGE}' "
@@ -449,6 +472,15 @@ class SoniTranslate(SoniTrCache):
         if get_video_from_text_json:
             if not self.edit_subs_complete:
                 raise ValueError("Generate the transcription first.")
+
+        if (
+            ("sound" in output_type or output_type == "raw media")
+            and (get_translated_text or get_video_from_text_json)
+        ):
+            raise ValueError(
+                "Please disable 'edit generate subtitles' "
+                f"first to acquire the {output_type}."
+            )
 
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
@@ -486,16 +518,6 @@ class SoniTranslate(SoniTrCache):
                 " to disable Voice Imitation."
             )
             warn_disp(wrn_lang, is_gui)
-
-        if media_file is None:
-            media_file = (
-                directory_input
-                if os.path.exists(directory_input)
-                else link_media
-            )
-        media_file = (
-            media_file if isinstance(media_file, str) else media_file.name
-        )
 
         if not media_file and not subtitle_file:
             raise ValueError(
@@ -549,6 +571,7 @@ class SoniTranslate(SoniTrCache):
         base_video_file = "Video.mp4"
         base_audio_wav = "audio.wav"
         dub_audio_file = "audio_dub_solo.ogg"
+        vocals_audio_file = "audio_Vocals_DeReverb.wav"
         voiceless_audio_file = "audio_Voiceless.wav"
         mix_audio_file = "audio_mix.mp3"
         vid_subs = "video_subs_file.mp4"
@@ -579,6 +602,55 @@ class SoniTranslate(SoniTrCache):
                     )
                 logger.debug("Set file complete.")
 
+            if "sound" in output_type:
+                prog_disp(
+                    "Separating sounds in the file...",
+                    0.50,
+                    is_gui,
+                    progress=progress
+                )
+                separate_out = sound_separate(base_audio_wav, output_type)
+                final_outputs = []
+                for out in separate_out:
+                    final_name = media_out(
+                        media_file,
+                        f"{get_no_ext_filename(out)}",
+                        video_output_name,
+                        "wav",
+                        file_obj=out,
+                    )
+                    final_outputs.append(final_name)
+                logger.info(f"Done: {str(final_outputs)}")
+                return final_outputs
+
+            if output_type == "raw media":
+                output = media_out(
+                    media_file,
+                    "raw_media",
+                    video_output_name,
+                    "wav" if is_audio_file(media_file) else "mp4",
+                    file_obj=base_audio_wav if is_audio_file(media_file) else base_video_file,
+                )
+                logger.info(f"Done: {output}")
+                return output
+
+            if not self.task_in_cache("refine_vocals", [vocal_refinement], {}):
+                self.vocals = None
+                if vocal_refinement:
+                    try:
+                        from soni_translate.mdx_net import process_uvr_task
+                        _, _, _, _, file_vocals = process_uvr_task(
+                            orig_song_path=base_audio_wav,
+                            main_vocals=False,
+                            dereverb=True,
+                            remove_files_output_dir=True,
+                        )
+                        remove_files(vocals_audio_file)
+                        copy_files(file_vocals, ".")
+                        self.vocals = vocals_audio_file
+                    except Exception as error:
+                        logger.error(str(error))
+
             if not self.task_in_cache("transcript_align", [
                 subtitle_file,
                 SOURCE_LANGUAGE,
@@ -593,12 +665,14 @@ class SoniTranslate(SoniTrCache):
                     and subtitle_file
                     else "sentence"
                 )
-            ], {}):
+            ], {"vocals": self.vocals}):
                 if subtitle_file:
                     prog_disp(
                         "From SRT file...", 0.30, is_gui, progress=progress
                     )
-                    audio = whisperx.load_audio(base_audio_wav)
+                    audio = whisperx.load_audio(
+                        base_audio_wav if not self.vocals else self.vocals
+                    )
                     self.result = srt_file_to_segments(subtitle_file)
                     self.result["language"] = SOURCE_LANGUAGE
                 else:
@@ -611,7 +685,7 @@ class SoniTranslate(SoniTrCache):
                         else SOURCE_LANGUAGE
                     )
                     audio, self.result = transcribe_speech(
-                        base_audio_wav,
+                        base_audio_wav if not self.vocals else self.vocals,
                         WHISPER_MODEL_SIZE,
                         compute_type,
                         batch_size,
@@ -677,7 +751,7 @@ class SoniTranslate(SoniTrCache):
                 prog_disp("Diarizing...", 0.60, is_gui, progress=progress)
                 diarize_model_select = diarization_models[diarization_model]
                 self.result_diarize = diarize_speech(
-                    base_audio_wav,
+                    base_audio_wav if not self.vocals else self.vocals,
                     self.result,
                     min_speakers,
                     max_speakers,
@@ -789,6 +863,20 @@ class SoniTranslate(SoniTrCache):
                 base_name=video_output_name,
             )
             logger.info(f"Done: {str(output)}")
+            return output
+
+        if "video [subtitled]" in output_type:
+            output = media_out(
+                media_file,
+                TRANSLATE_AUDIO_TO + "_subtitled",
+                video_output_name,
+                "wav" if is_audio_file(media_file) else (
+                    "mkv" if "mkv" in output_type else "mp4"
+                ),
+                file_obj=base_audio_wav if is_audio_file(media_file) else base_video_file,
+                soft_subtitles=False if is_audio_file(media_file) else True,
+            )
+            logger.info(f"Done: {output}")
             return output
 
         if not self.task_in_cache("tts", [
@@ -1132,6 +1220,8 @@ class SoniTranslate(SoniTrCache):
         create_translated_audio(
             result_diarize, audio_files, final_wav_file, True
         )
+
+        logger.info(f"Done: {final_wav_file}")
 
         return final_wav_file
 
@@ -1491,6 +1581,11 @@ def create_gui(theme, logs_in_gui=False):
                                 True,
                                 label="Literalize Numbers",
                                 info="Literalize Numbers: Replace numerical representations with their written equivalents in the transcript.",
+                            )
+                            vocal_refinement_gui = gr.Checkbox(
+                                False,
+                                label="Sound Cleanup",
+                                info="Sound Cleanup: Enhance vocals, remove background noise before transcription for utmost timestamp precision. This operation may take time, especially with lengthy audio files.",
                             )
                             segment_duration_limit_gui = gr.Slider(
                                 label="Segment Duration Limit",
@@ -2291,6 +2386,7 @@ def create_gui(theme, logs_in_gui=False):
                 dummy_false_check,  # dummy false
                 subs_edit_space,
                 avoid_overlap_gui,
+                vocal_refinement_gui,
                 literalize_numbers_gui,
                 segment_duration_limit_gui,
                 diarization_process_dropdown,
@@ -2349,6 +2445,7 @@ def create_gui(theme, logs_in_gui=False):
                 edit_sub_check,
                 subs_edit_space,
                 avoid_overlap_gui,
+                vocal_refinement_gui,
                 literalize_numbers_gui,
                 segment_duration_limit_gui,
                 diarization_process_dropdown,

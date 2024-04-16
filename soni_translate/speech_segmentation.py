@@ -136,7 +136,7 @@ def transcribe_speech(
                     converter.convert(
                         model_dir,
                         quantization=quantization,
-                        force=False
+                        force=True
                     )
                 else:
                     raise error
