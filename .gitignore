@@ -173,6 +173,12 @@ task_subtitle.*
 *.ogg
 *.wav
 *.mkv
+*.webm
+*.avi
+*.mpg
+*.mov
+*.ogv
+*.wmv
 list.txt
 text_preprocessor.txt
 text_translation.txt
@@ -182,6 +188,7 @@ text_translation.txt
 *.aud
 *.ass
 *.pt
+.vscode/
 mdx_models/*.onnx
 _XTTS_/
 downloads/
@@ -192,5 +199,6 @@ audio2/
 audio/
 outputs/
 processed/
+OPENVOICE_MODELS/
 PIPER_MODELS/
 WHISPER_MODELS/
