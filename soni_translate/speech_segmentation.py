@@ -50,8 +50,6 @@ COMPUTE_TYPE_CPU = [
 
 WHISPER_MODELS_PATH = './WHISPER_MODELS'
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 
 def find_whisper_models():
     path = WHISPER_MODELS_PATH
@@ -146,7 +144,7 @@ def transcribe_speech(
 
     model = whisperx.load_model(
         asr_model,
-        device,
+        os.environ.get("SONITR_DEVICE"),
         compute_type=compute_type,
         language=SOURCE_LANGUAGE,
         asr_options=asr_options,
@@ -218,7 +216,7 @@ def align_speech(audio, result):
 
     model_a, metadata = whisperx.load_align_model(
         language_code=result["language"],
-        device=device,
+        device=os.environ.get("SONITR_DEVICE"),
         model_name=None
         if result["language"] in DAMHF.keys()
         else EXTRA_ALIGN[result["language"]],
@@ -228,7 +226,7 @@ def align_speech(audio, result):
         model_a,
         metadata,
         audio,
-        device,
+        os.environ.get("SONITR_DEVICE"),
         return_char_alignments=True,
     )
     del model_a
@@ -286,7 +284,7 @@ def diarize_speech(
             diarize_model = whisperx.DiarizationPipeline(
                 model_name=model_name,
                 use_auth_token=YOUR_HF_TOKEN,
-                device=device,
+                device=os.environ.get("SONITR_DEVICE"),
             )
 
         except Exception as error:

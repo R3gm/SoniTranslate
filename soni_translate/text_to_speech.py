@@ -24,9 +24,6 @@ import platform
 import logging
 from .logging_setup import logger
 
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-torch_dtype_env = torch.float16 if torch.cuda.is_available() else torch.float32
-
 
 class TTS_OperationError(Exception):
     def __init__(self, message="The operation did not complete successfully."):
@@ -197,6 +194,9 @@ def segments_bark_tts(
     from transformers import AutoProcessor, BarkModel
     from optimum.bettertransformer import BetterTransformer
 
+    device = os.environ.get("SONITR_DEVICE")
+    torch_dtype_env = torch.float16 if device == "cuda" else torch.float32
+
     # load model bark
     model = BarkModel.from_pretrained(
         model_id_bark, torch_dtype=torch_dtype_env
@@ -205,7 +205,7 @@ def segments_bark_tts(
     processor = AutoProcessor.from_pretrained(
         model_id_bark, return_tensors="pt"
     )  # , padding=True
-    if torch.cuda.is_available():
+    if device == "cuda":
         # convert to bettertransformer
         model = BetterTransformer.transform(model, keep_original_model=False)
         # enable CPU offload
@@ -626,6 +626,7 @@ def segments_coqui_tts(
     )
 
     # Init TTS
+    device = os.environ.get("SONITR_DEVICE")
     model = TTS(model_id_coqui).to(device)
     sampling_rate = 24000
 
@@ -729,7 +730,7 @@ def load_piper_model(
     try:
         import onnxruntime as rt
 
-        if rt.get_device() == "GPU" and torch.cuda.is_available():
+        if rt.get_device() == "GPU" and os.environ.get("SONITR_DEVICE") == "cuda":
             logger.debug("onnxruntime device > GPU")
             cuda = True
         else:
@@ -742,6 +743,7 @@ def load_piper_model(
 
     # Disable CUDA in Windows
     if platform.system() == "Windows":
+        logger.info("Employing CPU exclusivity with Piper TTS")
         cuda = False
 
     if not download_dir:
@@ -1107,7 +1109,7 @@ def accelerate_segments(
 
 
 def se_process_audio_segments(
-    source_seg, tone_color_converter, remove_previous_processed=True
+    source_seg, tone_color_converter, device, remove_previous_processed=True
 ):
     # list wav seg
     source_audio_segs = glob.glob(f"{source_seg}/*.wav")
@@ -1280,6 +1282,7 @@ def toneconverter_openvoice(
         url=checkpoint_url, path=model_path_openvoice
     )
 
+    device = os.environ.get("SONITR_DEVICE")
     tone_color_converter = ToneColorConverter(config_path, device=device)
     tone_color_converter.load_ckpt(checkpoint_path)
 
@@ -1290,9 +1293,9 @@ def toneconverter_openvoice(
         path_source_segments, path_target_segments, valid_speakers
     ):
         # source_se_path = os.path.join(source_seg, 'se.pth')
-        source_se = se_process_audio_segments(source_seg, tone_color_converter)
+        source_se = se_process_audio_segments(source_seg, tone_color_converter, device)
         # target_se_path = os.path.join(target_seg, 'se.pth')
-        target_se = se_process_audio_segments(target_seg, tone_color_converter)
+        target_se = se_process_audio_segments(target_seg, tone_color_converter, device)
 
         # Iterate throw segments
         encode_message = "@MyShell"
@@ -1361,6 +1364,8 @@ def toneconverter_freevc(
     )
 
     logger.info("FreeVC loading model...")
+    device_id = os.environ.get("SONITR_DEVICE")
+    device = None if device_id == "cpu" else device_id
     try:
         from TTS.api import TTS
         tts = TTS(

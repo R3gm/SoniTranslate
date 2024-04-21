@@ -270,9 +270,16 @@ def check_openai_api_key():
 
 
 class SoniTranslate(SoniTrCache):
-    def __init__(self, dev=False):
+    def __init__(self, cpu_mode=False):
         super().__init__()
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        if cpu_mode:
+            os.environ["SONITR_DEVICE"] = "cpu"
+        else:
+            os.environ["SONITR_DEVICE"] = (
+                "cuda" if torch.cuda.is_available() else "cpu"
+            )
+
+        self.device = os.environ.get("SONITR_DEVICE")
         self.result_diarize = None
         self.align_language = None
         self.result_source_lang = None
@@ -282,7 +289,7 @@ class SoniTranslate(SoniTrCache):
 
         os.environ["VOICES_MODELS"] = "DISABLE"
         os.environ["VOICES_MODELS_WORKERS"] = "1"
-        self.vci = ClassVoices()
+        self.vci = ClassVoices(only_cpu=cpu_mode)
 
         self.tts_voices = self.get_tts_voice_list()
 
@@ -1597,7 +1604,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             whisper_model_default = (
                                 "large-v3"
-                                if torch.cuda.is_available()
+                                if SoniTr.device == "cuda"
                                 else "medium"
                             )
 
@@ -1610,7 +1617,7 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             com_t_opt, com_t_default = (
                                 [COMPUTE_TYPE_GPU, "float16"]
-                                if torch.cuda.is_available()
+                                if SoniTr.device == "cuda"
                                 else [COMPUTE_TYPE_CPU, "float32"]
                             )
                             compute_type = gr.Dropdown(
@@ -2555,6 +2562,12 @@ def create_parser():
         default="english",
         help=" Select the language of the interface: english, spanish",
     )
+    parser.add_argument(
+        "--cpu_mode",
+        action="store_true",
+        default=False,
+        help="Enable CPU mode to run the program without utilizing GPU acceleration.",
+    )
     return parser
 
 
@@ -2576,7 +2589,7 @@ if __name__ == "__main__":
 
     models_path, index_path = upload_model_list()
 
-    SoniTr = SoniTranslate()
+    SoniTr = SoniTranslate(cpu_mode=args.cpu_mode)
 
     lg_conf = get_language_config(language_data, language=args.language)
 

@@ -119,10 +119,8 @@ class MDX:
     DEFAULT_CHUNK_SIZE = 0 * DEFAULT_SR
     DEFAULT_MARGIN_SIZE = 1 * DEFAULT_SR
 
-    DEFAULT_PROCESSOR = 0 if torch.cuda.is_available() else -1
-
     def __init__(
-        self, model_path: str, params: MDXModel, processor=DEFAULT_PROCESSOR
+        self, model_path: str, params: MDXModel, processor=0
     ):
         # Set the device and the provider (CPU or CUDA)
         self.device = (
@@ -356,14 +354,17 @@ def run_mdx(
     denoise=False,
     keep_orig=True,
     m_threads=2,
+    device_base="cuda",
 ):
-    if torch.cuda.is_available():
+    if device_base == "cuda":
         device = torch.device("cuda:0")
+        processor_num = 0
         device_properties = torch.cuda.get_device_properties(device)
         vram_gb = device_properties.total_memory / 1024**3
         m_threads = 1 if vram_gb < 8 else 2
     else:
         device = torch.device("cpu")
+        processor_num = -1
         m_threads = 1
 
     model_hash = MDX.get_hash(model_path)
@@ -377,7 +378,7 @@ def run_mdx(
         compensation=mp["compensate"],
     )
 
-    mdx_sess = MDX(model_path, model)
+    mdx_sess = MDX(model_path, model, processor=processor_num)
     wave, sr = librosa.load(filename, mono=False, sr=44100)
     # normalizing input wave gives better output
     peak = max(np.max(wave), abs(np.min(wave)))
@@ -478,6 +479,11 @@ def process_uvr_task(
     only_voiceless: bool = False,
     remove_files_output_dir: bool = False,
 ):
+    if os.environ.get("SONITR_DEVICE") == "cpu":
+        device_base = "cpu"
+    else:
+        device_base = "cuda" if torch.cuda.is_available() else "cpu"
+
     if remove_files_output_dir:
         remove_directory_contents(output_dir)
 
@@ -501,6 +507,7 @@ def process_uvr_task(
             denoise=False,
             keep_orig=True,
             exclude_inversion=True,
+            device_base=device_base,
         )
 
     logger.info("Vocal Track Isolation and Voiceless Track Separation...")
@@ -511,6 +518,7 @@ def process_uvr_task(
         orig_song_path,
         denoise=True,
         keep_orig=True,
+        device_base=device_base,
     )
 
     if main_vocals:
@@ -523,6 +531,7 @@ def process_uvr_task(
             suffix="Backup",
             invert_suffix="Main",
             denoise=True,
+            device_base=device_base,
         )
     else:
         backup_vocals_path, main_vocals_path = None, vocals_path
@@ -537,6 +546,7 @@ def process_uvr_task(
             invert_suffix="DeReverb",
             exclude_main=True,
             denoise=True,
+            device_base=device_base,
         )
     else:
         vocals_dereverb_path = main_vocals_path
