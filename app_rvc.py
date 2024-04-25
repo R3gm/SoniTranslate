@@ -87,6 +87,7 @@ from voice_main import ClassVoices
 import argparse
 import time
 import hashlib
+import sys
 
 directories = [
     "downloads",
@@ -448,7 +449,10 @@ class SoniTranslate(SoniTrCache):
             else:
                 os.environ["YOUR_HF_TOKEN"] = YOUR_HF_TOKEN
 
-        if "gpt" in translate_process:
+        if (
+            "gpt" in translate_process
+            or WHISPER_MODEL_SIZE == "OpenAI_API_Whisper"
+        ):
             check_openai_api_key()
 
         if media_file is None:
@@ -491,6 +495,15 @@ class SoniTranslate(SoniTrCache):
 
         TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
         SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+
+        if (
+            WHISPER_MODEL_SIZE == "OpenAI_API_Whisper"
+            and SOURCE_LANGUAGE == "zh-TW"
+        ):
+            logger.warning(
+                "OpenAI API Whisper only supports Chinese (Simplified)."
+            )
+            SOURCE_LANGUAGE = "zh"
 
         if (
             text_segmentation_scale in ["word", "character"]
@@ -1627,7 +1640,12 @@ def create_gui(theme, logs_in_gui=False):
                                 info="Choosing smaller types like int8 or float16 can improve performance by reducing memory usage and increasing computational throughput, but may sacrifice precision compared to larger data types like float32.",
                             )
                             batch_size = gr.Slider(
-                                1, 32, value=16, label="Batch size", step=1
+                                minimum=1,
+                                maximum=32,
+                                value=8,
+                                label="Batch size",
+                                info="Reducing the batch size saves memory if your GPU has less VRAM and helps manage Out of Memory issues.",
+                                step=1,
                             )
                             input_srt = gr.File(
                                 label=lg_conf["srt_file_label"],
@@ -2289,7 +2307,6 @@ def create_gui(theme, logs_in_gui=False):
 
         if logs_in_gui:
             logger.info("Logs in gui need public url")
-            import sys
 
             class Logger:
                 def __init__(self, filename):

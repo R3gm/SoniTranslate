@@ -2,14 +2,17 @@ from whisperx.alignment import (
     DEFAULT_ALIGN_MODELS_TORCH as DAMT,
     DEFAULT_ALIGN_MODELS_HF as DAMHF,
 )
+from whisperx.utils import TO_LANGUAGE_CODE
 import whisperx
 import torch
 import gc
 import os
+import soundfile as sf
 from IPython.utils import capture # noqa
 from .language_configuration import EXTRA_ALIGN, INVERTED_LANGUAGES
 from .logging_setup import logger
 from .postprocessor import sanitize_file_name
+from .utils import remove_directory_contents, run_command
 
 ASR_MODEL_OPTIONS = [
     "tiny",
@@ -28,6 +31,7 @@ ASR_MODEL_OPTIONS = [
     "medium.en",
     "distil-small.en",
     "distil-medium.en",
+    "OpenAI_API_Whisper",
 ]
 
 COMPUTE_TYPE_GPU = [
@@ -49,6 +53,77 @@ COMPUTE_TYPE_CPU = [
 ]
 
 WHISPER_MODELS_PATH = './WHISPER_MODELS'
+
+
+def openai_api_whisper(
+    input_audio_file,
+    source_lang=None,
+    chunk_duration=1800
+):
+
+    info = sf.info(input_audio_file)
+    duration = info.duration
+
+    output_directory = "./whisper_api_audio_parts"
+    os.makedirs(output_directory, exist_ok=True)
+    remove_directory_contents(output_directory)
+
+    if duration > chunk_duration:
+        # Split the audio file into smaller chunks with 30-minute duration
+        cm = f'ffmpeg -i "{input_audio_file}" -f segment -segment_time {chunk_duration} -c:a libvorbis "{output_directory}/output%03d.ogg"'
+        run_command(cm)
+        # Get list of generated chunk files
+        chunk_files = sorted(
+            [f"{output_directory}/{f}" for f in os.listdir(output_directory) if f.endswith('.ogg')]
+        )
+    else:
+        one_file = f"{output_directory}/output000.ogg"
+        cm = f'ffmpeg -i "{input_audio_file}" -c:a libvorbis {one_file}'
+        run_command(cm)
+        chunk_files = [one_file]
+
+    # Transcript
+    segments = []
+    language = source_lang if source_lang else None
+    for i, chunk in enumerate(chunk_files):
+        from openai import OpenAI
+        client = OpenAI()
+
+        audio_file = open(chunk, "rb")
+        transcription = client.audio.transcriptions.create(
+          model="whisper-1",
+          file=audio_file,
+          language=language,
+          response_format="verbose_json",
+          timestamp_granularities=["segment"],
+        )
+
+        try:
+            transcript_dict = transcription.model_dump()
+        except: # noqa
+            transcript_dict = transcription.to_dict()
+
+        if language is None:
+            logger.info(f'Language detected: {transcript_dict["language"]}')
+            language = TO_LANGUAGE_CODE[transcript_dict["language"]]
+
+        chunk_time = chunk_duration * (i)
+
+        for seg in transcript_dict["segments"]:
+
+            if "start" in seg.keys():
+                segments.append(
+                    {
+                        "text": seg["text"],
+                        "start": seg["start"] + chunk_time,
+                        "end": seg["end"] + chunk_time,
+                    }
+                )
+
+    audio = whisperx.load_audio(input_audio_file)
+    result = {"segments": segments, "language": language}
+
+    return audio, result
 
 
 def find_whisper_models():
@@ -90,6 +165,14 @@ def transcribe_speech(
         - audio: Loaded audio file.
         - result: Transcription result as a dictionary.
     """
+
+    if asr_model == "OpenAI_API_Whisper":
+        if literalize_numbers:
+            logger.info(
+                "OpenAI's API Whisper does not support "
+                "the literalization of numbers."
+            )
+        return openai_api_whisper(audio_wav, SOURCE_LANGUAGE)
 
     # https://github.com/openai/whisper/discussions/277
     prompt = "以下是普通话的句子。" if SOURCE_LANGUAGE == "zh" else None
