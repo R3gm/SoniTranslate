@@ -197,7 +197,7 @@ def fix_code_language(translate_to, syntax="google"):
     return new_code_lang
 
 
-bark_voices_list = {
+BARK_VOICES_LIST = {
     "de_speaker_0-Male BARK": "v2/de_speaker_0",
     "de_speaker_1-Male BARK": "v2/de_speaker_1",
     "de_speaker_2-Male BARK": "v2/de_speaker_2",
@@ -330,7 +330,7 @@ bark_voices_list = {
     "zh_speaker_9-Female BARK": "v2/zh_speaker_9",
 }
 
-vits_voices_list = {
+VITS_VOICES_LIST = {
     "ar-facebook-mms VITS": "facebook/mms-tts-ara",
     # 'zh-facebook-mms VITS': 'facebook/mms-tts-cmn',
     "zh_Hakka-facebook-mms VITS": "facebook/mms-tts-hak",
@@ -478,6 +478,29 @@ vits_voices_list = {
     "ug_script_arabic-facebook-mms VITS": "facebook/mms-tts-uig-script_arabic",
     "ug_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-uig-script_cyrillic",
 }
+
+OPENAI_TTS_CODES = [
+    "af", "ar", "hy", "az", "be", "bs", "bg", "ca", "zh", "hr", "cs", "da",
+    "nl", "en", "et", "fi", "fr", "gl", "de", "el", "he", "hi", "hu", "is",
+    "id", "it", "ja", "kn", "kk", "ko", "lv", "lt", "mk", "ms", "mr", "mi",
+    "ne", "no", "fa", "pl", "pt", "ro", "ru", "sr", "sk", "sl", "es", "sw",
+    "sv", "tl", "ta", "th", "tr", "uk", "ur", "vi", "cy", "zh-TW"
+]
+
+OPENAI_TTS_MODELS = [
+    ">alloy OpenAI-TTS",
+    ">echo OpenAI-TTS",
+    ">fable OpenAI-TTS",
+    ">onyx OpenAI-TTS",
+    ">nova OpenAI-TTS",
+    ">shimmer OpenAI-TTS",
+    ">alloy HD OpenAI-TTS",
+    ">echo HD OpenAI-TTS",
+    ">fable HD OpenAI-TTS",
+    ">onyx HD OpenAI-TTS",
+    ">nova HD OpenAI-TTS",
+    ">shimmer HD OpenAI-TTS"
+]
 
 LANGUAGE_CODE_IN_THREE_LETTERS = {
     "Automatic detection": "aut",

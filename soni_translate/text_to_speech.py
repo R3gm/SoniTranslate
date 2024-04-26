@@ -4,8 +4,8 @@ from tqdm import tqdm
 import librosa, os, re, torch, gc, subprocess # noqa
 from .language_configuration import (
     fix_code_language,
-    bark_voices_list,
-    vits_voices_list,
+    BARK_VOICES_LIST,
+    VITS_VOICES_LIST,
 )
 from .utils import (
     download_manager,
@@ -80,18 +80,24 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
 
 def pad_array(array, sr):
 
+    if not array.shape[0]:
+        raise ValueError("The generated audio does not contain any data")
+
     valid_indices = np.where(np.abs(array) > 0.001)[0]
 
     if len(valid_indices) == 0:
+        logger.debug(f"No valid indices: {array}")
         return array
 
-    pad_indice = int(0.1 * sr)
-    start_pad = max(0, valid_indices[0] - pad_indice)
-    end_pad = min(len(array), valid_indices[-1] + 1 + pad_indice)
-
-    padded_array = array[start_pad:end_pad]
-
-    return padded_array
+    try:
+        pad_indice = int(0.1 * sr)
+        start_pad = max(0, valid_indices[0] - pad_indice)
+        end_pad = min(len(array), valid_indices[-1] + 1 + pad_indice)
+        padded_array = array[start_pad:end_pad]
+        return padded_array
+    except Exception as error:
+        logger.error(str(error))
+        return array
 
 
 # =====================================
@@ -223,7 +229,7 @@ def segments_bark_tts(
         start = segment["start"]
         tts_name = segment["tts_name"]
 
-        inputs = processor(text, voice_preset=bark_voices_list[tts_name]).to(
+        inputs = processor(text, voice_preset=BARK_VOICES_LIST[tts_name]).to(
             device
         )
 
@@ -325,9 +331,9 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
 
         if tts_name != model_name_key:
             model_name_key = tts_name
-            model = VitsModel.from_pretrained(vits_voices_list[tts_name])
+            model = VitsModel.from_pretrained(VITS_VOICES_LIST[tts_name])
             tokenizer = AutoTokenizer.from_pretrained(
-                vits_voices_list[tts_name]
+                VITS_VOICES_LIST[tts_name]
             )
             sampling_rate = model.config.sampling_rate
 
@@ -867,6 +873,67 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
 
 
 # =====================================
+# CLOSEAI TTS
+# =====================================
+
+
+def segments_openai_tts(
+    filtered_openai_tts_segments, TRANSLATE_AUDIO_TO
+):
+    from openai import OpenAI
+
+    client = OpenAI()
+    sampling_rate = 24000
+
+    # filtered_segments = filtered_openai_tts_segments['segments']
+    # Sorting the segments by 'tts_name'
+    # sorted_segments = sorted(filtered_segments, key=lambda x: x['tts_name'])
+
+    for segment in tqdm(filtered_openai_tts_segments["segments"]):
+        speaker = segment["speaker"] # noqa
+        text = segment["text"].strip()
+        start = segment["start"]
+        tts_name = segment["tts_name"]
+
+        # make the tts audio
+        filename = f"audio/{start}.ogg"
+        logger.info(f"{text} >> {filename}")
+
+        try:
+            # Request
+            response = client.audio.speech.create(
+                model="tts-1-hd" if "HD" in tts_name else "tts-1",
+                voice=tts_name.split()[0][1:],
+                response_format="wav",
+                input=text
+            )
+
+            audio_bytes = b''
+            for data in response.iter_bytes(chunk_size=4096):
+                audio_bytes += data
+
+            speech_output = np.frombuffer(audio_bytes, dtype=np.int16)
+
+            # Save file
+            data_tts = pad_array(
+                speech_output[240:],
+                sampling_rate,
+            )
+
+            sf.write(
+                file=filename,
+                samplerate=sampling_rate,
+                data=data_tts,
+                format="ogg",
+                subtype="vorbis",
+            )
+            verify_saved_file_and_size(filename)
+
+        except Exception as error:
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
+
+
+# =====================================
 # Select task TTS
 # =====================================
 
@@ -936,6 +1003,7 @@ def audio_segmentation_to_voice(
     pattern_vits = re.compile(r".* VITS$")
     pattern_coqui = re.compile(r".+\.(wav|mp3|ogg|m4a)$")
     pattern_vits_onnx = re.compile(r".* VITS-onnx$")
+    pattern_openai_tts = re.compile(r".* OpenAI-TTS$")
 
     all_segments = result_diarize["segments"]
 
@@ -946,6 +1014,9 @@ def audio_segmentation_to_voice(
     speakers_vits_onnx = find_spkr(
         pattern_vits_onnx, speaker_to_voice, all_segments
     )
+    speakers_openai_tts = find_spkr(
+        pattern_openai_tts, speaker_to_voice, all_segments
+    )
 
     # Filter method in segments
     filtered_edge = filter_by_speaker(speakers_edge, all_segments)
@@ -953,6 +1024,7 @@ def audio_segmentation_to_voice(
     filtered_vits = filter_by_speaker(speakers_vits, all_segments)
     filtered_coqui = filter_by_speaker(speakers_coqui, all_segments)
     filtered_vits_onnx = filter_by_speaker(speakers_vits_onnx, all_segments)
+    filtered_openai_tts = filter_by_speaker(speakers_openai_tts, all_segments)
 
     # Infer
     if filtered_edge["segments"]:
@@ -979,6 +1051,9 @@ def audio_segmentation_to_voice(
     if filtered_vits_onnx["segments"]:
         logger.info(f"PIPER TTS: {speakers_vits_onnx}")
         segments_vits_onnx_tts(filtered_vits_onnx, TRANSLATE_AUDIO_TO)  # wav
+    if filtered_openai_tts["segments"]:
+        logger.info(f"OpenAI TTS: {speakers_openai_tts}")
+        segments_openai_tts(filtered_openai_tts, TRANSLATE_AUDIO_TO)  # wav
 
     [result.pop("tts_name", None) for result in result_diarize["segments"]]
     return [
@@ -987,6 +1062,7 @@ def audio_segmentation_to_voice(
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
+        speakers_openai_tts
     ]
 
 
@@ -1004,7 +1080,8 @@ def accelerate_segments(
         speakers_bark,
         speakers_vits,
         speakers_coqui,
-        speakers_vits_onnx
+        speakers_vits_onnx,
+        speakers_openai_tts
     ) = valid_speakers
 
     create_directories(f"{folder_output}/audio/")

@@ -181,13 +181,14 @@ def split_text_into_chunks(text, chunk_size):
 
 def determine_chunk_size(file_name):
     patterns = {
-        re.compile(r".*-(Male|Female)$"): 600,  # by character
+        re.compile(r".*-(Male|Female)$"): 1024,  # by character
         re.compile(r".* BARK$"): 100,  # t 64 256
         re.compile(r".* VITS$"): 500,
         re.compile(
             r".+\.(wav|mp3|ogg|m4a)$"
         ): 150,  # t 250 400 api automatic split
         re.compile(r".* VITS-onnx$"): 250,  # automatic sentence split
+        re.compile(r".* OpenAI-TTS$"): 1024  # max charaters 4096
     }
 
     for pattern, chunk_size in patterns.items():

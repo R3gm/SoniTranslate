@@ -107,7 +107,7 @@ def get_output_file(
     else:
         shutil.copy2(original_file, new_file_path)
 
-    return os.path.join(os.getcwd(), new_file_path)
+    return os.path.abspath(new_file_path)
 
 
 def media_out(

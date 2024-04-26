@@ -238,6 +238,7 @@ def transcribe_speech(
         audio,
         batch_size=batch_size,
         chunk_size=segment_duration_limit,
+        print_progress=True,
     )
 
     if result["language"] == "zh" and not prompt:
@@ -311,6 +312,7 @@ def align_speech(audio, result):
         audio,
         os.environ.get("SONITR_DEVICE"),
         return_char_alignments=True,
+        print_progress=False,
     )
     del model_a
     gc.collect()

@@ -37,8 +37,9 @@ from soni_translate.language_configuration import (
     LANGUAGES,
     UNIDIRECTIONAL_L_LIST,
     LANGUAGES_LIST,
-    bark_voices_list,
-    vits_voices_list,
+    BARK_VOICES_LIST,
+    VITS_VOICES_LIST,
+    OPENAI_TTS_MODELS,
 )
 from soni_translate.utils import (
     remove_files,
@@ -109,8 +110,9 @@ directories = [
 class TTS_Info:
     def __init__(self, piper_enabled, xtts_enabled):
         self.list_edge = edge_tts_voices_list()
-        self.list_bark = list(bark_voices_list.keys())
-        self.list_vits = list(vits_voices_list.keys())
+        self.list_bark = list(BARK_VOICES_LIST.keys())
+        self.list_vits = list(VITS_VOICES_LIST.keys())
+        self.list_openai_tts = OPENAI_TTS_MODELS
         self.piper_enabled = piper_enabled
         self.list_vits_onnx = (
             piper_tts_voices_list() if self.piper_enabled else []
@@ -121,12 +123,12 @@ class TTS_Info:
         self.list_coqui_xtts = (
             coqui_xtts_voices_list() if self.xtts_enabled else []
         )
-        list_tts = sorted(
+        list_tts = self.list_coqui_xtts + sorted(
             self.list_edge
             + self.list_bark
             + self.list_vits
+            + self.list_openai_tts
             + self.list_vits_onnx
-            + self.list_coqui_xtts
         )
         return list_tts
 
@@ -393,11 +395,11 @@ class SoniTranslate(SoniTrCache):
         directory_input="",
         YOUR_HF_TOKEN="",
         preview=False,
-        WHISPER_MODEL_SIZE="large-v3",
+        transcriber_model="large-v3",
         batch_size=16,
         compute_type="float16",
-        SOURCE_LANGUAGE="Automatic detection",
-        TRANSLATE_AUDIO_TO="English (en)",
+        origin_language="Automatic detection",
+        target_language="English (en)",
         min_speakers=1,
         max_speakers=2,
         tts_voice00="en-AU-WilliamNeural-Male",
@@ -407,7 +409,7 @@ class SoniTranslate(SoniTrCache):
         tts_voice04="en-NZ-MitchellNeural-Male",
         tts_voice05="en-GB-MaisieNeural-Female",
         video_output_name="",
-        AUDIO_MIX_METHOD="Adjusting volumes and mixing audio",
+        mix_method_audio="Adjusting volumes and mixing audio",
         max_accelerate_audio=2.1,
         acceleration_rate_regulation=False,
         volume_original_audio=0.25,
@@ -451,7 +453,8 @@ class SoniTranslate(SoniTrCache):
 
         if (
             "gpt" in translate_process
-            or WHISPER_MODEL_SIZE == "OpenAI_API_Whisper"
+            or transcriber_model == "OpenAI_API_Whisper"
+            or "OpenAI-TTS" in tts_voice00
         ):
             check_openai_api_key()
 
@@ -472,9 +475,12 @@ class SoniTranslate(SoniTrCache):
         if media_file is None:
             media_file = ""
 
-        if SOURCE_LANGUAGE in UNIDIRECTIONAL_L_LIST and not subtitle_file:
+        if not origin_language:
+            origin_language = "Automatic detection"
+
+        if origin_language in UNIDIRECTIONAL_L_LIST and not subtitle_file:
             raise ValueError(
-                f"The language '{SOURCE_LANGUAGE}' "
+                f"The language '{origin_language}' "
                 "is not supported for transcription (ASR)."
             )
 
@@ -493,11 +499,11 @@ class SoniTranslate(SoniTrCache):
                 f"first to acquire the {output_type}."
             )
 
-        TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
-        SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+        TRANSLATE_AUDIO_TO = LANGUAGES[target_language]
+        SOURCE_LANGUAGE = LANGUAGES[origin_language]
 
         if (
-            WHISPER_MODEL_SIZE == "OpenAI_API_Whisper"
+            transcriber_model == "OpenAI_API_Whisper"
             and SOURCE_LANGUAGE == "zh-TW"
         ):
             logger.warning(
@@ -574,8 +580,8 @@ class SoniTranslate(SoniTrCache):
 
         if "SET_LIMIT" == os.getenv("DEMO"):
             preview = True
-            AUDIO_MIX_METHOD = "Adjusting volumes and mixing audio"
-            WHISPER_MODEL_SIZE = "medium"
+            mix_method_audio = "Adjusting volumes and mixing audio"
+            transcriber_model = "medium"
             logger.info(
                 "DEMO; set preview=True; Generation is limited to "
                 "10 seconds to prevent CPU errors. No limitations with GPU.\n"
@@ -674,7 +680,7 @@ class SoniTranslate(SoniTrCache):
             if not self.task_in_cache("transcript_align", [
                 subtitle_file,
                 SOURCE_LANGUAGE,
-                WHISPER_MODEL_SIZE,
+                transcriber_model,
                 compute_type,
                 batch_size,
                 literalize_numbers,
@@ -706,7 +712,7 @@ class SoniTranslate(SoniTrCache):
                     )
                     audio, self.result = transcribe_speech(
                         base_audio_wav if not self.vocals else self.vocals,
-                        WHISPER_MODEL_SIZE,
+                        transcriber_model,
                         compute_type,
                         batch_size,
                         SOURCE_LANGUAGE,
@@ -1026,7 +1032,7 @@ class SoniTranslate(SoniTrCache):
                 base_audio_wav = voiceless_audio_file
 
         if not self.task_in_cache("mix_aud", [
-            AUDIO_MIX_METHOD,
+            mix_method_audio,
             volume_original_audio,
             volume_translated_audio,
             voiceless_track
@@ -1035,7 +1041,7 @@ class SoniTranslate(SoniTrCache):
             remove_files(mix_audio_file)
             command_volume_mix = f'ffmpeg -y -i {base_audio_wav} -i {dub_audio_file} -filter_complex "[0:0]volume={volume_original_audio}[a];[1:0]volume={volume_translated_audio}[b];[a][b]amix=inputs=2:duration=longest" -c:a libmp3lame {mix_audio_file}'
             command_background_mix = f'ffmpeg -i {base_audio_wav} -i {dub_audio_file} -filter_complex "[1:a]asplit=2[sc][mix];[0:a][sc]sidechaincompress=threshold=0.003:ratio=20[bg]; [bg][mix]amerge[final]" -map [final] {mix_audio_file}'
-            if AUDIO_MIX_METHOD == "Adjusting volumes and mixing audio":
+            if mix_method_audio == "Adjusting volumes and mixing audio":
                 # volume mix
                 run_command(command_volume_mix)
             else:
@@ -1108,8 +1114,8 @@ class SoniTranslate(SoniTrCache):
         string_text="",  # string
         document=None,  # doc path gui
         directory_input="",  # doc path
-        SOURCE_LANGUAGE="English (en)",
-        TRANSLATE_AUDIO_TO="English (en)",
+        origin_language="English (en)",
+        target_language="English (en)",
         tts_voice00="en-AU-WilliamNeural-Male",
         name_final_file="sample",
         translate_process="google_translator",
@@ -1121,9 +1127,9 @@ class SoniTranslate(SoniTrCache):
         if "gpt" in translate_process:
             check_openai_api_key()
 
-        SOURCE_LANGUAGE = LANGUAGES[SOURCE_LANGUAGE]
+        SOURCE_LANGUAGE = LANGUAGES[origin_language]
         if translate_process != "disable_translation":
-            TRANSLATE_AUDIO_TO = LANGUAGES[TRANSLATE_AUDIO_TO]
+            TRANSLATE_AUDIO_TO = LANGUAGES[target_language]
         else:
             TRANSLATE_AUDIO_TO = SOURCE_LANGUAGE
             logger.info("No translation")
@@ -1803,7 +1809,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "",
                                 False,
                                 whisper_model_default,
-                                16,
+                                8,
                                 com_t_default,
                                 "Spanish (es)",
                                 "English (en)",
@@ -1825,7 +1831,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "",
                                 False,
                                 whisper_model_default,
-                                16,
+                                8,
                                 com_t_default,
                                 "Japanese (ja)",
                                 "English (en)",
