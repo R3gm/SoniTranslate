@@ -133,17 +133,6 @@ class TTS_Info:
         return list_tts
 
 
-def custom_model_voice_enable(enable_custom_voice):
-    os.environ["VOICES_MODELS"] = (
-        "ENABLE" if enable_custom_voice else "DISABLE"
-    )
-
-
-def custom_model_voice_workers(workers):
-    # os.environ["VOICES_MODELS_WORKERS"] = str(workers)
-    pass
-
-
 def prog_disp(msg, percent, is_gui, progress=None):
     logger.info(msg)
     if is_gui:
@@ -290,8 +279,6 @@ class SoniTranslate(SoniTrCache):
         self.voiceless_id = None
         self.burn_subs_id = None
 
-        os.environ["VOICES_MODELS"] = "DISABLE"
-        os.environ["VOICES_MODELS_WORKERS"] = "1"
         self.vci = ClassVoices(only_cpu=cpu_mode)
 
         self.tts_voices = self.get_tts_voice_list()
@@ -329,13 +316,6 @@ class SoniTranslate(SoniTrCache):
         self.tts_info = TTS_Info(piper_enabled, xtts_enabled)
 
         return self.tts_info.tts_list()
-
-    def enable_custom_model_voice(self, workers=1):
-        os.environ["VOICES_MODELS"] = "ENABLE"
-        os.environ["VOICES_MODELS_WORKERS"] = str(workers)
-
-    def disable_custom_model_voice(self):
-        os.environ["VOICES_MODELS"] = "DISABLE"
 
     def batch_multilingual_media_conversion(self, *kwargs):
         # logger.debug(str(kwargs))
@@ -396,12 +376,12 @@ class SoniTranslate(SoniTrCache):
         YOUR_HF_TOKEN="",
         preview=False,
         transcriber_model="large-v3",
-        batch_size=16,
+        batch_size=4,
         compute_type="float16",
         origin_language="Automatic detection",
         target_language="English (en)",
         min_speakers=1,
-        max_speakers=2,
+        max_speakers=1,
         tts_voice00="en-AU-WilliamNeural-Male",
         tts_voice01="en-CA-ClaraNeural-Female",
         tts_voice02="en-GB-ThomasNeural-Male",
@@ -435,9 +415,11 @@ class SoniTranslate(SoniTrCache):
         dereverb_automatic_xtts=True,
         text_segmentation_scale="sentence",
         divide_text_segments_by="",
-        soft_subtitles_to_video=False,
+        soft_subtitles_to_video=True,
         burn_subtitles_to_video=False,
-        enable_cache=False,
+        enable_cache=True,
+        custom_voices=False,
+        custom_voices_workers=1,
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -538,7 +520,7 @@ class SoniTranslate(SoniTrCache):
             )
             warn_disp(wrn_lang, is_gui)
 
-        if os.getenv("VOICES_MODELS") == "ENABLE" and voice_imitation:
+        if custom_voices and voice_imitation:
             wrn_lang = (
                 "When you use R.V.C. models, it is advisable"
                 " to disable Voice Imitation."
@@ -939,8 +921,8 @@ class SoniTranslate(SoniTrCache):
             voice_imitation_remove_previous,
             voice_imitation_vocals_dereverb,
             voice_imitation_method,
-            os.getenv("VOICES_MODELS"),
-            os.getenv("VOICES_MODELS_WORKERS"),
+            custom_voices,
+            custom_voices_workers,
             copy.deepcopy(self.vci.model_config),
             avoid_overlap
         ], {
@@ -972,7 +954,7 @@ class SoniTranslate(SoniTrCache):
                     logger.error(str(error))
 
             # custom voice
-            if os.getenv("VOICES_MODELS") == "ENABLE":
+            if custom_voices:
                 prog_disp(
                     "Applying customized voices...",
                     0.90,
@@ -985,10 +967,9 @@ class SoniTranslate(SoniTrCache):
                         audio_files,
                         speakers_list,
                         overwrite=True,
-                        parallel_workers=int(
-                            os.getenv("VOICES_MODELS_WORKERS")
-                        ),
+                        parallel_workers=custom_voices_workers,
                     )
+                    self.vci.unload_models()
                 except Exception as error:
                     logger.error(str(error))
 
@@ -1121,6 +1102,8 @@ class SoniTranslate(SoniTrCache):
         translate_process="google_translator",
         output_type="audio",
         chunk_size=None,
+        custom_voices=False,
+        custom_voices_workers=1,
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -1223,7 +1206,7 @@ class SoniTranslate(SoniTrCache):
             )
 
         # custom voice
-        if os.getenv("VOICES_MODELS") == "ENABLE":
+        if custom_voices:
             prog_disp(
                 "Applying customized voices...",
                 0.80,
@@ -1234,10 +1217,9 @@ class SoniTranslate(SoniTrCache):
                 audio_files,
                 speakers_list,
                 overwrite=True,
-                parallel_workers=int(
-                    os.getenv("VOICES_MODELS_WORKERS")
-                ),
+                parallel_workers=custom_voices_workers,
             )
+            self.vci.unload_models()
 
         prog_disp(
             "Creating final audio file...", 0.90, is_gui, progress=progress
@@ -1809,7 +1791,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "",
                                 False,
                                 whisper_model_default,
-                                8,
+                                4,
                                 com_t_default,
                                 "Spanish (es)",
                                 "English (en)",
@@ -1831,7 +1813,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "",
                                 False,
                                 whisper_model_default,
-                                8,
+                                4,
                                 com_t_default,
                                 "Japanese (ja)",
                                 "English (en)",
@@ -2056,12 +2038,9 @@ def create_gui(theme, logs_in_gui=False):
                         with gr.Column():
                             gr.Markdown(lg_conf["sec1_title"])
                             enable_custom_voice = gr.Checkbox(
-                                label="ENABLE", info=lg_conf["enable_replace"]
-                            )
-                            enable_custom_voice.change(
-                                custom_model_voice_enable,
-                                [enable_custom_voice],
-                                [],
+                                False,
+                                label="ENABLE",
+                                info=lg_conf["enable_replace"]
                             )
                             workers_custom_voice = gr.Number(
                                 step=1,
@@ -2071,11 +2050,7 @@ def create_gui(theme, logs_in_gui=False):
                                 label="workers",
                                 visible=False,
                             )
-                            workers_custom_voice.change(
-                                custom_model_voice_workers,
-                                [workers_custom_voice],
-                                [],
-                            )
+
                             gr.Markdown(lg_conf["sec2_title"])
                             gr.Markdown(lg_conf["sec2_subtitle"])
 
@@ -2084,6 +2059,7 @@ def create_gui(theme, logs_in_gui=False):
                                 "harvest",
                                 "crepe",
                                 "rmvpe",
+                                "rmvpe+",
                             ]
 
                             def model_conf():
@@ -2435,6 +2411,8 @@ def create_gui(theme, logs_in_gui=False):
                 soft_subtitles_to_video_gui,
                 burn_subtitles_to_video_gui,
                 enable_cache_gui,
+                enable_custom_voice,
+                workers_custom_voice,
                 is_gui_dummy_check,
             ],
             outputs=subs_edit_space,
@@ -2494,6 +2472,8 @@ def create_gui(theme, logs_in_gui=False):
                 soft_subtitles_to_video_gui,
                 burn_subtitles_to_video_gui,
                 enable_cache_gui,
+                enable_custom_voice,
+                workers_custom_voice,
                 is_gui_dummy_check,
             ],
             outputs=video_output,
@@ -2518,6 +2498,8 @@ def create_gui(theme, logs_in_gui=False):
                 docs_translate_process_dropdown,
                 docs_output_type,
                 docs_chunk_size,
+                enable_custom_voice,
+                workers_custom_voice,
                 docs_dummy_check,
             ],
             outputs=docs_output,

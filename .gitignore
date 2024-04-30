@@ -203,3 +203,4 @@ OPENVOICE_MODELS/
 PIPER_MODELS/
 WHISPER_MODELS/
 whisper_api_audio_parts/
+uroman/

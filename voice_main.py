@@ -214,6 +214,7 @@ class ClassVoices:
         if not self.config:
             self.config = Config(self.only_cpu)
             self.hu_bert_model = None
+            self.model_pitch_estimator = None
 
         self.model_config[tag] = {
             "file_model": file_model,
@@ -231,6 +232,7 @@ class ClassVoices:
 
     def infer(
         self,
+        task_id,
         params,
         # load model
         n_spk,
@@ -441,6 +443,7 @@ class ClassVoices:
             data=audio_opt
         )
 
+        self.model_config[task_id]["result"].append(output_audio_path)
         self.output_list.append(output_audio_path)
 
     def make_test(
@@ -510,6 +513,12 @@ class ClassVoices:
         gc.collect()
         torch.cuda.empty_cache()
 
+    def unload_models(self):
+        self.hu_bert_model = None
+        self.model_pitch_estimator = None
+        gc.collect()
+        torch.cuda.empty_cache()
+
     def __call__(
         self,
         audio_files=[],
@@ -573,6 +582,8 @@ class ClassVoices:
                 threads = []
 
             if cache_params != id_tag:
+
+                self.model_config[id_tag]["result"] = []
 
                 # Unload previous
                 (
@@ -639,7 +650,7 @@ class ClassVoices:
                         logger.error(f"f0 file: {str(error)}")
 
                 if "rmvpe" in f0_method:
-                    if not hasattr(self, "model_pitch_estimator"):
+                    if not self.model_pitch_estimator:
                         from lib.rmvpe import RMVPE
 
                         logger.info("Loading vocal pitch estimator model")
@@ -654,6 +665,7 @@ class ClassVoices:
                 cache_params = id_tag
 
             # self.infer(
+            #     id_tag,
             #     params,
             #     # load model
             #     n_spk,
@@ -677,6 +689,7 @@ class ClassVoices:
             thread = threading.Thread(
                 target=self.infer,
                 args=(
+                    id_tag,
                     params,
                     # loaded model
                     n_spk,
@@ -707,4 +720,13 @@ class ClassVoices:
         progress_bar.update(len(threads))
         progress_bar.close()
 
-        return self.output_list
+        final_result = []
+        valid_tags = set(tag_list)
+        for tag in valid_tags:
+            if (
+                tag in self.model_config.keys()
+                and "result" in self.model_config[tag].keys()
+            ):
+                final_result.extend(self.model_config[tag]["result"])
+
+        return final_result
