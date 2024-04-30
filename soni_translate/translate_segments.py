@@ -336,19 +336,19 @@ def gpt_batch(segments, model, target, token_batch_limit=900, source=None):
     fixed_target = fix_code_language(target)
     fixed_source = fix_code_language(source) if source else "auto"
 
-    name_speaker = "ABCDEF"
+    name_speaker = "ABCDEFGHIJKL"
 
     translated_lines = []
     text_data_dict = []
     num_tokens = 0
-    count_sk = {char: 0 for char in "ABCDEF"}
+    count_sk = {char: 0 for char in "ABCDEFGHIJKL"}
 
     for i, line in enumerate(segments_copy):
         text = line["text"]
         speaker = line["speaker"]
         last_start = line["start"]
         # text_data_dict.append({str(int(speaker[-1])+1): text})
-        index_sk = int(speaker[-1])
+        index_sk = int(speaker[-2:])
         character_sk = name_speaker[index_sk]
         count_sk[character_sk] += 1
         code_sk = character_sk+str(count_sk[character_sk])
@@ -361,7 +361,7 @@ def gpt_batch(segments, model, target, token_batch_limit=900, source=None):
                 # Reset vars
                 num_tokens = 0
                 text_data_dict = []
-                count_sk = {char: 0 for char in "ABCDEF"}
+                count_sk = {char: 0 for char in "ABCDEFGHIJKL"}
                 # Process translation
                 # https://arxiv.org/pdf/2309.03409.pdf
                 system_prompt = f"Machine translation designed to output the translated_conversation key JSON containing a list of {batch_lines} items."

@@ -330,8 +330,8 @@ class SoniTranslate(SoniTrCache):
         path_arg = [x.strip() for x in path_arg.split(',')]
         path_arg = get_valid_files(path_arg)
 
-        edit_text_arg = kwargs[25]
-        get_text_arg = kwargs[26]
+        edit_text_arg = kwargs[31]
+        get_text_arg = kwargs[32]
 
         is_gui_arg = kwargs[-1]
 
@@ -388,6 +388,12 @@ class SoniTranslate(SoniTrCache):
         tts_voice03="en-GB-SoniaNeural-Female",
         tts_voice04="en-NZ-MitchellNeural-Male",
         tts_voice05="en-GB-MaisieNeural-Female",
+        tts_voice06="en-AU-WilliamNeural-Male",
+        tts_voice07="en-CA-ClaraNeural-Female",
+        tts_voice08="en-GB-ThomasNeural-Male",
+        tts_voice09="en-GB-SoniaNeural-Female",
+        tts_voice10="en-NZ-MitchellNeural-Male",
+        tts_voice11="en-GB-MaisieNeural-Female",
         video_output_name="",
         mix_method_audio="Adjusting volumes and mixing audio",
         max_accelerate_audio=2.1,
@@ -797,7 +803,7 @@ class SoniTranslate(SoniTrCache):
             for segment in self.result_diarize["segments"]:
                 start = segment["start"]
                 text = segment["text"]
-                speaker = int(segment.get("speaker", "SPEAKER_00")[-1]) + 1
+                speaker = int(segment.get("speaker", "SPEAKER_00")[-2:]) + 1
                 json_data.append(
                     {"start": start, "text": text, "speaker": speaker}
                 )
@@ -816,7 +822,7 @@ class SoniTranslate(SoniTrCache):
             text_json_loaded = json.loads(text_json)
             for i, segment in enumerate(self.result_diarize["segments"]):
                 segment["text"] = text_json_loaded[i]["text"]
-                segment["speaker"] = "SPEAKER_0" + str(
+                segment["speaker"] = "SPEAKER_{:02d}".format(
                     int(text_json_loaded[i]["speaker"]) - 1
                 )
 
@@ -895,6 +901,12 @@ class SoniTranslate(SoniTrCache):
             tts_voice03,
             tts_voice04,
             tts_voice05,
+            tts_voice06,
+            tts_voice07,
+            tts_voice08,
+            tts_voice09,
+            tts_voice10,
+            tts_voice11,
             dereverb_automatic_xtts
         ], {
             "sub_file": self.sub_file
@@ -910,6 +922,12 @@ class SoniTranslate(SoniTrCache):
                 tts_voice03,
                 tts_voice04,
                 tts_voice05,
+                tts_voice06,
+                tts_voice07,
+                tts_voice08,
+                tts_voice09,
+                tts_voice10,
+                tts_voice11,
                 dereverb_automatic_xtts,
             )
 
@@ -1196,6 +1214,12 @@ class SoniTranslate(SoniTrCache):
             "",
             "",
             "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
         )
 
         # fix format and set folder output
@@ -1312,7 +1336,7 @@ def create_gui(theme, logs_in_gui=False):
                     gr.HTML("<hr></h2>")
 
                     gr.Markdown(lg_conf["num_speakers"])
-                    MAX_TTS = 6
+                    MAX_TTS = 12
                     min_speakers = gr.Slider(
                         1,
                         MAX_TTS,
@@ -1333,7 +1357,7 @@ def create_gui(theme, logs_in_gui=False):
                     def submit(value):
                         visibility_dict = {
                             f"tts_voice{i:02d}": gr.update(visible=i < value)
-                            for i in range(6)
+                            for i in range(MAX_TTS)
                         }
                         return [value for value in visibility_dict.values()]
 
@@ -1379,6 +1403,48 @@ def create_gui(theme, logs_in_gui=False):
                         visible=False,
                         interactive=True,
                     )
+                    tts_voice06 = gr.Dropdown(
+                        SoniTr.tts_info.tts_list(),
+                        value="en-GB-MaisieNeural-Female",
+                        label=lg_conf["sk7"],
+                        visible=False,
+                        interactive=True,
+                    )
+                    tts_voice07 = gr.Dropdown(
+                        SoniTr.tts_info.tts_list(),
+                        value="en-GB-MaisieNeural-Female",
+                        label=lg_conf["sk8"],
+                        visible=False,
+                        interactive=True,
+                    )
+                    tts_voice08 = gr.Dropdown(
+                        SoniTr.tts_info.tts_list(),
+                        value="en-GB-MaisieNeural-Female",
+                        label=lg_conf["sk9"],
+                        visible=False,
+                        interactive=True,
+                    )
+                    tts_voice09 = gr.Dropdown(
+                        SoniTr.tts_info.tts_list(),
+                        value="en-GB-MaisieNeural-Female",
+                        label=lg_conf["sk10"],
+                        visible=False,
+                        interactive=True,
+                    )
+                    tts_voice10 = gr.Dropdown(
+                        SoniTr.tts_info.tts_list(),
+                        value="en-GB-MaisieNeural-Female",
+                        label=lg_conf["sk11"],
+                        visible=False,
+                        interactive=True,
+                    )
+                    tts_voice11 = gr.Dropdown(
+                        SoniTr.tts_info.tts_list(),
+                        value="en-GB-MaisieNeural-Female",
+                        label=lg_conf["sk12"],
+                        visible=False,
+                        interactive=True,
+                    )
                     max_speakers.change(
                         submit,
                         max_speakers,
@@ -1389,6 +1455,12 @@ def create_gui(theme, logs_in_gui=False):
                             tts_voice03,
                             tts_voice04,
                             tts_voice05,
+                            tts_voice06,
+                            tts_voice07,
+                            tts_voice08,
+                            tts_voice09,
+                            tts_voice10,
+                            tts_voice11,
                         ],
                     )
 
@@ -1803,6 +1875,12 @@ def create_gui(theme, logs_in_gui=False):
                                 "en-GB-SoniaNeural-Female",
                                 "en-NZ-MitchellNeural-Male",
                                 "en-GB-MaisieNeural-Female",
+                                "en-AU-WilliamNeural-Male",
+                                "en-CA-ClaraNeural-Female",
+                                "en-GB-ThomasNeural-Male",
+                                "en-GB-SoniaNeural-Female",
+                                "en-NZ-MitchellNeural-Male",
+                                "en-GB-MaisieNeural-Female",
                                 "",
                                 "Adjusting volumes and mixing audio",
                             ],
@@ -1821,6 +1899,12 @@ def create_gui(theme, logs_in_gui=False):
                                 1,
                                 "en-CA-ClaraNeural-Female",
                                 "en-AU-WilliamNeural-Male",
+                                "en-GB-ThomasNeural-Male",
+                                "en-GB-SoniaNeural-Female",
+                                "en-NZ-MitchellNeural-Male",
+                                "en-GB-MaisieNeural-Female",
+                                "en-AU-WilliamNeural-Male",
+                                "en-CA-ClaraNeural-Female",
                                 "en-GB-ThomasNeural-Male",
                                 "en-GB-SoniaNeural-Female",
                                 "en-NZ-MitchellNeural-Male",
@@ -1849,6 +1933,12 @@ def create_gui(theme, logs_in_gui=False):
                             tts_voice03,
                             tts_voice04,
                             tts_voice05,
+                            tts_voice06,
+                            tts_voice07,
+                            tts_voice08,
+                            tts_voice09,
+                            tts_voice10,
+                            tts_voice11,
                             VIDEO_OUTPUT_NAME,
                             AUDIO_MIX,
                             audio_accelerate,
@@ -2021,13 +2111,13 @@ def create_gui(theme, logs_in_gui=False):
                             f"fmodel{i:02d}": gr.update(
                                 choices=models_path
                             )
-                            for i in range(7)
+                            for i in range(MAX_TTS+1)
                         }
                         dict_index = {
                             f"findex{i:02d}": gr.update(
                                 choices=index_path, value=None
                             )
-                            for i in range(7)
+                            for i in range(MAX_TTS+1)
                         }
                         dict_changes = {**dict_models, **dict_index}
                         return [value for value in dict_changes.values()]
@@ -2143,7 +2233,7 @@ def create_gui(theme, logs_in_gui=False):
                                 )
 
                             TTS_TABS = [
-                                'TTS Speaker {}'.format(i) for i in range(1, 7)
+                                'TTS Speaker {:02d}'.format(i) for i in range(1, MAX_TTS+1)
                             ]
 
                             CV_SUBTITLES = [
@@ -2153,11 +2243,17 @@ def create_gui(theme, logs_in_gui=False):
                                 lg_conf["cv_tts4"],
                                 lg_conf["cv_tts5"],
                                 lg_conf["cv_tts6"],
+                                lg_conf["cv_tts7"],
+                                lg_conf["cv_tts8"],
+                                lg_conf["cv_tts9"],
+                                lg_conf["cv_tts10"],
+                                lg_conf["cv_tts11"],
+                                lg_conf["cv_tts12"],
                             ]
 
                             configs_storage = []
 
-                            for i in range(6):  # Loop from 00 to 05
+                            for i in range(MAX_TTS):  # Loop from 00 to 11
                                 with gr.Accordion(CV_SUBTITLES[i], open=False):
                                     gr.Markdown(TTS_TABS[i])
                                     with gr.Column():
@@ -2322,7 +2418,7 @@ def create_gui(theme, logs_in_gui=False):
             def update_tts_list():
                 update_dict = {
                     f"tts_voice{i:02d}": gr.update(choices=SoniTr.tts_info.tts_list())
-                    for i in range(6)
+                    for i in range(MAX_TTS)
                 }
                 update_dict["tts_documents"] = gr.update(
                     choices=list(
@@ -2355,6 +2451,12 @@ def create_gui(theme, logs_in_gui=False):
                     tts_voice03,
                     tts_voice04,
                     tts_voice05,
+                    tts_voice06,
+                    tts_voice07,
+                    tts_voice08,
+                    tts_voice09,
+                    tts_voice10,
+                    tts_voice11,
                     tts_documents,
                 ],
             )
@@ -2381,6 +2483,12 @@ def create_gui(theme, logs_in_gui=False):
                 tts_voice03,
                 tts_voice04,
                 tts_voice05,
+                tts_voice06,
+                tts_voice07,
+                tts_voice08,
+                tts_voice09,
+                tts_voice10,
+                tts_voice11,
                 VIDEO_OUTPUT_NAME,
                 AUDIO_MIX,
                 audio_accelerate,
@@ -2442,6 +2550,12 @@ def create_gui(theme, logs_in_gui=False):
                 tts_voice03,
                 tts_voice04,
                 tts_voice05,
+                tts_voice06,
+                tts_voice07,
+                tts_voice08,
+                tts_voice09,
+                tts_voice10,
+                tts_voice11,
                 VIDEO_OUTPUT_NAME,
                 AUDIO_MIX,
                 audio_accelerate,

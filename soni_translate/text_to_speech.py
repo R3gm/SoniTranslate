@@ -968,6 +968,12 @@ def audio_segmentation_to_voice(
     tts_voice03,
     tts_voice04,
     tts_voice05,
+    tts_voice06,
+    tts_voice07,
+    tts_voice08,
+    tts_voice09,
+    tts_voice10,
+    tts_voice11,
     dereverb_automatic=True,
     model_id_bark="suno/bark-small",
     model_id_coqui="tts_models/multilingual/multi-dataset/xtts_v2",
@@ -984,6 +990,12 @@ def audio_segmentation_to_voice(
         "SPEAKER_03": tts_voice03,
         "SPEAKER_04": tts_voice04,
         "SPEAKER_05": tts_voice05,
+        "SPEAKER_06": tts_voice06,
+        "SPEAKER_07": tts_voice07,
+        "SPEAKER_08": tts_voice08,
+        "SPEAKER_09": tts_voice09,
+        "SPEAKER_10": tts_voice10,
+        "SPEAKER_11": tts_voice11,
     }
 
     # Assign 'SPEAKER_00' to segments without a 'speaker' key
@@ -1174,7 +1186,7 @@ def accelerate_segments(
             )
 
         audio_files.append(f"{folder_output}/{filename}")
-        speaker = "TTS Speaker " + str(int(speaker[-1]) + 1)
+        speaker = "TTS Speaker {:02d}".format(int(speaker[-2:]) + 1)
         speakers_list.append(speaker)
 
     return audio_files, speakers_list
