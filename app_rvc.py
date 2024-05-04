@@ -1475,10 +1475,11 @@ def create_gui(theme, logs_in_gui=False):
                                 label=lg_conf["vc_active_label"],
                                 info=lg_conf["vc_active_info"],
                             )
+                            openvoice_models = ["openvoice", "openvoice_v2"]
                             voice_imitation_method_options = (
-                                ["freevc", "openvoice"]
+                                ["freevc"] + openvoice_models
                                 if SoniTr.tts_info.xtts_enabled
-                                else ["openvoice"]
+                                else openvoice_models
                             )
                             voice_imitation_method_gui = gr.Dropdown(
                                 voice_imitation_method_options,

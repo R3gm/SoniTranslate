@@ -22,6 +22,7 @@ from pathlib import Path
 import soundfile as sf
 import platform
 import logging
+import traceback
 from .logging_setup import logger
 
 
@@ -42,6 +43,7 @@ def verify_saved_file_and_size(filename):
 
 
 def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
+    traceback.print_exc()
     logger.error(f"Error: {str(error)}")
     try:
         from tempfile import TemporaryFile
@@ -1327,6 +1329,7 @@ def toneconverter_openvoice(
     preprocessor_max_segments,
     remove_previous_process=True,
     get_vocals_dereverb=False,
+    model="openvoice",
 ):
     audio_path = "audio.wav"
     # se_path = "se.pth"
@@ -1359,16 +1362,24 @@ def toneconverter_openvoice(
     )
 
     logger.info("Openvoice loading model...")
-
     model_path_openvoice = "./OPENVOICE_MODELS"
     url_model_openvoice = "https://huggingface.co/myshell-ai/OpenVoice/resolve/main/checkpoints/converter"
+
+    if "v2" in model:
+        model_path = os.path.join(model_path_openvoice, "v2")
+        url_model_openvoice = url_model_openvoice.replace(
+            "OpenVoice", "OpenVoiceV2"
+        ).replace("checkpoints/", "")
+    else:
+        model_path = os.path.join(model_path_openvoice, "v1")
+    create_directories(model_path)
 
     config_url = f"{url_model_openvoice}/config.json"
     checkpoint_url = f"{url_model_openvoice}/checkpoint.pth"
 
-    config_path = download_manager(url=config_url, path=model_path_openvoice)
+    config_path = download_manager(url=config_url, path=model_path)
     checkpoint_path = download_manager(
-        url=checkpoint_url, path=model_path_openvoice
+        url=checkpoint_url, path=model_path
     )
 
     device = os.environ.get("SONITR_DEVICE")
@@ -1533,12 +1544,13 @@ def toneconverter(
                     remove_previous_process=remove_previous_process,
                     get_vocals_dereverb=get_vocals_dereverb,
                 )
-    elif method_vc == "openvoice":
+    elif "openvoice" in method_vc:
         return toneconverter_openvoice(
                     result_diarize,
                     preprocessor_max_segments,
                     remove_previous_process=remove_previous_process,
                     get_vocals_dereverb=get_vocals_dereverb,
+                    model=method_vc,
                 )
 
 
