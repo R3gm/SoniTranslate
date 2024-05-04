@@ -82,6 +82,9 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
 
 def pad_array(array, sr):
 
+    if isinstance(array, list):
+        array = np.array(array)
+
     if not array.shape[0]:
         raise ValueError("The generated audio does not contain any data")
 
