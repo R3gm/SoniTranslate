@@ -35,6 +35,8 @@ ASR_MODEL_OPTIONS = [
 ]
 
 COMPUTE_TYPE_GPU = [
+    "default",
+    "auto",
     "int8",
     "int8_float32",
     "int8_float16",
@@ -45,6 +47,8 @@ COMPUTE_TYPE_GPU = [
 ]
 
 COMPUTE_TYPE_CPU = [
+    "default",
+    "auto",
     "int8",
     "int8_float32",
     "int16",
@@ -326,6 +330,26 @@ diarization_models = {
 }
 
 
+def reencode_speakers(result):
+
+    if result["segments"][0]["speaker"] == "SPEAKER_00":
+        return result
+
+    speaker_mapping = {}
+    counter = 0
+
+    logger.debug("Reencode speakers")
+
+    for segment in result["segments"]:
+        old_speaker = segment["speaker"]
+        if old_speaker not in speaker_mapping:
+            speaker_mapping[old_speaker] = f"SPEAKER_{counter:02d}"
+            counter += 1
+        segment["speaker"] = speaker_mapping[old_speaker]
+
+    return result
+
+
 def diarize_speech(
     audio_wav,
     result,
@@ -420,4 +444,4 @@ def diarize_speech(
             {**item, "speaker": "SPEAKER_00"}
             for item in result_diarize["segments"]
         ]
-    return result_diarize
+    return reencode_speakers(result_diarize)

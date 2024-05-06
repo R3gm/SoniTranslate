@@ -26,7 +26,9 @@ OUTPUT_TYPE_OPTIONS = [
 ]
 
 DOCS_OUTPUT_TYPE_OPTIONS = [
-    "audio",
+    "audio (wav)",
+    "audio (mp3)",
+    "audio (ogg)",
     "text",
 ]  # Add DOCX and etc.
 
@@ -76,7 +78,7 @@ def get_output_file(
         soft_subtitles,
         output_directory="",
 ):
-    directory_base = "." # default directory
+    directory_base = "."  # default directory
 
     if output_directory and os.path.isdir(output_directory):
         new_file_path = os.path.join(output_directory, new_file_name)
@@ -96,6 +98,8 @@ def get_output_file(
         cm = f'ffmpeg -y -i "{original_file}" -acodec pcm_s16le -ar 44100 -ac 2 "{new_file_path}"'
     elif new_file_path.endswith(".ogg"):
         cm = f'ffmpeg -i "{original_file}" -c:a libvorbis "{new_file_path}"'
+    elif new_file_path.endswith(".mp3") and not original_file.endswith(".mp3"):
+        cm = f'ffmpeg -y -i "{original_file}" -codec:a libmp3lame -qscale:a 2 "{new_file_path}"'
 
     if cm:
         try:
@@ -117,6 +121,7 @@ def media_out(
     extension="mp4",
     file_obj="video_dub.mp4",
     soft_subtitles=False,
+    subtitle_files="disable",
 ):
     if not media_out_name:
         if os.path.exists(media_file):
@@ -128,7 +133,19 @@ def media_out(
 
     f_name = f"{sanitize_file_name(media_out_name)}.{extension}"
 
-    return get_output_file(file_obj, f_name, soft_subtitles)
+    if subtitle_files != "disable":
+        final_media = [get_output_file(file_obj, f_name, soft_subtitles)]
+        name_tra = f"{sanitize_file_name(media_out_name)}.{subtitle_files}"
+        name_ori = f"{sanitize_file_name(base_name)}.{subtitle_files}"
+        tgt_subs = f"sub_tra.{subtitle_files}"
+        ori_subs = f"sub_ori.{subtitle_files}"
+        final_subtitles = [
+            get_output_file(tgt_subs, name_tra, False),
+            get_output_file(ori_subs, name_ori, False)
+        ]
+        return final_media + final_subtitles
+    else:
+        return get_output_file(file_obj, f_name, soft_subtitles)
 
 
 def get_subtitle_speaker(media_file, result, language, extension, base_name):

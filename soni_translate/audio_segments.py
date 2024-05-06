@@ -89,7 +89,7 @@ def create_translated_audio(
         combined_audio = Mixer()
         combined_audio.overlay(base_audio)
 
-        logger.info(
+        logger.debug(
             f"Audio duration: {total_duration // 60} "
             f"minutes and {int(total_duration % 60)} seconds"
         )

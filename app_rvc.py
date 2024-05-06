@@ -377,7 +377,7 @@ class SoniTranslate(SoniTrCache):
         preview=False,
         transcriber_model="large-v3",
         batch_size=4,
-        compute_type="float16",
+        compute_type="auto",
         origin_language="Automatic detection",
         target_language="English (en)",
         min_speakers=1,
@@ -719,11 +719,19 @@ class SoniTranslate(SoniTrCache):
                 ):
                     prog_disp("Aligning...", 0.45, is_gui, progress=progress)
                     try:
-                        self.result = align_speech(audio, self.result)
-                        logger.debug(
-                            "Align complete, "
-                            f"segments count {len(self.result['segments'])}"
-                        )
+                        if self.align_language in ["vi"]:
+                            logger.info(
+                                "Deficient alignment for the "
+                                f"{self.align_language} language, skipping the"
+                                " process. It is suggested to reduce the "
+                                "duration of the segments as an alternative."
+                            )
+                        else:
+                            self.result = align_speech(audio, self.result)
+                            logger.debug(
+                                "Align complete, "
+                                f"segments count {len(self.result['segments'])}"
+                            )
                     except Exception as error:
                         logger.error(str(error))
 
@@ -834,7 +842,9 @@ class SoniTranslate(SoniTrCache):
         ], {
             "result_diarize": self.result_diarize
         }):
-            if output_format_subtitle != "ass":
+            if output_format_subtitle == "disable":
+                self.sub_file = "sub_tra.srt"
+            elif output_format_subtitle != "ass":
                 self.sub_file = process_subtitles(
                     self.result_source_lang,
                     self.align_language,
@@ -842,6 +852,8 @@ class SoniTranslate(SoniTrCache):
                     output_format_subtitle,
                     TRANSLATE_AUDIO_TO,
                 )
+
+            # Need task
             if output_format_subtitle != "srt":
                 _ = process_subtitles(
                     self.result_source_lang,
@@ -850,6 +862,7 @@ class SoniTranslate(SoniTrCache):
                     "srt",
                     TRANSLATE_AUDIO_TO,
                 )
+
             if output_format_subtitle == "ass":
                 convert_ori = "ffmpeg -i sub_ori.srt sub_ori.ass -y"
                 convert_tra = "ffmpeg -i sub_tra.srt sub_tra.ass -y"
@@ -857,23 +870,41 @@ class SoniTranslate(SoniTrCache):
                 run_command(convert_ori)
                 run_command(convert_tra)
 
+        format_sub = (
+            output_format_subtitle
+            if output_format_subtitle != "disable"
+            else "srt"
+        )
+
         if output_type == "subtitle":
-            output = media_out(
+
+            out_subs = []
+            tra_subs = media_out(
                 media_file,
                 TRANSLATE_AUDIO_TO,
                 video_output_name,
-                output_format_subtitle,
+                format_sub,
                 file_obj=self.sub_file,
             )
-            logger.info(f"Done: {output}")
-            return output
+            out_subs.append(tra_subs)
+
+            ori_subs = media_out(
+                media_file,
+                self.align_language,
+                video_output_name,
+                format_sub,
+                file_obj=f"sub_ori.{format_sub}",
+            )
+            out_subs.append(ori_subs)
+            logger.info(f"Done: {out_subs}")
+            return out_subs
 
         if output_type == "subtitle [by speaker]":
             output = get_subtitle_speaker(
                 media_file,
                 result=self.result_diarize,
                 language=TRANSLATE_AUDIO_TO,
-                extension=output_format_subtitle,
+                extension=format_sub,
                 base_name=video_output_name,
             )
             logger.info(f"Done: {str(output)}")
@@ -889,8 +920,10 @@ class SoniTranslate(SoniTrCache):
                 ),
                 file_obj=base_audio_wav if is_audio_file(media_file) else base_video_file,
                 soft_subtitles=False if is_audio_file(media_file) else True,
+                subtitle_files=output_format_subtitle,
             )
-            logger.info(f"Done: {output}")
+            msg_out = output[0] if isinstance(output, list) else output
+            logger.info(f"Done: {msg_out}")
             return output
 
         if not self.task_in_cache("tts", [
@@ -1061,8 +1094,10 @@ class SoniTranslate(SoniTrCache):
                     "ogg" if "ogg" in output_type else "mp3"
                 ),
                 file_obj=mix_audio_file,
+                subtitle_files=output_format_subtitle,
             )
-            logger.info(f"Done: {output}")
+            msg_out = output[0] if isinstance(output, list) else output
+            logger.info(f"Done: {msg_out}")
             return output
 
         hash_base_video_file = get_hash(base_video_file)
@@ -1076,7 +1111,7 @@ class SoniTranslate(SoniTrCache):
                 try:
                     logger.info("Burn subtitles")
                     remove_files(vid_subs)
-                    command = f"ffmpeg -i {base_video_file} -y -vf subtitles=sub_tra.srt {vid_subs}"
+                    command = f"ffmpeg -i {base_video_file} -y -vf subtitles=sub_tra.srt -max_muxing_queue_size 9999 {vid_subs}"
                     run_command(command)
                     base_video_file = vid_subs
                     self.burn_subs_id = hashvideo_text
@@ -1103,8 +1138,10 @@ class SoniTranslate(SoniTrCache):
             "mkv" if "mkv" in output_type else "mp4",
             file_obj=video_output_file,
             soft_subtitles=soft_subtitles_to_video,
+            subtitle_files=output_format_subtitle,
         )
-        logger.info(f"Done: {output}")
+        msg_out = output[0] if isinstance(output, list) else output
+        logger.info(f"Done: {msg_out}")
 
         return output
 
@@ -1116,7 +1153,7 @@ class SoniTranslate(SoniTrCache):
         origin_language="English (en)",
         target_language="English (en)",
         tts_voice00="en-AU-WilliamNeural-Male",
-        name_final_file="sample",
+        name_final_file="",
         translate_process="google_translator",
         output_type="audio",
         chunk_size=None,
@@ -1154,11 +1191,7 @@ class SoniTranslate(SoniTrCache):
             raise Exception("No data found")
 
         # audio_wav = "audio.wav"
-        final_wav_file = (
-            "audio_book.wav"
-            if not name_final_file
-            else f"{name_final_file}.wav"
-        )
+        final_wav_file = "audio_book.wav"
 
         prog_disp("Processing text...", 0.15, is_gui, progress=progress)
         result_file_path, result_text = document_preprocessor(
@@ -1253,9 +1286,19 @@ class SoniTranslate(SoniTrCache):
             result_diarize, audio_files, final_wav_file, True
         )
 
-        logger.info(f"Done: {final_wav_file}")
+        output = media_out(
+            result_file_path if is_string else document,
+            TRANSLATE_AUDIO_TO,
+            name_final_file,
+            "mp3" if "mp3" in output_type else (
+                "ogg" if "ogg" in output_type else "wav"
+            ),
+            file_obj=final_wav_file,
+        )
 
-        return final_wav_file
+        logger.info(f"Done: {output}")
+
+        return output
 
 
 title = "<center><strong><font size='7'>📽️ SoniTranslate 🈷️</font></strong></center>"
@@ -1363,84 +1406,84 @@ def create_gui(theme, logs_in_gui=False):
 
                     tts_voice00 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-AU-WilliamNeural-Male",
+                        value="en-US-EmmaMultilingualNeural-Female",
                         label=lg_conf["sk1"],
                         visible=True,
                         interactive=True,
                     )
                     tts_voice01 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-CA-ClaraNeural-Female",
+                        value="en-US-AndrewMultilingualNeural-Male",
                         label=lg_conf["sk2"],
                         visible=True,
                         interactive=True,
                     )
                     tts_voice02 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-ThomasNeural-Male",
+                        value="en-US-AvaMultilingualNeural-Female",
                         label=lg_conf["sk3"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice03 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-SoniaNeural-Female",
+                        value="en-US-BrianMultilingualNeural-Male",
                         label=lg_conf["sk4"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice04 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-NZ-MitchellNeural-Male",
+                        value="de-DE-SeraphinaMultilingualNeural-Female",
                         label=lg_conf["sk4"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice05 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="de-DE-FlorianMultilingualNeural-Male",
                         label=lg_conf["sk6"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice06 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="fr-FR-VivienneMultilingualNeural-Female",
                         label=lg_conf["sk7"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice07 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="fr-FR-RemyMultilingualNeural-Male",
                         label=lg_conf["sk8"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice08 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="en-US-EmmaMultilingualNeural-Female",
                         label=lg_conf["sk9"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice09 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="en-US-AndrewMultilingualNeural-Male",
                         label=lg_conf["sk10"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice10 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="en-US-EmmaMultilingualNeural-Female",
                         label=lg_conf["sk11"],
                         visible=False,
                         interactive=True,
                     )
                     tts_voice11 = gr.Dropdown(
                         SoniTr.tts_info.tts_list(),
-                        value="en-GB-MaisieNeural-Female",
+                        value="en-US-AndrewMultilingualNeural-Male",
                         label=lg_conf["sk12"],
                         visible=False,
                         interactive=True,
@@ -1622,6 +1665,7 @@ def create_gui(theme, logs_in_gui=False):
 
                             gr.HTML("<hr></h2>")
                             sub_type_options = [
+                                "disable",
                                 "srt",
                                 "vtt",
                                 "ass",
@@ -1631,20 +1675,9 @@ def create_gui(theme, logs_in_gui=False):
                                 "aud",
                             ]
 
-                            def get_subs_path(type_subs):
-                                if os.path.exists(
-                                    f"sub_ori.{type_subs}"
-                                ) and os.path.exists(f"sub_tra.{type_subs}"):
-                                    return (
-                                        f"sub_ori.{type_subs}",
-                                        f"sub_tra.{type_subs}",
-                                    )
-                                else:
-                                    return None, None
-
                             sub_type_output = gr.Dropdown(
                                 sub_type_options,
-                                value=sub_type_options[0],
+                                value=sub_type_options[1],
                                 label=lg_conf["sub_type"],
                             )
                             soft_subtitles_to_video_gui = gr.Checkbox(
@@ -1825,15 +1858,6 @@ def create_gui(theme, logs_in_gui=False):
                             interactive=False,
 
                         )  # gr.Video()
-                    with gr.Row():
-                        sub_ori_output = gr.File(
-                            label=lg_conf["sub_ori"],
-                            interactive=False,
-                        )
-                        sub_tra_output = gr.File(
-                            label=lg_conf["sub_tra"],
-                            interactive=False,
-                        )
 
                     gr.HTML("<hr></h2>")
 
@@ -1870,48 +1894,8 @@ def create_gui(theme, logs_in_gui=False):
                                 "English (en)",
                                 1,
                                 2,
-                                "en-AU-WilliamNeural-Male",
-                                "en-CA-ClaraNeural-Female",
-                                "en-GB-ThomasNeural-Male",
-                                "en-GB-SoniaNeural-Female",
-                                "en-NZ-MitchellNeural-Male",
-                                "en-GB-MaisieNeural-Female",
-                                "en-AU-WilliamNeural-Male",
-                                "en-CA-ClaraNeural-Female",
-                                "en-GB-ThomasNeural-Male",
-                                "en-GB-SoniaNeural-Female",
-                                "en-NZ-MitchellNeural-Male",
-                                "en-GB-MaisieNeural-Female",
-                                "",
-                                "Adjusting volumes and mixing audio",
-                            ],
-                            [
-                                None,
-                                "https://www.youtube.com/watch?v=5ZeHtRKHl7Y",
-                                "",
-                                "",
-                                False,
-                                whisper_model_default,
-                                4,
-                                com_t_default,
-                                "Japanese (ja)",
-                                "English (en)",
-                                1,
-                                1,
                                 "en-CA-ClaraNeural-Female",
                                 "en-AU-WilliamNeural-Male",
-                                "en-GB-ThomasNeural-Male",
-                                "en-GB-SoniaNeural-Female",
-                                "en-NZ-MitchellNeural-Male",
-                                "en-GB-MaisieNeural-Female",
-                                "en-AU-WilliamNeural-Male",
-                                "en-CA-ClaraNeural-Female",
-                                "en-GB-ThomasNeural-Male",
-                                "en-GB-SoniaNeural-Female",
-                                "en-NZ-MitchellNeural-Male",
-                                "en-GB-MaisieNeural-Female",
-                                "",
-                                "Adjusting volumes and mixing audio",
                             ],
                         ],  # no update
                         fn=SoniTr.batch_multilingual_media_conversion,
@@ -1930,23 +1914,6 @@ def create_gui(theme, logs_in_gui=False):
                             max_speakers,
                             tts_voice00,
                             tts_voice01,
-                            tts_voice02,
-                            tts_voice03,
-                            tts_voice04,
-                            tts_voice05,
-                            tts_voice06,
-                            tts_voice07,
-                            tts_voice08,
-                            tts_voice09,
-                            tts_voice10,
-                            tts_voice11,
-                            VIDEO_OUTPUT_NAME,
-                            AUDIO_MIX,
-                            audio_accelerate,
-                            acceleration_rate_regulation_gui,
-                            volume_original_mix,
-                            volume_translated_mix,
-                            sub_type_output,
                         ],
                         outputs=[video_output],
                         cache_examples=False,
@@ -2024,7 +1991,7 @@ def create_gui(theme, logs_in_gui=False):
                                         SoniTr.tts_info.tts_list(),
                                     )
                                 ),
-                                value="en-GB-ThomasNeural-Male",
+                                value="en-US-EmmaMultilingualNeural-Female",
                                 label="TTS",
                                 visible=True,
                                 interactive=True,
@@ -2066,7 +2033,7 @@ def create_gui(theme, logs_in_gui=False):
                                     )
                                     docs_OUTPUT_NAME = gr.Textbox(
                                         label="Final file name",
-                                        value="final_sample",
+                                        value="",
                                         info=lg_conf["out_name_info"],
                                     )
                                     docs_chunk_size = gr.Number(
@@ -2593,8 +2560,6 @@ def create_gui(theme, logs_in_gui=False):
             ],
             outputs=video_output,
             trigger_mode="multiple",
-        ).then(
-            get_subs_path, [sub_type_output], [sub_ori_output, sub_tra_output]
         ).then(
             play_sound_alert, [play_sound_gui], [sound_alert_notification]
         )
