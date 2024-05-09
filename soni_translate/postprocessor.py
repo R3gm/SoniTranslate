@@ -26,10 +26,12 @@ OUTPUT_TYPE_OPTIONS = [
 ]
 
 DOCS_OUTPUT_TYPE_OPTIONS = [
-    "audio (wav)",
-    "audio (mp3)",
-    "audio (ogg)",
-    "text",
+    "videobook (mp4)",
+    "videobook (mkv)",
+    "audiobook (wav)",
+    "audiobook (mp3)",
+    "audiobook (ogg)",
+    "book (txt)",
 ]  # Add DOCX and etc.
 
 

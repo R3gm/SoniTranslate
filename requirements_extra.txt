@@ -15,5 +15,5 @@ git+https://github.com/R3gm/openvoice_package.git@lite
 openai==1.14.3
 tiktoken==0.6.0
 # Documents
-PyPDF2
+pypdf==4.2.0
 python-docx

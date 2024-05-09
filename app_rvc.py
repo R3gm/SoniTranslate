@@ -70,6 +70,7 @@ from soni_translate.speech_segmentation import (
     diarization_models,
 )
 from soni_translate.text_multiformat_processor import (
+    BORDER_COLORS,
     srt_file_to_segments,
     document_preprocessor,
     determine_chunk_size,
@@ -78,6 +79,12 @@ from soni_translate.text_multiformat_processor import (
     process_subtitles,
     linguistic_level_segments,
     break_aling_segments,
+    doc_to_txtximg_pages,
+    page_data_to_segments,
+    update_page_data,
+    fix_timestamps_docs,
+    create_video_from_images,
+    merge_video_and_audio,
 )
 from soni_translate.languages_gui import language_data, news
 import copy
@@ -382,18 +389,18 @@ class SoniTranslate(SoniTrCache):
         target_language="English (en)",
         min_speakers=1,
         max_speakers=1,
-        tts_voice00="en-AU-WilliamNeural-Male",
-        tts_voice01="en-CA-ClaraNeural-Female",
-        tts_voice02="en-GB-ThomasNeural-Male",
-        tts_voice03="en-GB-SoniaNeural-Female",
-        tts_voice04="en-NZ-MitchellNeural-Male",
-        tts_voice05="en-GB-MaisieNeural-Female",
-        tts_voice06="en-AU-WilliamNeural-Male",
-        tts_voice07="en-CA-ClaraNeural-Female",
-        tts_voice08="en-GB-ThomasNeural-Male",
-        tts_voice09="en-GB-SoniaNeural-Female",
-        tts_voice10="en-NZ-MitchellNeural-Male",
-        tts_voice11="en-GB-MaisieNeural-Female",
+        tts_voice00="en-US-EmmaMultilingualNeural-Female",
+        tts_voice01="en-US-AndrewMultilingualNeural-Male",
+        tts_voice02="en-US-AvaMultilingualNeural-Female",
+        tts_voice03="en-US-BrianMultilingualNeural-Male",
+        tts_voice04="de-DE-SeraphinaMultilingualNeural-Female",
+        tts_voice05="de-DE-FlorianMultilingualNeural-Male",
+        tts_voice06="fr-FR-VivienneMultilingualNeural-Female",
+        tts_voice07="fr-FR-RemyMultilingualNeural-Male",
+        tts_voice08="en-US-EmmaMultilingualNeural-Female",
+        tts_voice09="en-US-AndrewMultilingualNeural-Male",
+        tts_voice10="en-US-EmmaMultilingualNeural-Female",
+        tts_voice11="en-US-AndrewMultilingualNeural-Male",
         video_output_name="",
         mix_method_audio="Adjusting volumes and mixing audio",
         max_accelerate_audio=2.1,
@@ -1145,6 +1152,109 @@ class SoniTranslate(SoniTrCache):
 
         return output
 
+    def hook_beta_processor(
+        self,
+        document,
+        tgt_lang,
+        translate_process,
+        ori_lang,
+        tts,
+        name_final_file,
+        custom_voices,
+        custom_voices_workers,
+        output_type,
+        chunk_size,
+        width,
+        height,
+        start_page,
+        end_page,
+        bcolor,
+        is_gui,
+        progress
+    ):
+        prog_disp("Processing pages...", 0.10, is_gui, progress=progress)
+        doc_data = doc_to_txtximg_pages(document,  width, height, start_page, end_page, bcolor)
+        result_diarize = page_data_to_segments(doc_data, 1700)
+
+        prog_disp("Translating...", 0.20, is_gui, progress=progress)
+        result_diarize["segments"] = translate_text(
+            result_diarize["segments"],
+            tgt_lang,
+            translate_process,
+            chunk_size=0,
+            source=ori_lang,
+        )
+        chunk_size = (
+            chunk_size if chunk_size else determine_chunk_size(tts)
+        )
+        doc_data = update_page_data(result_diarize, doc_data)
+
+        prog_disp("Text to speech...", 0.30, is_gui, progress=progress)
+        result_diarize = page_data_to_segments(doc_data, chunk_size)
+        valid_speakers = audio_segmentation_to_voice(
+            result_diarize,
+            tgt_lang,
+            is_gui,
+            tts,
+        )
+
+        # fix format and set folder output
+        audio_files, speakers_list = accelerate_segments(
+                result_diarize,
+                1.0,
+                valid_speakers,
+            )
+
+        # custom voice
+        if custom_voices:
+            prog_disp(
+                "Applying customized voices...",
+                0.60,
+                is_gui,
+                progress=progress,
+            )
+            self.vci(
+                audio_files,
+                speakers_list,
+                overwrite=True,
+                parallel_workers=custom_voices_workers,
+            )
+            self.vci.unload_models()
+
+        # Update time segments and not concat
+        result_diarize = fix_timestamps_docs(result_diarize, audio_files)
+        final_wav_file = "audio_book.wav"
+        remove_files(final_wav_file)
+
+        prog_disp("Creating audio file...", 0.70, is_gui, progress=progress)
+        create_translated_audio(
+            result_diarize, audio_files, final_wav_file, False
+        )
+
+        prog_disp("Creating video file...", 0.80, is_gui, progress=progress)
+        video_doc = create_video_from_images(
+                document,
+                width,
+                height,
+                doc_data,
+                result_diarize
+        )
+
+        # Merge video and audio
+        prog_disp("Merging...", 0.90, is_gui, progress=progress)
+        vid_out = merge_video_and_audio(video_doc, final_wav_file)
+
+        # End
+        output = media_out(
+            document,
+            tgt_lang,
+            name_final_file,
+            "mkv" if "mkv" in output_type else "mp4",
+            file_obj=vid_out,
+        )
+        logger.info(f"Done: {output}")
+        return output
+
     def multilingual_docs_conversion(
         self,
         string_text="",  # string
@@ -1152,13 +1262,18 @@ class SoniTranslate(SoniTrCache):
         directory_input="",  # doc path
         origin_language="English (en)",
         target_language="English (en)",
-        tts_voice00="en-AU-WilliamNeural-Male",
+        tts_voice00="en-US-EmmaMultilingualNeural-Female",
         name_final_file="",
         translate_process="google_translator",
         output_type="audio",
         chunk_size=None,
         custom_voices=False,
         custom_voices_workers=1,
+        start_page=1,
+        end_page=99999,
+        width=1280,
+        height=720,
+        bcolor="dynamic",
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -1190,16 +1305,42 @@ class SoniTranslate(SoniTrCache):
         if not document:
             raise Exception("No data found")
 
+        if "videobook" in output_type:
+            if not document.lower().endswith(".pdf"):
+                raise ValueError(
+                    "Videobooks are only compatible with PDF files."
+                )
+
+            return self.hook_beta_processor(
+                document,
+                TRANSLATE_AUDIO_TO,
+                translate_process,
+                SOURCE_LANGUAGE,
+                tts_voice00,
+                name_final_file,
+                custom_voices,
+                custom_voices_workers,
+                output_type,
+                chunk_size,
+                width,
+                height,
+                start_page,
+                end_page,
+                bcolor,
+                is_gui,
+                progress
+            )
+
         # audio_wav = "audio.wav"
         final_wav_file = "audio_book.wav"
 
         prog_disp("Processing text...", 0.15, is_gui, progress=progress)
         result_file_path, result_text = document_preprocessor(
-            document, is_string
+            document, is_string, start_page, end_page
         )
 
         if (
-            output_type == "text"
+            output_type == "book (txt)"
             and translate_process == "disable_translation"
         ):
             return result_file_path
@@ -1226,8 +1367,14 @@ class SoniTranslate(SoniTrCache):
 
             txt_file_path, result_text = segments_to_plain_text(result_diarize)
 
-            if output_type == "text":
-                return txt_file_path
+            if output_type == "book (txt)":
+                return media_out(
+                    result_file_path if is_string else document,
+                    TRANSLATE_AUDIO_TO,
+                    name_final_file,
+                    "txt",
+                    file_obj=txt_file_path,
+                )
 
         # (TTS limits) plain text to result_diarize
         chunk_size = (
@@ -1242,17 +1389,6 @@ class SoniTranslate(SoniTrCache):
             TRANSLATE_AUDIO_TO,
             is_gui,
             tts_voice00,
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
         )
 
         # fix format and set folder output
@@ -2028,7 +2164,7 @@ def create_gui(theme, logs_in_gui=False):
 
                                     docs_output_type = gr.Dropdown(
                                         DOCS_OUTPUT_TYPE_OPTIONS,
-                                        value=DOCS_OUTPUT_TYPE_OPTIONS[0],
+                                        value=DOCS_OUTPUT_TYPE_OPTIONS[2],
                                         label="Output type",
                                     )
                                     docs_OUTPUT_NAME = gr.Textbox(
@@ -2042,6 +2178,41 @@ def create_gui(theme, logs_in_gui=False):
                                         visible=True,
                                         interactive=True,
                                         info=lg_conf["chunk_size_info"],
+                                    )
+                                    gr.HTML("<hr></h2>")
+                                    start_page_gui = gr.Number(
+                                        step=1,
+                                        value=1,
+                                        minimum=1,
+                                        maximum=99999,
+                                        label="Start page",
+                                    )
+                                    end_page_gui = gr.Number(
+                                        step=1,
+                                        value=99999,
+                                        minimum=1,
+                                        maximum=99999,
+                                        label="End page",
+                                    )
+                                    gr.HTML("<hr>Videobook</h2>")
+                                    videobook_width_gui = gr.Number(
+                                        step=1,
+                                        value=1280,
+                                        minimum=100,
+                                        maximum=4096,
+                                        label="Width",
+                                    )
+                                    videobook_height_gui = gr.Number(
+                                        step=1,
+                                        value=720,
+                                        minimum=100,
+                                        maximum=4096,
+                                        label="Height",
+                                    )
+                                    videobook_bcolor_gui = gr.Dropdown(
+                                        BORDER_COLORS,
+                                        value=BORDER_COLORS[0],
+                                        label="Border color",
                                     )
                                     docs_dummy_check = gr.Checkbox(
                                         True, visible=False
@@ -2580,6 +2751,11 @@ def create_gui(theme, logs_in_gui=False):
                 docs_chunk_size,
                 enable_custom_voice,
                 workers_custom_voice,
+                start_page_gui,
+                end_page_gui,
+                videobook_width_gui,
+                videobook_height_gui,
+                videobook_bcolor_gui,
                 docs_dummy_check,
             ],
             outputs=docs_output,

@@ -185,6 +185,7 @@ task_subtitle.*
 *.mov
 *.ogv
 *.wmv
+test.py
 list.txt
 text_preprocessor.txt
 text_translation.txt
@@ -210,3 +211,4 @@ PIPER_MODELS/
 WHISPER_MODELS/
 whisper_api_audio_parts/
 uroman/
+pdf_images/

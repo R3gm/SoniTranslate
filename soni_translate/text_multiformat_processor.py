@@ -1,11 +1,14 @@
 from .logging_setup import logger
 from whisperx.utils import get_writer
-from .utils import remove_files, run_command
+from .utils import remove_files, run_command, remove_directory_contents
+from typing import List
 import srt
 import re
 import os
 import copy
 import string
+import soundfile as sf
+from PIL import Image, ImageOps
 
 punctuation_list = list(
     string.punctuation + "¡¿«»„”“”‚‘’「」『』《》（）【】〈〉〔〕〖〗〘〙〚〛⸤⸥⸨⸩"
@@ -89,18 +92,62 @@ def srt_file_to_segments(file_path, speaker=False):
 # documents
 
 
-def pdf_to_txt(pdf_file):
-    import PyPDF2
+def dehyphenate(lines: List[str], line_no: int) -> List[str]:
+    next_line = lines[line_no + 1]
+    word_suffix = next_line.split(" ")[0]
+
+    lines[line_no] = lines[line_no][:-1] + word_suffix
+    lines[line_no + 1] = lines[line_no + 1][len(word_suffix):]
+    return lines
+
+
+def remove_hyphens(text: str) -> str:
+    """
+
+    This fails for:
+    * Natural dashes: well-known, self-replication, use-cases, non-semantic,
+                      Post-processing, Window-wise, viewpoint-dependent
+    * Trailing math operands: 2 - 4
+    * Names: Lopez-Ferreras, VGG-19, CIFAR-100
+    """
+    lines = [line.rstrip() for line in text.split("\n")]
+
+    # Find dashes
+    line_numbers = []
+    for line_no, line in enumerate(lines[:-1]):
+        if line.endswith("-"):
+            line_numbers.append(line_no)
+
+    # Replace
+    for line_no in line_numbers:
+        lines = dehyphenate(lines, line_no)
+
+    return "\n".join(lines)
+
+
+def pdf_to_txt(pdf_file, start_page, end_page):
+    from pypdf import PdfReader
 
     with open(pdf_file, "rb") as file:
-        reader = PyPDF2.PdfReader(file)
+        reader = PdfReader(file)
+        logger.debug(f"Total pages: {reader.get_num_pages()}")
         text = ""
-        for page in reader.pages:
-            text += page.extract_text()
+
+        start_page_idx = max((start_page-1), 0)
+        end_page_inx = min((end_page), (reader.get_num_pages()))
+        document_pages = reader.pages[start_page_idx:end_page_inx]
+        logger.info(
+            f"Selected pages from {start_page_idx} to {end_page_inx}: "
+            f"{len(document_pages)}"
+        )
+
+        for page in document_pages:
+            text += remove_hyphens(page.extract_text())
     return text
 
 
 def docx_to_txt(docx_file):
+    # https://github.com/AlJohri/docx2pdf update
     from docx import Document
 
     doc = Document(docx_file)
@@ -122,14 +169,14 @@ def replace_multiple_elements(text, replacements):
     return replaced_text
 
 
-def document_preprocessor(file_path, is_string):
+def document_preprocessor(file_path, is_string, start_page, end_page):
     if not is_string:
         file_ext = os.path.splitext(file_path)[1].lower()
 
     if is_string:
         text = file_path
     elif file_ext == ".pdf":
-        text = pdf_to_txt(file_path)
+        text = pdf_to_txt(file_path, start_page, end_page)
     elif file_ext == ".docx":
         text = docx_to_txt(file_path)
     elif file_ext == ".txt":
@@ -234,6 +281,286 @@ def segments_to_plain_text(result_diarize):
         txt_file.write(complete_text)
 
     return txt_file_path, complete_text
+
+
+# doc to video
+
+COLORS = {
+    "black": (0, 0, 0),
+    "white": (255, 255, 255),
+    "red": (255, 0, 0),
+    "green": (0, 255, 0),
+    "blue": (0, 0, 255),
+    "yellow": (255, 255, 0),
+    "light_gray": (200, 200, 200),
+    "light_blue": (173, 216, 230),
+    "light_green": (144, 238, 144),
+    "light_yellow": (255, 255, 224),
+    "light_pink": (255, 182, 193),
+    "lavender": (230, 230, 250),
+    "peach": (255, 218, 185),
+    "light_cyan": (224, 255, 255),
+    "light_salmon": (255, 160, 122),
+    "light_green_yellow": (173, 255, 47),
+}
+
+BORDER_COLORS = ["dynamic"] + list(COLORS.keys())
+
+
+def calculate_average_color(img):
+    # Resize the image to a small size for faster processing
+    img_small = img.resize((50, 50))
+    # Calculate the average color
+    average_color = img_small.convert("RGB").resize((1, 1)).getpixel((0, 0))
+    return average_color
+
+
+def add_border_to_image(image_path, target_width, target_height, border_color=None):
+
+    img = Image.open(image_path)
+
+    # Calculate the width and height for the new image with borders
+    original_width, original_height = img.size
+    original_aspect_ratio = original_width / original_height
+    target_aspect_ratio = target_width / target_height
+
+    # Resize the image to fit the target resolution while retaining aspect ratio
+    if original_aspect_ratio > target_aspect_ratio:
+        # Image is wider, calculate new height
+        new_height = int(target_width / original_aspect_ratio)
+        resized_img = img.resize((target_width, new_height))
+    else:
+        # Image is taller, calculate new width
+        new_width = int(target_height * original_aspect_ratio)
+        resized_img = img.resize((new_width, target_height))
+
+    # Calculate padding for borders
+    padding = (0, 0, 0, 0)
+    if resized_img.size[0] != target_width or resized_img.size[1] != target_height:
+        if original_aspect_ratio > target_aspect_ratio:
+            # Add borders vertically
+            padding = (0, (target_height - resized_img.size[1]) // 2, 0, (target_height - resized_img.size[1]) // 2)
+        else:
+            # Add borders horizontally
+            padding = ((target_width - resized_img.size[0]) // 2, 0, (target_width - resized_img.size[0]) // 2, 0)
+
+    # Add borders with specified color
+    if not border_color or border_color == "dynamic":
+        border_color = calculate_average_color(resized_img)
+    else:
+        border_color = COLORS.get(border_color, (0, 0, 0))
+
+    bordered_img = ImageOps.expand(resized_img, padding, fill=border_color)
+
+    bordered_img.save(image_path)
+
+    return image_path
+
+
+def doc_to_txtximg_pages(document, width, height, start_page, end_page, bcolor):
+    from pypdf import PdfReader
+
+    reader = PdfReader(document)
+    logger.debug(f"Total pages: {reader.get_num_pages()}")
+    images_folder = "pdf_images/"
+    os.makedirs(images_folder, exist_ok=True)
+    remove_directory_contents(images_folder)
+
+    start_page_idx = max((start_page-1), 0)
+    end_page_inx = min((end_page), (reader.get_num_pages()))
+    document_pages = reader.pages[start_page_idx:end_page_inx]
+
+    logger.info(
+        f"Selected pages from {start_page_idx} to {end_page_inx}: "
+        f"{len(document_pages)}"
+    )
+
+    data_doc = {}
+    for i, page in enumerate(document_pages):
+
+        count = 0
+        images = []
+        for image_file_object in page.images:
+            img_name = f"{images_folder}{i:04d}_{count:02d}_{image_file_object.name}"
+            images.append(img_name)
+            with open(img_name, "wb") as fp:
+                fp.write(image_file_object.data)
+                count += 1
+            img_name = add_border_to_image(img_name, width, height, bcolor)
+
+        data_doc[i] = {
+            "text": remove_hyphens(page.extract_text()),
+            "images": images
+        }
+
+    return data_doc
+
+
+def page_data_to_segments(result_text=None, chunk_size=None):
+
+    if not chunk_size:
+        chunk_size = 100
+
+    segments_chunks = []
+    time_global = 0
+    for page, result_data in result_text.items():
+        # result_image = result_data["images"]
+        result_text = result_data["text"]
+        text_chunks = split_text_into_chunks(result_text, chunk_size)
+        if not text_chunks:
+            text_chunks = [" "]
+
+        for chunk in text_chunks:
+            chunk_dict = {
+                "text": chunk,
+                "start": (1.0 + time_global),
+                "end": (2.0 + time_global),
+                "speaker": "SPEAKER_00",
+                "page": page,
+            }
+            segments_chunks.append(chunk_dict)
+            time_global += 1
+
+    result_diarize = {"segments": segments_chunks}
+
+    return result_diarize
+
+
+def update_page_data(result_diarize, doc_data):
+    complete_text = ""
+    current_page = result_diarize["segments"][0]["page"]
+    text_page = ""
+
+    for seg in result_diarize["segments"]:
+        text = seg["text"] + " "  # issue
+        complete_text += text
+
+        page = seg["page"]
+
+        if page == current_page:
+            text_page += text
+        else:
+            doc_data[current_page]["text"] = text_page
+
+            # Next
+            text_page = text
+            current_page = page
+
+    if doc_data[current_page]["text"] != text_page:
+        doc_data[current_page]["text"] = text_page
+
+    return doc_data
+
+
+def fix_timestamps_docs(result_diarize, audio_files):
+    current_start = 0.0
+
+    for seg, audio in zip(result_diarize["segments"], audio_files):
+        duration = round(sf.info(audio).duration, 2)
+
+        seg["start"] = current_start
+        current_start += duration
+        seg["end"] = current_start
+
+    return result_diarize
+
+
+def create_video_from_images(
+        document,
+        width,
+        height,
+        doc_data,
+        result_diarize
+):
+
+    # First image
+    text = os.path.basename(document)[:-4]
+    first_image = "pdf_images/0000_00_aaa.png"
+    cm = f"ffmpeg -f lavfi -i color=c=black:s={width}x{height} -vf \"drawtext=text='{text}':x=(w-text_w)/2:y=(h-text_h)/2:fontsize=24:fontcolor=white\" -frames:v 1 {first_image}"
+    run_command(cm)
+
+    # Time segments and images
+    max_pages_idx = len(doc_data) - 1
+    current_page = result_diarize["segments"][0]["page"]
+    duration_page = 0.0
+    last_image = None
+
+    for seg in result_diarize["segments"]:
+        start = seg["start"]
+        end = seg["end"]
+        duration_seg = end - start
+
+        page = seg["page"]
+
+        if page == current_page:
+            duration_page += duration_seg
+        else:
+
+            images = doc_data[current_page]["images"]
+
+            if first_image:
+                images = [first_image] + images
+                first_image = None
+            if not doc_data[min(max_pages_idx, (current_page+1))]["text"].strip():
+                images = images + doc_data[min(max_pages_idx, (current_page+1))]["images"]
+            if not images and last_image:
+                images = [last_image]
+
+            # Calculate images duration
+            time_duration_per_image = round((duration_page / len(images)), 2)
+            doc_data[current_page]["time_per_image"] = time_duration_per_image
+
+            # Next values
+            doc_data[current_page]["images"] = images
+            last_image = images[-1]
+            duration_page = duration_seg
+            current_page = page
+
+    if "time_per_image" not in doc_data[current_page].keys():
+        images = doc_data[current_page]["images"]
+        if first_image:
+            images = [first_image] + images
+        if not images:
+            images = [last_image]
+        time_duration_per_image = round((duration_page / len(images)), 2)
+        doc_data[current_page]["time_per_image"] = time_duration_per_image
+
+    # Timestamped image video.
+    with open("list.txt", "w") as file:
+
+        for i, page in enumerate(doc_data.values()):
+
+            duration = page["time_per_image"]
+            for img in page["images"]:
+                if i == len(doc_data) - 1 and img == page["images"][-1]:  # Check if it's the last item
+                    file.write(f"file {img}\n")
+                    file.write(f"outpoint {duration}")
+                else:
+                    file.write(f"file {img}\n")
+                    file.write(f"outpoint {duration}\n")
+
+    out_video = "video_from_images.mp4"
+    remove_files(out_video)
+
+    cm = f"ffmpeg -y -f concat -i list.txt -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p {out_video}"
+    run_command(cm)
+
+    return out_video
+
+
+def merge_video_and_audio(video_doc, final_wav_file):
+
+    fixed_audio = "fixed_audio.mp3"
+    remove_files(fixed_audio)
+    cm = f"ffmpeg -i {final_wav_file} -c:a libmp3lame {fixed_audio}"
+    run_command(cm)
+
+    vid_out = "video_book.mp4"
+    remove_files(vid_out)
+    cm = f"ffmpeg -i {video_doc} -i {fixed_audio} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {vid_out}"
+    run_command(cm)
+
+    return vid_out
 
 
 # subtitles
