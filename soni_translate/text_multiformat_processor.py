@@ -8,7 +8,7 @@ import os
 import copy
 import string
 import soundfile as sf
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw, ImageFont
 
 punctuation_list = list(
     string.punctuation + "¡¿«»„”“”‚‘’「」『』《》（）【】〈〉〔〕〖〗〘〙〚〛⸤⸥⸨⸩"
@@ -315,7 +315,12 @@ def calculate_average_color(img):
     return average_color
 
 
-def add_border_to_image(image_path, target_width, target_height, border_color=None):
+def add_border_to_image(
+    image_path,
+    target_width,
+    target_height,
+    border_color=None
+):
 
     img = Image.open(image_path)
 
@@ -324,7 +329,7 @@ def add_border_to_image(image_path, target_width, target_height, border_color=No
     original_aspect_ratio = original_width / original_height
     target_aspect_ratio = target_width / target_height
 
-    # Resize the image to fit the target resolution while retaining aspect ratio
+    # Resize the image to fit the target resolution retaining aspect ratio
     if original_aspect_ratio > target_aspect_ratio:
         # Image is wider, calculate new height
         new_height = int(target_width / original_aspect_ratio)
@@ -357,14 +362,133 @@ def add_border_to_image(image_path, target_width, target_height, border_color=No
     return image_path
 
 
-def doc_to_txtximg_pages(document, width, height, start_page, end_page, bcolor):
+def resize_and_position_subimage(
+    subimage,
+    max_width,
+    max_height,
+    subimage_position,
+    main_width,
+    main_height
+):
+    subimage_width, subimage_height = subimage.size
+
+    # Resize subimage if it exceeds maximum dimensions
+    if subimage_width > max_width or subimage_height > max_height:
+        # Calculate scaling factor
+        width_scale = max_width / subimage_width
+        height_scale = max_height / subimage_height
+        scale = min(width_scale, height_scale)
+
+        # Resize subimage
+        subimage = subimage.resize(
+            (int(subimage_width * scale), int(subimage_height * scale))
+        )
+
+    # Calculate position to place the subimage
+    if subimage_position == "top-left":
+        subimage_x = 0
+        subimage_y = 0
+    elif subimage_position == "top-right":
+        subimage_x = main_width - subimage.width
+        subimage_y = 0
+    elif subimage_position == "bottom-left":
+        subimage_x = 0
+        subimage_y = main_height - subimage.height
+    elif subimage_position == "bottom-right":
+        subimage_x = main_width - subimage.width
+        subimage_y = main_height - subimage.height
+    else:
+        raise ValueError(
+            "Invalid subimage_position. Choose from 'top-left', 'top-right',"
+            " 'bottom-left', or 'bottom-right'."
+        )
+
+    return subimage, subimage_x, subimage_y
+
+
+def create_image_with_text_and_subimages(
+    text,
+    subimages,
+    width,
+    height,
+    text_color,
+    background_color,
+    output_file
+):
+    # Create an image with the specified resolution and background color
+    image = Image.new('RGB', (width, height), color=background_color)
+
+    # Initialize ImageDraw object
+    draw = ImageDraw.Draw(image)
+
+    # Load a font
+    font = ImageFont.load_default()  # You can specify your font file here
+
+    # Calculate text size and position
+    text_bbox = draw.textbbox((0, 0), text, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    text_x = (width - text_width) / 2
+    text_y = (height - text_height) / 2
+
+    # Draw text on the image
+    draw.text((text_x, text_y), text, fill=text_color, font=font)
+
+    # Paste subimages onto the main image
+    for subimage_path, subimage_position in subimages:
+        # Open the subimage
+        subimage = Image.open(subimage_path)
+
+        # Convert subimage to RGBA mode if it doesn't have an alpha channel
+        if subimage.mode != 'RGBA':
+            subimage = subimage.convert('RGBA')
+
+        # Resize and position the subimage
+        subimage, subimage_x, subimage_y = resize_and_position_subimage(
+            subimage, width / 4, height / 4, subimage_position, width, height
+        )
+
+        # Paste the subimage onto the main image
+        image.paste(subimage, (int(subimage_x), int(subimage_y)), subimage)
+
+    image.save(output_file)
+
+    return output_file
+
+
+def doc_to_txtximg_pages(
+    document,
+    width,
+    height,
+    start_page,
+    end_page,
+    bcolor
+):
     from pypdf import PdfReader
 
-    reader = PdfReader(document)
-    logger.debug(f"Total pages: {reader.get_num_pages()}")
     images_folder = "pdf_images/"
     os.makedirs(images_folder, exist_ok=True)
     remove_directory_contents(images_folder)
+
+    # First image
+    text_image = os.path.basename(document)[:-4]
+    subimages = [("./assets/logo.jpeg", "top-left")]
+    text_color = (255, 255, 255) if bcolor == "black" else (0, 0, 0)  # w|b
+    background_color = COLORS.get(bcolor, (255, 255, 255))  # dynamic white
+    first_image = "pdf_images/0000_00_aaa.png"
+
+    create_image_with_text_and_subimages(
+        text_image,
+        subimages,
+        width,
+        height,
+        text_color,
+        background_color,
+        first_image
+    )
+
+    reader = PdfReader(document)
+    logger.debug(f"Total pages: {reader.get_num_pages()}")
 
     start_page_idx = max((start_page-1), 0)
     end_page_inx = min((end_page), (reader.get_num_pages()))
@@ -466,18 +590,12 @@ def fix_timestamps_docs(result_diarize, audio_files):
 
 
 def create_video_from_images(
-        document,
-        width,
-        height,
-        doc_data,
-        result_diarize
+    doc_data,
+    result_diarize
 ):
 
-    # First image
-    text = os.path.basename(document)[:-4]
+    # First image path
     first_image = "pdf_images/0000_00_aaa.png"
-    cm = f"ffmpeg -f lavfi -i color=c=black:s={width}x{height} -vf \"drawtext=text='{text}':x=(w-text_w)/2:y=(h-text_h)/2:fontsize=24:fontcolor=white\" -frames:v 1 {first_image}"
-    run_command(cm)
 
     # Time segments and images
     max_pages_idx = len(doc_data) - 1

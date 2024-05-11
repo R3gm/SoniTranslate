@@ -1233,9 +1233,6 @@ class SoniTranslate(SoniTrCache):
 
         prog_disp("Creating video file...", 0.80, is_gui, progress=progress)
         video_doc = create_video_from_images(
-                document,
-                width,
-                height,
                 doc_data,
                 result_diarize
         )
