@@ -661,7 +661,13 @@ def create_video_from_images(
     remove_files(out_video)
 
     cm = f"ffmpeg -y -f concat -i list.txt -c:v libx264 -preset veryfast -crf 18 -pix_fmt yuv420p {out_video}"
-    run_command(cm)
+    cm_alt = f"ffmpeg -f concat -i list.txt -c:v libx264 -r 30 -pix_fmt yuv420p -y {out_video}"
+    try:
+        run_command(cm)
+    except Exception as error:
+        logger.error(str(error))
+        remove_files(out_video)
+        run_command(cm_alt)
 
     return out_video
 
