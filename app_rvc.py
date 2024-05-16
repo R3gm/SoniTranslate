@@ -1755,8 +1755,8 @@ def create_gui(theme, logs_in_gui=False):
                             )
                             avoid_overlap_gui = gr.Checkbox(
                                 False,
-                                label="Overlap Reduction",
-                                info="Overlap Reduction: Ensures segments don't overlap by adjusting start times based on previous end times; could disrupt synchronization.",
+                                label=lg_conf["or_label"],
+                                info=lg_conf["or_info"],
                             )
 
                             gr.HTML("<hr></h2>")
@@ -1826,17 +1826,17 @@ def create_gui(theme, logs_in_gui=False):
                             gr.Markdown(lg_conf["whisper_title"])
                             literalize_numbers_gui = gr.Checkbox(
                                 True,
-                                label="Literalize Numbers",
-                                info="Literalize Numbers: Replace numerical representations with their written equivalents in the transcript.",
+                                label=lg_conf["lnum_label"],
+                                info=lg_conf["lnum_info"],
                             )
                             vocal_refinement_gui = gr.Checkbox(
                                 False,
-                                label="Sound Cleanup",
-                                info="Sound Cleanup: Enhance vocals, remove background noise before transcription for utmost timestamp precision. This operation may take time, especially with lengthy audio files.",
+                                label=lg_conf["scle_label"],
+                                info=lg_conf["scle_info"],
                             )
                             segment_duration_limit_gui = gr.Slider(
-                                label="Segment Duration Limit",
-                                info="Specify the maximum duration (in seconds) for each segment. The audio will be processed using VAD, limiting the duration for each segment chunk.",
+                                label=lg_conf["sd_limit_label"],
+                                info=lg_conf["sd_limit_info"],
                                 value=15,
                                 step=1,
                                 minimum=1,
@@ -1852,7 +1852,7 @@ def create_gui(theme, logs_in_gui=False):
                                 ASR_MODEL_OPTIONS + find_whisper_models(),
                                 value=whisper_model_default,
                                 label="Whisper ASR model",
-                                info="It converts spoken language to text using the Whisper model by default. Use a custom model, for example, by inputting the repository name 'BELLE-2/Belle-whisper-large-v3-zh' in the dropdown to utilize a Chinese language finetuned model. Find finetuned models on Hugging Face.",
+                                info=lg_conf["asr_model_info"],
                                 allow_custom_value=True,
                             )
                             com_t_opt, com_t_default = (
@@ -1863,15 +1863,15 @@ def create_gui(theme, logs_in_gui=False):
                             compute_type = gr.Dropdown(
                                 com_t_opt,
                                 value=com_t_default,
-                                label="Compute type",
-                                info="Choosing smaller types like int8 or float16 can improve performance by reducing memory usage and increasing computational throughput, but may sacrifice precision compared to larger data types like float32.",
+                                label=lg_conf["ctype_label"],
+                                info=lg_conf["ctype_info"],
                             )
                             batch_size = gr.Slider(
                                 minimum=1,
                                 maximum=32,
                                 value=8,
-                                label="Batch size",
-                                info="Reducing the batch size saves memory if your GPU has less VRAM and helps manage Out of Memory issues.",
+                                label=lg_conf["batchz_label"],
+                                info=lg_conf["batchz_info"],
                                 step=1,
                             )
                             input_srt = gr.File(
@@ -1889,8 +1889,8 @@ def create_gui(theme, logs_in_gui=False):
                             text_segmentation_scale_gui = gr.Dropdown(
                                 text_segmentation_options,
                                 value=text_segmentation_options[0],
-                                label="Text Segmentation Scale",
-                                info="Divide text into segments by sentences, words, or characters. Word and character segmentation offer finer granularity, useful for subtitles; disabling translation preserves original structure.",
+                                label=lg_conf["tsscale_label"],
+                                info=lg_conf["tsscale_info"],
                             )
                             divide_text_segments_by_gui = gr.Textbox(
                                 label=lg_conf["divide_text_label"],
@@ -2191,7 +2191,7 @@ def create_gui(theme, logs_in_gui=False):
                                         maximum=99999,
                                         label="End page",
                                     )
-                                    gr.HTML("<hr>Videobook</h2>")
+                                    gr.HTML("<hr>Videobook config</h2>")
                                     videobook_width_gui = gr.Number(
                                         step=1,
                                         value=1280,

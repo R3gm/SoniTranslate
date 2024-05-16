@@ -26,14 +26,14 @@ language_data = {
         "description": """
         ### 🎥 **Translate videos easily with SoniTranslate!** 📽️
 
-        Upload a video, audio file or provide a YouTube link. 📽️ **Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+        Upload a video, subtitle, audio file or provide a URL video link. 📽️ **Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
 
         See the tab `Help` for instructions on how to use it. Let's start having fun with video translation! 🚀🎉
         """,
         "tutorial": """
         # 🔰 **Instructions for use:**
 
-        1. 📤 Upload a **video**, **audio file** or provide a 🌐 **YouTube link.**
+        1. 📤 Upload a **video**, **subtitle file**, **audio file**, or provide a 🌐 **URL link** to a video like YouTube.
 
         2. 🌍 Choose the language in which you want to **translate the video**.
 
@@ -48,6 +48,7 @@ language_data = {
         - FACEBOOK MMS → format `en-facebook-mms VITS` → The voice is more natural; at the moment, it only uses CPU.
         - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Same as the previous one, but it is optimized for both CPU and GPU.
         - BARK → format `en_speaker_0-Male BARK` → Good quality but slow, and it is prone to hallucinations.
+        - OpenAI TTS → format `>alloy OpenAI-TTS` → Multilingual but it needs an OpenAI API key.
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Only available for Chinese (Simplified), English, French, German, Italian, Portuguese, Polish, Turkish, Russian, Dutch, Czech, Arabic, Spanish, Hungarian, Korean and Japanese.
 
         ---
@@ -130,6 +131,8 @@ language_data = {
         "acc_max_info": "Maximum acceleration for translated audio segments to avoid overlapping. A value of 1.0 represents no acceleration",
         "acc_rate_label": "Acceleration Rate Regulation",
         "acc_rate_info": "Acceleration Rate Regulation: Adjusts acceleration to accommodate segments requiring less speed, maintaining continuity and considering next-start timing.",
+        "or_label": "Overlap Reduction",
+        "or_info": "Overlap Reduction: Ensures segments don't overlap by adjusting start times based on previous end times; could disrupt synchronization.",
         "aud_mix_label": "Audio Mixing Method",
         "aud_mix_info": "Mix original and translated audio files to create a customized, balanced output with two available mixing modes.",
         "vol_ori": "Volume original audio",
@@ -142,6 +145,19 @@ language_data = {
         "burn_subs_label": "Burn Subtitles",
         "burn_subs_info": "Burn Subtitles: Embed subtitles into the video, making them a permanent part of the visual content.",
         "whisper_title": "Config transcription.",
+        "lnum_label": "Literalize Numbers",
+        "lnum_info": "Literalize Numbers: Replace numerical representations with their written equivalents in the transcript.",
+        "scle_label": "Sound Cleanup",
+        "scle_info": "Sound Cleanup: Enhance vocals, remove background noise before transcription for utmost timestamp precision. This operation may take time, especially with lengthy audio files.",
+        "sd_limit_label": "Segment Duration Limit",
+        "sd_limit_info": "Specify the maximum duration (in seconds) for each segment. The audio will be processed using VAD, limiting the duration for each segment chunk.",
+        "asr_model_info": "It converts spoken language to text using the 'Whisper model' by default. Use a custom model, for example, by inputting the repository name 'BELLE-2/Belle-whisper-large-v3-zh' in the dropdown to utilize a Chinese language finetuned model. Find finetuned models on Hugging Face.",
+        "ctype_label": "Compute type",
+        "ctype_info": "Choosing smaller types like int8 or float16 can improve performance by reducing memory usage and increasing computational throughput, but may sacrifice precision compared to larger data types like float32.",
+        "batchz_label": "Batch size",
+        "batchz_info": "Reducing the batch size saves memory if your GPU has less VRAM and helps manage Out of Memory issues.",
+        "tsscale_label": "Text Segmentation Scale",
+        "tsscale_info": "Divide text into segments by sentences, words, or characters. Word and character segmentation offer finer granularity, useful for subtitles; disabling translation preserves original structure.",
         "srt_file_label": "Upload an SRT subtitle file (will be used instead of the transcription of Whisper)",
         "divide_text_label": "Redivide text segments by:",
         "divide_text_info": "(Experimental) Enter a separator to split existing text segments in the source language. The tool will identify occurrences and create new segments accordingly. Specify multiple separators using |, e.g.: !|?|...|。",
@@ -222,6 +238,7 @@ language_data = {
         - FACEBOOK MMS → formato `en-facebook-mms VITS` → Voz más natural, por el momento solo usa CPU.
         - PIPER TTS → formato `en_US-lessac-high VITS-onnx` → Igual que el anterior, pero está optimizado tanto para CPU como para GPU.
         - BARK → formato `en_speaker_0-Male BARK` → De buena calidad pero lento y propenso a alucinaciones.
+        - OpenAI TTS → formato `>alloy OpenAI-TTS` → Multilingüe pero necesita una OpenAI API key.
         - Coqui XTTS → formato `_XTTS_/AUTOMATIC.wav` → Solo disponible para Chinese (Simplified), English, French, German, Italian, Portuguese, Polish, Turkish, Russian, Dutch, Czech, Arabic, Spanish, Hungarian, Korean y Japanese.
 
         ---
@@ -304,6 +321,8 @@ language_data = {
         "acc_max_info": "Aceleración máxima para segmentos de audio traducidos para evitar superposiciones. Un valor de 1.0 representa ninguna aceleración.",
         "acc_rate_label": "Regulación de la Tasa de Aceleración",
         "acc_rate_info": "Regulación de la Tasa de Aceleración: Ajusta la aceleración para adaptarse a segmentos que requieren menos velocidad, manteniendo la continuidad y considerando el momento de inicio siguiente.",
+        "or_label": "Reducción de superposición",
+        "or_info": "Reducción de superposición: Asegura que los segmentos no se superpongan ajustando los tiempos de inicio en función de los tiempos de finalización anteriores; podría interrumpir la sincronización.",
         "aud_mix_label": "Método de Mezcla de Audio",
         "aud_mix_info": "Mezclar archivos de audio original y traducido para crear una salida personalizada y equilibrada con dos modos de mezcla disponibles.",
         "vol_ori": "Volumen audio original",
@@ -316,6 +335,19 @@ language_data = {
         "burn_subs_label": "Grabar subtítulos",
         "burn_subs_info": "Grabar subtítulos: Incrusta los subtítulos en el video, convirtiéndolos en una parte permanente del contenido visual.",
         "whisper_title": "Configuracion Transcripción.",
+        "lnum_label": "Literalizar Números",
+        "lnum_info": "Literalizar Números: Reemplazar representaciones numéricas con sus equivalentes escritos en la transcripción.",
+        "scle_label": "Limpieza de Sonido",
+        "scle_info": "Limpieza de Sonido: Mejora de vocales, elimina ruido de fondo antes de la transcripción para una precisión máxima en la marca de tiempo. Esta operación puede tomar tiempo, especialmente con archivos de audio extensos.",
+        "sd_limit_label": "Límite de Duración del Segmento",
+        "sd_limit_info": "Especifique la duración máxima (en segundos) para cada segmento. El audio se procesará utilizando VAD, limitando la duración para cada fragmento de segmento.",
+        "asr_model_info": "Convierte el lenguaje hablado a texto utilizando el modelo 'Whisper' de forma predeterminada. Utilice un modelo personalizado, por ejemplo, ingresando el nombre del repositorio 'BELLE-2/Belle-whisper-large-v3-zh' en el menú desplegable para utilizar un modelo en chino preajustado. Encuentre modelos preajustados en Hugging Face.",
+        "ctype_label": "Tipo de Cálculo",
+        "ctype_info": "Elegir tipos más pequeños como int8 o float16 puede mejorar el rendimiento al reducir el uso de memoria y aumentar el rendimiento computacional, pero puede sacrificar precisión en comparación con tipos de datos más grandes como float32.",
+        "batchz_label": "Tamaño del Lote",
+        "batchz_info": "Reducir el tamaño del lote ahorra memoria si su GPU tiene menos VRAM y ayuda a gestionar problemas de falta de memoria.",
+        "tsscale_label": "Escala de Segmentación de Texto",
+        "tsscale_info": "Divide el texto en segmentos por oraciones, palabras o caracteres. La segmentación por palabras y caracteres ofrece una granularidad más fina, útil para subtítulos; desactivar la traducción conserva la estructura original.",
         "srt_file_label": "Subir un archivo de subtítulos SRT (Se utilizará en lugar de la transcripción de Whisper)",
         "divide_text_label": "Redividir segmentos de texto por:",
         "divide_text_info": "(Experimental) Ingresa un separador para dividir los segmentos de texto existentes en el idioma origen. La herramienta identificará las ocurrencias y creará nuevos segmentos en consecuencia. Especifica múltiples separadores usando |, por ejemplo: !|?|...|。",
@@ -396,6 +428,7 @@ language_data = {
         - FACEBOOK MMS → format `en-facebook-mms VITS` → La voix est plus naturelle ; pour le moment, il utilise uniquement le CPU.
         - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Identique au précédent, mais optimisé pour le CPU et le GPU.
         - BARK → format `en_speaker_0-Male BARK` → Bonne qualité mais lent, et sujet aux hallucinations.
+        - OpenAI TTS → format `>alloy OpenAI-TTS` → Multilingue mais nécessite une OpenAI API key.
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Disponible uniquement pour le chinois (simplifié), l'anglais, le français, l'allemand, l'italien, le portugais, le polonais, le turc, le russe, le néerlandais, le tchèque, l'arabe, l'espagnol, le hongrois, le coréen et le japonais.
 
         ---
@@ -478,6 +511,8 @@ language_data = {
         "acc_max_info": "Accélération maximale pour les segments audio traduits afin d'éviter les chevauchements. Une valeur de 1,0 représente aucune accélération",
         "acc_rate_label": "Régulation du taux d'accélération",
         "acc_rate_info": "Régulation du taux d'accélération : Ajuste l'accélération pour prendre en compte les segments nécessitant moins de vitesse, en maintenant la continuité et en tenant compte du timing du prochain démarrage.",
+        "or_label": "Réduction des chevauchements",
+        "or_info": "Réduction des chevauchements : Garantit que les segments ne se chevauchent pas en ajustant les heures de début en fonction des heures de fin précédentes ; pourrait perturber la synchronisation.",
         "aud_mix_label": "Méthode de mixage audio",
         "aud_mix_info": "Mixer les fichiers audio original et traduit pour créer une sortie équilibrée et personnalisée avec deux modes de mixage disponibles.",
         "vol_ori": "Volume audio original",
@@ -490,6 +525,19 @@ language_data = {
         "burn_subs_label": "Incorporer les sous-titres",
         "burn_subs_info": "Incorporer les sous-titres : Intégrer les sous-titres dans la vidéo, les rendant ainsi une partie permanente du contenu visuel.",
         "whisper_title": "Config transcription.",
+        "lnum_label": "Literaliser les Nombres",
+        "lnum_info": "Literaliser les Nombres: Remplacer les représentations numériques par leurs équivalents écrits dans la transcription.",
+        "scle_label": "Nettoyage du Son",
+        "scle_info": "Nettoyage du Son: Amélioration des voix, suppression du bruit de fond avant la transcription pour une précision maximale des horodatages. Cette opération peut prendre du temps, notamment avec des fichiers audio volumineux.",
+        "sd_limit_label": "Limite de Durée du Segment",
+        "sd_limit_info": "Spécifiez la durée maximale (en secondes) pour chaque segment. L'audio sera traité en utilisant VAD, limitant la durée pour chaque fragment de segment.",
+        "asr_model_info": "Il convertit la langue parlée en texte en utilisant le modèle 'Whisper' par défaut. Utilisez un modèle personnalisé, par exemple, en saisissant le nom du référentiel 'BELLE-2/Belle-whisper-large-v3-zh' dans la liste déroulante pour utiliser un modèle chinois préajusté. Trouvez des modèles préajustés sur Hugging Face.",
+        "ctype_label": "Type de Calcul",
+        "ctype_info": "Choisir des types plus petits comme int8 ou float16 peut améliorer les performances en réduisant l'utilisation de la mémoire et en augmentant le débit computationnel, mais peut sacrifier la précision par rapport à des types de données plus grands comme float32.",
+        "batchz_label": "Taille du Lot",
+        "batchz_info": "Réduire la taille du lot permet d'économiser de la mémoire si votre GPU dispose de moins de VRAM et aide à gérer les problèmes de mémoire insuffisante.",
+        "tsscale_label": "Échelle de Segmentation de Texte",
+        "tsscale_info": "Divisez le texte en segments par phrases, mots ou caractères. La segmentation par mots et caractères offre une granularité plus fine, utile pour les sous-titres; désactiver la traduction conserve la structure d'origine.",
         "srt_file_label": "Télécharger un fichier de sous-titres SRT (sera utilisé à la place de la transcription de Whisper)",
         "divide_text_label": "Rediviser les segments de texte par :",
         "divide_text_info": "(Expérimental) Entrez un séparateur pour diviser les segments de texte existants dans la langue source. L'outil identifiera les occurrences et créera de nouveaux segments en conséquence. Spécifiez plusieurs séparateurs en utilisant |, par ex. : !|?|...|。",
@@ -570,6 +618,7 @@ language_data = {
         - FACEBOOK MMS → Format `en-facebook-mms VITS` → Die Stimme ist natürlicher; derzeit nur CPU.
         - PIPER TTS → Format `en_US-lessac-high VITS-onnx` → Wie das vorherige, aber optimiert für CPU und GPU.
         - BARK → Format `en_speaker_0-Male BARK` → Gute Qualität, aber langsam und anfällig für Halluzinationen.
+        - OpenAI TTS → Format `>alloy OpenAI-TTS` → Multisprachig, erfordert jedoch einen OpenAI API key
         - Coqui XTTS → Format `_XTTS_/AUTOMATIC.wav` → Nur verfügbar für Chinesisch (vereinfacht), Englisch, Französisch, Deutsch, Italienisch, Portugiesisch, Polnisch, Türkisch, Russisch, Niederländisch, Tschechisch, Arabisch, Spanisch, Ungarisch, Koreanisch und Japanisch.
 
         ---
@@ -652,6 +701,8 @@ language_data = {
         "acc_max_info": "Maximale Beschleunigung für übersetzte Audiosegmente, um Überlappungen zu vermeiden. Ein Wert von 1,0 repräsentiert keine Beschleunigung",
         "acc_rate_label": "Beschleunigungsrate-Regelung",
         "acc_rate_info": "Beschleunigungsrate-Regelung: Passt die Beschleunigung an, um Segmente mit weniger Geschwindigkeit anzupassen, um die Kontinuität zu erhalten und den Zeitpunkt des nächsten Starts zu berücksichtigen.",
+        "or_label": "Überlappungsreduzierung",
+        "or_info": "Überlappungsreduzierung: Stellt sicher, dass Segmente sich nicht überschneiden, indem Startzeiten auf Grundlage vorheriger Endzeiten angepasst werden; könnte die Synchronisierung stören.",
         "aud_mix_label": "Audio-Mixing-Methode",
         "aud_mix_info": "Mischen Sie Original- und übersetzte Audiodateien, um eine individuelle, ausgewogene Ausgabe mit zwei verfügbaren Mischmodi zu erstellen.",
         "vol_ori": "Lautstärke des Originaltons",
@@ -664,6 +715,19 @@ language_data = {
         "burn_subs_label": "Untertitel einbetten",
         "burn_subs_info": "Untertitel einbetten: Untertitel in das Video einbetten und somit zu einem festen Bestandteil des visuellen Inhalts machen.",
         "whisper_title": "Konfiguration Transkription.",
+        "lnum_label": "Zahlen Literalisieren",
+        "lnum_info": "Zahlen Literalisieren: Ersetzen numerischer Darstellungen durch ihre geschriebenen Äquivalente in der Transkription.",
+        "scle_label": "Tonbereinigung",
+        "scle_info": "Tonbereinigung: Verbesserung der Stimme, Entfernen von Hintergrundgeräuschen vor der Transkription für maximale Zeitstempelgenauigkeit. Diese Operation kann Zeit in Anspruch nehmen, insbesondere bei längeren Audiodateien.",
+        "sd_limit_label": "Segmentdauerbegrenzung",
+        "sd_limit_info": "Geben Sie die maximale Dauer (in Sekunden) für jeden Abschnitt an. Der Ton wird unter Verwendung von VAD verarbeitet, wobei die Dauer für jeden Segmentabschnitt begrenzt wird.",
+        "asr_model_info": "Es wandelt gesprochene Sprache standardmäßig mit dem 'Whisper'-Modell in Text um. Verwenden Sie ein benutzerdefiniertes Modell, indem Sie beispielsweise den Repository-Namen 'BELLE-2/Belle-whisper-large-v3-zh' im Dropdown-Menü eingeben, um ein chinesisches Sprachmodell zu verwenden. Finden Sie feinabgestimmte Modelle auf Hugging Face.",
+        "ctype_label": "Berechnungstyp",
+        "ctype_info": "Die Auswahl kleinerer Typen wie int8 oder float16 kann die Leistung verbessern, indem der Speicherverbrauch reduziert und die Rechenleistung erhöht wird, kann jedoch im Vergleich zu größeren Datentypen wie float32 an Präzision verlieren.",
+        "batchz_label": "Batch-Größe",
+        "batchz_info": "Die Reduzierung der Batch-Größe spart Speicherplatz, wenn Ihre GPU weniger VRAM hat, und hilft bei der Verwaltung von Out-of-Memory-Problemen.",
+        "tsscale_label": "Textsegmentierungsskala",
+        "tsscale_info": "Teilen Sie den Text in Segmente nach Sätzen, Wörtern oder Zeichen auf. Die Segmentierung nach Wörtern und Zeichen bietet eine feinere Granularität, die für Untertitel nützlich ist. Das Deaktivieren der Übersetzung erhält die Originalstruktur.",
         "srt_file_label": "Laden Sie eine SRT-Untertiteldatei hoch (wird anstelle der Transkription von Whisper verwendet)",
         "divide_text_label": "Textsegmente neu aufteilen nach:",
         "divide_text_info": "(Experimentell) Geben Sie einen Separator ein, um vorhandene Textsegmente in der Ausgangssprache aufzuteilen. Das Tool erkennt Vorkommen und erstellt entsprechend neue Segmente. Geben Sie mehrere Trennzeichen mit | an, z. B.: !|?|...|。",
@@ -744,6 +808,7 @@ language_data = {
         - FACEBOOK MMS → formato `en-facebook-mms VITS` → La voce è più naturale; al momento utilizza solo la CPU.
         - PIPER TTS → formato `en_US-lessac-high VITS-onnx` → Come il precedente, ma ottimizzato sia per CPU che GPU.
         - BARK → formato `en_speaker_0-Male BARK` → Buona qualità ma lenta e soggetta ad allucinazioni.
+        - OpenAI TTS → formato `>alloy OpenAI-TTS` → Multilingue ma richiede una OpenAI API key.
         - Coqui XTTS → formato `_XTTS_/AUTOMATIC.wav` → Disponibile solo per cinese (semplificato), inglese, francese, tedesco, italiano, portoghese, polacco, turco, russo, olandese, ceco, arabo, spagnolo, ungherese, coreano e giapponese.
 
         ---
@@ -826,6 +891,8 @@ language_data = {
         "acc_max_info": "Massima accelerazione per i segmenti audio tradotti per evitare sovrapposizioni. Un valore di 1,0 rappresenta nessuna accelerazione",
         "acc_rate_label": "Regolazione del tasso di accelerazione",
         "acc_rate_info": "Regolazione del tasso di accelerazione: Regola l'accelerazione per adattarsi ai segmenti che richiedono una velocità inferiore, mantenendo la continuità e considerando il timing di avvio successivo.",
+        "or_label": "Riduzione Sovrapposizione",
+        "or_info": "Riduzione Sovrapposizione: Assicura che i segmenti non si sovrappongano regolando gli orari di inizio in base agli orari di fine precedenti; potrebbe interrompere la sincronizzazione.",
         "aud_mix_label": "Metodo di mixing audio",
         "aud_mix_info": "Mixa file audio originali e tradotti per creare un output personalizzato e bilanciato con due modalità di mixing disponibili.",
         "vol_ori": "Volume audio originale",
@@ -838,6 +905,19 @@ language_data = {
         "burn_subs_label": "Incorpora sottotitoli",
         "burn_subs_info": "Incorpora sottotitoli: Incorpora i sottotitoli nel video, rendendoli una parte permanente del contenuto visivo.",
         "whisper_title": "Configura la trascrizione.",
+        "lnum_label": "Literalizzare Numeri",
+        "lnum_info": "Literalizzare Numeri: Sostituisci le rappresentazioni numeriche con i loro equivalenti scritti nella trascrizione.",
+        "scle_label": "Pulizia del Suono",
+        "scle_info": "Pulizia del Suono: Migliora le voci, rimuovi il rumore di fondo prima della trascrizione per una massima precisione dei timestamp. Questa operazione può richiedere del tempo, specialmente con file audio lunghi.",
+        "sd_limit_label": "Limite Durata Segmento",
+        "sd_limit_info": "Specifica la durata massima (in secondi) per ogni segmento. L'audio verrà elaborato utilizzando VAD, limitando la durata per ciascun frammento di segmento.",
+        "asr_model_info": "Converte il linguaggio parlato in testo utilizzando il modello 'Whisper' per impostazione predefinita. Utilizza un modello personalizzato, ad esempio, inserendo il nome del repository 'BELLE-2/Belle-whisper-large-v3-zh' nel menu a discesa per utilizzare un modello pre-ottimizzato in cinese. Trova modelli pre-ottimizzati su Hugging Face.",
+        "ctype_label": "Tipo di Calcolo",
+        "ctype_info": "Scegliere tipi più piccoli come int8 o float16 può migliorare le prestazioni riducendo l'utilizzo della memoria e aumentando il throughput computazionale, ma può sacrificare la precisione rispetto a tipi di dati più grandi come float32.",
+        "batchz_label": "Dimensione Batch",
+        "batchz_info": "Ridurre la dimensione del batch consente di risparmiare memoria se la tua GPU ha meno VRAM e aiuta a gestire i problemi di memoria esaurita.",
+        "tsscale_label": "Scala di Segmentazione del Testo",
+        "tsscale_info": "Dividi il testo in segmenti per frasi, parole o caratteri. La segmentazione per parole e caratteri offre una granularità più fine, utile per i sottotitoli; disabilitare la traduzione conserva la struttura originale.",
         "srt_file_label": "Carica un file sottotitoli SRT (verrà utilizzato al posto della trascrizione di Whisper)",
         "divide_text_label": "Ridividi i segmenti di testo per:",
         "divide_text_info": "(Sperimentale) Inserisci un separatore per dividere i segmenti di testo esistenti nella lingua di origine. Lo strumento identificherà le occorrenze e creerà nuovi segmenti di conseguenza. Specifica più separatori usando |, ad esempio: !|?|...|。",
@@ -918,6 +998,7 @@ language_data = {
         - FACEBOOK MMS → 形式 `en-facebook-mms VITS` → 音声がより自然です。現時点ではCPUのみを使用します。
         - PIPER TTS → 形式 `en_US-lessac-high VITS-onnx` → 前述のものと同じですが、CPUとGPUの両方に最適化されています。
         - BARK → 形式 `en_speaker_0-Male BARK` → 品質は良好ですが、遅く、幻覚に陥りやすいです。
+        - OpenAI TTS → フォーマット `>alloy OpenAI-TTS` → 多言語対応ですが、OpenAIのAPIキーが必要です
         - Coqui XTTS → 形式 `_XTTS_/AUTOMATIC.wav` → 中国語（簡体字）、英語、フランス語、ドイツ語、イタリア語、ポルトガル語、ポーランド語、トルコ語、ロシア語、オランダ語、チェコ語、アラビア語、スペイン語、ハンガリー語、韓国語、日本語のみ利用可能です。
 
         ---
@@ -1000,6 +1081,8 @@ language_data = {
         "acc_max_info": "オーバーラップを回避するための翻訳されたオーディオセグメントの最大加速度。値が1.0の場合、加速度はありません",
         "acc_rate_label": "加速度調整",
         "acc_rate_info": "加速度調整：速度が低いセグメントに適応するために加速度を調整し、連続性を保ち、次の開始時刻を考慮します。",
+        "or_label": "重複削減",
+        "or_info": "重複削減：前の終了時間に基づいて開始時間を調整してセグメントが重複しないようにします。同期を妨げる可能性があります。",
         "aud_mix_label": "オーディオミキシング方法",
         "aud_mix_info": "オリジナルと翻訳されたオーディオファイルを混合してカスタマイズされたバランスの取れた出力を作成するための2つの利用可能なミキシングモード。",
         "vol_ori": "元のオーディオの音量",
@@ -1012,6 +1095,19 @@ language_data = {
         "burn_subs_label": "字幕を焼く",
         "burn_subs_info": "字幕を焼く：字幕をビデオに埋め込み、それを視覚コンテンツの恒久的な一部にします。",
         "whisper_title": "トランスクリプションの構成。",
+        "lnum_label": "数値の表現化",
+        "lnum_info": "数値の表現化：トランスクリプト内の数値表現を書き換えて、数値を文字列に変換します。",
+        "scle_label": "音声のクリーンアップ",
+        "scle_info": "音声のクリーンアップ：トランスクリプトの時間スタンプの精度を最大限に高めるために、ボーカルを強調し、背景ノイズを除去します。この操作には時間がかかる場合があります。特に長時間のオーディオファイルの場合。",
+        "sd_limit_label": "セグメントの長さ制限",
+        "sd_limit_info": "各セグメントの最大長（秒単位）を指定します。オーディオはVADを使用して処理され、各セグメントチャンクの長さが制限されます。",
+        "asr_model_info": "デフォルトでは、「Whisperモデル」を使用して、音声をテキストに変換します。カスタムモデルを使用するには、ドロップダウンでリポジトリ名「BELLE-2/Belle-whisper-large-v3-zh」を入力して、中国語の言語を微調整したモデルを利用します。 Hugging Faceで微調整されたモデルを見つけます。",
+        "ctype_label": "計算タイプ",
+        "ctype_info": "int8やfloat16などの小さなタイプを選択すると、メモリ使用量が減少し、計算スループットが増加してパフォーマンスが向上しますが、float32などの大きなデータタイプと比較して精度が低下する場合があります。",
+        "batchz_label": "バッチサイズ",
+        "batchz_info": "バッチサイズを減らすと、GPUのVRAMが少ない場合にメモリを節約し、メモリ不足の問題を管理するのに役立ちます。",
+        "tsscale_label": "テキストのセグメンテーションスケール",
+        "tsscale_info": "テキストを文、単語、または文字でセグメントに分割します。単語と文字のセグメンテーションは、字幕などの細かい粒度の処理に役立ちます。翻訳を無効にすると、元の構造が保持されます。",
         "srt_file_label": "SRT字幕ファイルをアップロードしてください（Whisperのトランスクリプションの代わりに使用されます）",
         "divide_text_label": "次のようにテキストセグメントを再分割します:",
         "divide_text_info": "(実験的) ソース言語の既存のテキストセグメントを分割するセパレーターを入力します。ツールは出現を識別し、適切な箇所で新しいセグメントを作成します。複数のセパレーターを | を使用して指定します。例: !|?|...|。",
@@ -1092,6 +1188,7 @@ language_data = {
           - FACEBOOK MMS → 格式 `en-facebook-mms VITS` → 声音更自然；目前仅使用CPU。
           - PIPER TTS → 格式 `en_US-lessac-high VITS-onnx` → 与前一款相同，但针对CPU和GPU进行了优化。
           - BARK → 格式 `en_speaker_0-Male BARK` → 质量良好但速度较慢，易产生幻觉。
+          - OpenAI TTS → 格式 `>alloy OpenAI-TTS` → 多语言但需要 OpenAI API key
           - Coqui XTTS → 格式 `_XTTS_/AUTOMATIC.wav` → 仅支持简体中文、英文、法文、德文、意大利文、葡萄牙文、波兰文、土耳其文、俄文、荷兰文、捷克文、阿拉伯文、西班牙文、匈牙利文、韩文和日文。
 
           ---
@@ -1174,6 +1271,8 @@ language_data = {
         "acc_max_info": "翻译音频段的最大加速度，以避免重叠。值为1.0表示无加速度",
         "acc_rate_label": "加速度调节",
         "acc_rate_info": "加速度调节：调整加速度以适应需要较低速度的片段，保持连续性并考虑下一个开始的时机。",
+        "or_label": "重叠减少",
+        "or_info": "重叠减少：通过根据先前的结束时间调整开始时间来确保片段不重叠；可能会干扰同步。",
         "aud_mix_label": "音频混合方法",
         "aud_mix_info": "混合原始和翻译音频文件，以创建平衡的定制输出，提供两种可用的混合模式。",
         "vol_ori": "原始音频音量",
@@ -1186,6 +1285,19 @@ language_data = {
         "burn_subs_label": "烧录字幕",
         "burn_subs_info": "烧录字幕：将字幕嵌入视频中，使其成为视觉内容的永久部分。",
         "whisper_title": "配置转录。",
+        "lnum_label": "数字文字化",
+        "lnum_info": "数字文字化：将数字表示替换为其在转录中的书面等价物。",
+        "scle_label": "声音清理",
+        "scle_info": "声音清理：增强语音，消除转录之前的背景噪音，以实现最大的时间戳精度。此操作可能需要一些时间，特别是对于较长的音频文件。",
+        "sd_limit_label": "段落时长限制",
+        "sd_limit_info": "指定每个段落的最大持续时间（以秒为单位）。将使用VAD处理音频，以限制每个段落块的持续时间。",
+        "asr_model_info": "默认情况下，它使用“Whisper模型”将口语转换为文本。使用自定义模型，例如，在下拉菜单中输入存储库名称“BELLE-2/Belle-whisper-large-v3-zh”以使用经过中文语言微调的模型。在Hugging Face上找到微调模型。",
+        "ctype_label": "计算类型",
+        "ctype_info": "选择较小的类型，如int8或float16，可以通过减少内存使用量和增加计算吞吐量来提高性能，但可能会牺牲与float32等较大数据类型相比的精度。",
+        "batchz_label": "批处理大小",
+        "batchz_info": "如果您的GPU的VRAM较少，则减小批处理大小可以节省内存，并有助于管理内存不足问题。",
+        "tsscale_label": "文本分段比例",
+        "tsscale_info": "按句子、单词或字符将文本分成段。按单词和字符进行分段可提供更精细的粒度，适用于字幕等用途；禁用翻译将保留原始结构。",
         "srt_file_label": "上传SRT字幕文件（将用于替代Whisper的转录）",
         "divide_text_label": "通过以下方式重新划分文本段：",
         "divide_text_info": "（实验性）输入用于拆分源语言中现有文本段的分隔符。该工具将识别出现并相应地创建新段。使用|指定多个分隔符，例如：!|?|...|。",
@@ -1266,6 +1378,7 @@ language_data = {
         - FACEBOOK MMS → формат `en-facebook-mms VITS` → Голос більш натуральний; наразі використовується лише ЦП.
         - PIPER TTS → формат `en_US-lessac-high VITS-onnx` → Те ж саме, що й попередній, але оптимізований як для ЦП, так і для ГПУ.
         - BARK → формат `en_speaker_0-Male BARK` → Хороша якість, але повільна, і вона схильна до галюцинацій.
+        - OpenAI TTS → формат `>alloy OpenAI-TTS` → Мультиязычный, але потребує OpenAI API key
         - Coqui XTTS → формат `_XTTS_/AUTOMATIC.wav` → Доступний лише для китайської (спрощеної), англійської, французької, німецької, італійської, португальської, польської, турецької, російської, голландської, чеської, арабської, іспанської, угорської, корейської та японської.
 
         ---
@@ -1348,6 +1461,8 @@ language_data = {
         "acc_max_info": "Максимальне прискорення для перекладених аудіосегментів для уникнення перекриття. Значення 1,0 означає відсутність прискорення",
         "acc_rate_label": "Регулювання швидкості прискорення",
         "acc_rate_info": "Регулювання швидкості прискорення: Налаштовує прискорення, щоб пристосуватися до сегментів, які потребують меншої швидкості, зберігаючи послідовність та враховуючи час наступного запуску.",
+        "or_label": "Зменшення перекриття",
+        "or_info": "Зменшення перекриття: Забезпечує відсутність перекриття сегментів за допомогою налаштування часу початку на основі попередніх часів завершення; може порушити синхронізацію.",
         "aud_mix_label": "Метод мікшування аудіо",
         "aud_mix_info": "Змішуйте оригінальні та перекладені аудіофайли, щоб створити налаштований, збалансований вихід з двома доступними режимами мікшування.",
         "vol_ori": "Гучність оригінального аудіо",
@@ -1360,6 +1475,19 @@ language_data = {
         "burn_subs_label": "Підпалити субтитри",
         "burn_subs_info": "Підпалити субтитри: Вбудувати субтитри у відео, зробивши їх постійною частиною візуального змісту.",
         "whisper_title": "Налаштування транскрипції.",
+        "lnum_label": "Літералізація Чисел",
+        "lnum_info": "Літералізація Чисел: Заміна числових представлень на їх письмові еквіваленти в транскрипції.",
+        "scle_label": "Очищення Звуку",
+        "scle_info": "Очищення Звуку: Покращення голосів, видалення фонового шуму перед транскрипцією для максимальної точності відміток часу. Ця операція може зайняти час, особливо з довгими аудіофайлами.",
+        "sd_limit_label": "Обмеження тривалості сегменту",
+        "sd_limit_info": "Вкажіть максимальну тривалість (у секундах) для кожного сегменту. Аудіо буде оброблено за допомогою VAD, обмежуючи тривалість для кожного фрагменту сегменту.",
+        "asr_model_info": "Він перетворює усну мову на текст за допомогою моделі 'Whisper' за замовчуванням. Використовуйте власну модель, наприклад, введіть ім'я репозиторію 'BELLE-2/Belle-whisper-large-v3-zh' у розкривному списку, щоб використовувати китайську мову з налаштованою моделлю. Знайдіть налаштовані моделі на Hugging Face.",
+        "ctype_label": "Тип обчислення",
+        "ctype_info": "Вибір менших типів, таких як int8 або float16, може покращити продуктивність, зменшивши використання пам'яті та збільшивши обчислювальну пропускну здатність, але може пожертвувати точністю порівняно з більшими типами даних, такими як float32.",
+        "batchz_label": "Розмір пакету",
+        "batchz_info": "Зменшення розміру пакета заощаджує пам'ять, якщо у вашої GPU менше VRAM, і допомагає керувати проблемами нестачі пам'яті.",
+        "tsscale_label": "Масштаб сегментації тексту",
+        "tsscale_info": "Розділіть текст на сегменти за допомогою речень, слів або символів. Сегментація за словами та символами надає більшу деталізацію, корисну для субтитрів; вимкнення перекладу зберігає вихідну структуру.",
         "srt_file_label": "Завантажте файл субтитрів SRT (використовуватиметься замість транскрипції Whisper)",
         "divide_text_label": "Розділити текстові сегменти за допомогою:",
         "divide_text_info": "(Експериментально) Введіть роздільник для розділення існуючих текстових сегментів на мові джерела. Інструмент ідентифікує випадки та створює нові сегменти відповідно. Вказуйте кілька роздільників, використовуючи |, наприклад: !|?|...|。",
@@ -1440,6 +1568,7 @@ language_data = {
           - FACEBOOK MMS → الصيغة `en-facebook-mms VITS` → الصوت أكثر طبيعية؛ في الوقت الحالي، يستخدم فقط وحدة المعالجة المركزية.
           - PIPER TTS → الصيغة `en_US-lessac-high VITS-onnx` → نفس الشيء كما السابق، ولكنه محسّن لكل من وحدة المعالجة المركزية ووحدة معالجة الرسومات.
           - BARK → الصيغة `en_speaker_0-Male BARK` → جودة جيدة ولكن بطيء، ويميل إلى التهليل.
+          - OpenAI TTS → الصيغة `>alloy OpenAI-TTS` → متعدد اللغات ولكن يتطلب OpenAI API key
           - Coqui XTTS → الصيغة `_XTTS_/AUTOMATIC.wav` → متاحة فقط للصينية (المبسطة)، الإنجليزية، الفرنسية، الألمانية، الإيطالية، البرتغالية، البولندية، التركية، الروسية، الهولندية، التشيكية، العربية، الإسبانية، الهنغارية، الكورية واليابانية.
 
           ---
@@ -1522,6 +1651,8 @@ language_data = {
         "acc_max_info": "التسارع الأقصى لقطع الصوت المترجم لتجنب التداخل. قيمة 1.0 تمثل عدم وجود تسارع",
         "acc_rate_label": "تنظيم معدل التسارع",
         "acc_rate_info": "تنظيم معدل التسارع: يعدل التسارع لتوفير مقاطع تتطلب سرعة أقل، مع الحفاظ على الاستمرارية واعتبار توقيت البدء التالي.",
+        "or_label": "تقليل التداخل",
+        "or_info": "تقليل التداخل: يضمن عدم تداخل الشرائح عن طريق ضبط أوقات البدء استنادًا إلى الأوقات السابقة للنهاية ؛ قد يؤدي إلى إختلال التزامن.",
         "aud_mix_label": "طريقة مزج الصوت",
         "aud_mix_info": "مزج ملفات الصوت الأصلية والمترجمة لإنشاء إخراج مخصص ومتوازن بوجود طريقتي مزج متاحتين.",
         "vol_ori": "مستوى صوت الصوت الأصلي",
@@ -1534,6 +1665,19 @@ language_data = {
         "burn_subs_label": "حرق الترجمة الفرعية",
         "burn_subs_info": "حرق الترجمة الفرعية: تضمين الترجمة الفرعية في الفيديو، مما يجعلها جزءًا دائمًا من المحتوى البصري.",
         "whisper_title": "تكوين النص السريع.",
+        "lnum_label": "تحويل الأرقام إلى كلمات",
+        "lnum_info": "تحويل الأرقام إلى كلمات: استبدال التمثيلات الرقمية بمكافآتها المكتوبة في النص المكتوب.",
+        "scle_label": "تنظيف الصوت",
+        "scle_info": "تنظيف الصوت: تعزيز الأصوات، إزالة الضجيج الخلفي قبل التفريغ للحصول على أقصى دقة في الطابع الزمني. قد تستغرق هذه العملية وقتًا، خاصة مع ملفات الصوت الطويلة.",
+        "sd_limit_label": "حد مدة القطعة",
+        "sd_limit_info": "حدد المدة القصوى (بالثواني) لكل قطعة. سيتم معالجة الصوت باستخدام VAD، محددة مدة كل قطعة.",
+        "asr_model_info": "يحول اللغة الحية إلى نص باستخدام نموذج 'الهمس' افتراضيًا. استخدم نموذجًا مخصصًا، على سبيل المثال، عن طريق إدخال اسم المستودع 'BELLE-2/Belle-whisper-large-v3-zh' في القائمة المنسدلة لاستخدام نموذج معدل باللغة الصينية. العثور على النماذج المعدلة على Hugging Face.",
+        "ctype_label": "نوع الحساب",
+        "ctype_info": "اختيار أنواع أصغر مثل int8 أو float16 يمكن أن يحسن الأداء من خلال تقليل استخدام الذاكرة وزيادة الإخراج الحسابي، ولكن قد يضحي بالدقة مقارنة بأنواع البيانات الأكبر مثل float32.",
+        "batchz_label": "حجم الدفعة",
+        "batchz_info": "توفير الذاكرة عن طريق تقليل حجم الدفعة إذا كان لديك بطاقة رسومات GPU تحتوي على VRAM أقل وتساعد في إدارة مشكلات الذاكرة النفاد.",
+        "tsscale_label": "مقياس تقسيم النص",
+        "tsscale_info": "تقسيم النص إلى قطع حسب الجمل أو الكلمات أو الأحرف. يوفر تقسيم الكلمات والأحرف دقة أكبر، وهو مفيد للترجمات الفورية؛ يحافظ تعطيل الترجمة على الهيكل الأصلي.",
         "srt_file_label": "قم بتحميل ملف عنوان فرعي SRT (سيُستخدم بدلاً من النص السريع)",
         "divide_text_label": "إعادة تقسيم شرائح النص بواسطة:",
         "divide_text_info": "(تجريبي) أدخل فاصل لتقسيم شرائح النص الحالية في اللغة المصدر. ستحدد الأداة حدوث الحالات وإنشاء شرائح جديدة وفقًا لذلك. حدد علامات فاصلة متعددة باستخدام |، على سبيل المثال: !|؟|...|。",
@@ -1614,6 +1758,7 @@ language_data = {
         - FACEBOOK MMS → формат `en-facebook-mms VITS` → Голос более естественный; на данный момент используется только процессор.
         - PIPER TTS → формат `en_US-lessac-high VITS-onnx` → То же самое, что и предыдущее, но оптимизировано как для CPU, так и для GPU.
         - BARK → формат `en_speaker_0-Male BARK` → Хорошее качество, но медленное, и оно подвержено галлюцинациям.
+        - OpenAI TTS → формат `>alloy OpenAI-TTS` → Многоязычный, но требуется OpenAI API key
         - Coqui XTTS → формат `_XTTS_/AUTOMATIC.wav` → Доступен только для китайского (упрощенного), английского, французского, немецкого, итальянского, португальского, польского, турецкого, русского, голландского, чешского, арабского, испанского, венгерского, корейского и японского языков.
 
         ---
@@ -1696,6 +1841,8 @@ language_data = {
         "acc_max_info": "Максимальное ускорение для переведенных аудиосегментов для избежания их перекрытия. Значение 1.0 означает отсутствие ускорения",
         "acc_rate_label": "Регулирование уровня ускорения",
         "acc_rate_info": "Регулирование уровня ускорения: Регулирует ускорение для адаптации к сегментам, требующим меньшей скорости, сохраняя непрерывность и учитывая временные параметры следующего запуска.",
+        "or_label": "Сокращение перекрытий",
+        "or_info": "Сокращение перекрытий: Обеспечивает отсутствие перекрытия сегментов путем корректировки времени начала на основе предыдущих времен завершения; может нарушить синхронизацию.",
         "aud_mix_label": "Метод смешивания аудио",
         "aud_mix_info": "Смешивание оригинальных и переведенных аудиофайлов для создания настраиваемого, сбалансированного вывода с двумя доступными режимами смешивания.",
         "vol_ori": "Громкость оригинального аудио",
@@ -1708,6 +1855,19 @@ language_data = {
         "burn_subs_label": "Вжечь субтитры",
         "burn_subs_info": "Вжечь субтитры: Внедрить субтитры в видео, сделав их постоянной частью визуального контента.",
         "whisper_title": "Конфигурация транскрипции.",
+        "lnum_label": "Литерализация Чисел",
+        "lnum_info": "Литерализация Чисел: Замена числовых представлений их письменными эквивалентами в транскрипции.",
+        "scle_label": "Очистка Звука",
+        "scle_info": "Очистка Звука: Улучшение голосов, удаление фонового шума перед транскрипцией для максимальной точности временных меток. Эта операция может занять время, особенно с длинными аудиофайлами.",
+        "sd_limit_label": "Ограничение Длительности Сегмента",
+        "sd_limit_info": "Укажите максимальную длительность (в секундах) для каждого сегмента. Аудио будет обработано с использованием VAD, ограничивая длительность для каждого фрагмента сегмента.",
+        "asr_model_info": "Он преобразует устную речь в текст с использованием модели 'Whisper' по умолчанию. Используйте пользовательскую модель, например, введите имя репозитория 'BELLE-2/Belle-whisper-large-v3-zh' в выпадающем списке, чтобы использовать китайскую модель. Найдите настроенные модели на Hugging Face.",
+        "ctype_label": "Тип вычисления",
+        "ctype_info": "Выбор меньших типов, таких как int8 или float16, может улучшить производительность за счет уменьшения использования памяти и увеличения вычислительного потока, но может пожертвовать точностью по сравнению с более крупными типами данных, такими как float32.",
+        "batchz_label": "Размер Пакета",
+        "batchz_info": "Уменьшение размера пакета экономит память, если у вашей GPU меньше VRAM, и помогает управлять проблемами с памятью.",
+        "tsscale_label": "Масштабирование сегментации текста",
+        "tsscale_info": "Разделите текст на сегменты по предложениям, словам или символам. Сегментация по словам и символам обеспечивает более точную гранулярность, полезную для субтитров; отключение перевода сохраняет исходную структуру.",
         "srt_file_label": "Загрузить файл субтитров в формате SRT (будет использоваться вместо транскрипции Whisper)",
         "divide_text_label": "Разделить текстовые сегменты по:",
         "divide_text_info": "(Экспериментально) Введите разделитель для разделения существующих текстовых сегментов на исходном языке. Инструмент определит вхождения и создаст новые сегменты в соответствии с ними. Укажите несколько разделителей, используя |, например: !|?|...|。",
@@ -1788,6 +1948,7 @@ language_data = {
         - FACEBOOK MMS → biçim `tr-facebook-mms VITS` → Ses daha doğal; şu anda yalnızca CPU kullanıyor.
         - PIPER TTS → biçim `tr_TR-lessac-high VITS-onnx` → Öncekiyle aynı, ancak hem CPU hem de GPU için optimize edilmiştir.
         - BARK → biçim `tr_speaker_0-Kadın BARK` → İyi kalite ancak yavaş ve halüsinasyonlara eğilimli.
+        - OpenAI TTS → biçim `>alloy OpenAI-TTS` → Çok dilli ancak bir OpenAI API key gerektirir
         - Coqui XTTS → biçim `_XTTS_/AUTOMATIC.wav` → Sadece Çince (Basitleştirilmiş), İngilizce, Fransızca, Almanca, İtalyanca, Portekizce, Lehçe, Türkçe, Rusça, Hollandaca, Çekçe, Arapça, İspanyolca, Macarca, Korece ve Japonca için mevcut.
 
         ---
@@ -1871,6 +2032,8 @@ language_data = {
         "acc_max_info": "Çakışmayı önlemek için çevrilen ses segmentlerinin maksimum hızlandırması. 1.0 değeri hiçbir hızlandırmayı temsil eder",
         "acc_rate_label": "Hızlanma Oranı Düzenlemesi",
         "acc_rate_info": "Hızlanma Oranı Düzenlemesi: Daha az hız gerektiren segmentlere uyum sağlamak için hızlanmayı ayarlar, sürekliliği korur ve sonraki başlangıç zamanını dikkate alır.",
+        "or_label": "Örtüşme Azaltma",
+        "or_info": "Örtüşme Azaltma: Önceki bitiş zamanlarına dayanarak başlangıç zamanlarını ayarlayarak segmentlerin örtüşmesini engeller; senkronizasyonu bozabilir.",
         "aud_mix_label": "Ses Karıştırma Yöntemi",
         "aud_mix_info": "Özgün ve çevrilmiş ses dosyalarını karıştırarak iki kullanılabilir karıştırma moduyla özelleştirilmiş, dengeli bir çıkış oluşturun.",
         "vol_ori": "Özgün ses seviyesi",
@@ -1883,6 +2046,19 @@ language_data = {
         "burn_subs_label": "Altyazıyı Yak",
         "burn_subs_info": "Altyazıyı Yak: Altyazıları videoya gömerek, bunları görsel içeriğin kalıcı bir parçası haline getirir.",
         "whisper_title": "Transkripsiyonu yapılandır.",
+        "lnum_label": "Sayıları Metinleştir",
+        "lnum_info": "Sayıları Metinleştir: Transkript içindeki sayısal temsilleri yazılı eşdeğerleriyle değiştirin.",
+        "scle_label": "Ses Temizliği",
+        "scle_info": "Ses Temizliği: Zaman damgası hassasiyeti için transkripsiyondan önce sesleri iyileştirin, arka plan gürültüsünü kaldırın. Bu işlem özellikle uzun ses dosyalarıyla zaman alabilir.",
+        "sd_limit_label": "Bölüm Süresi Sınırı",
+        "sd_limit_info": "Her bölüm için maksimum süreyi (saniye cinsinden) belirtin. Ses, her bölüm parçası için süreyi sınırlayarak VAD kullanılarak işlenecektir.",
+        "asr_model_info": "Varsayılan olarak 'Fısıldama modeli'ni kullanarak konuşma dilini metne dönüştürür. Özel bir model kullanın, örneğin, özel bir model kullanmak için açılan menüye 'BELLE-2/Belle-whisper-large-v3-zh' depo adını girin. Hugging Face'de ince ayarlı modeller bulun.",
+        "ctype_label": "Hesaplama Türü",
+        "ctype_info": "int8 veya float16 gibi daha küçük tipleri seçmek, bellek kullanımını azaltarak ve hesaplama verimliliğini artırarak performansı artırabilir, ancak float32 gibi daha büyük veri tiplerine göre hassasiyetten ödün verebilir.",
+        "batchz_label": "Toplu İş Boyutu",
+        "batchz_info": "GPU'nuzun daha az VRAM'a sahip olması durumunda toplu iş boyutunu azaltmak bellek tasarrufu sağlar ve Bellek Dışı Sorunları yönetmeye yardımcı olur.",
+        "tsscale_label": "Metin Bölme Ölçeği",
+        "tsscale_info": "Metni cümleler, kelimeler veya karakterler olarak bölümlere ayırın. Kelime ve karakter bölme, altyazılar için faydalı olan daha ince granülerlik sağlar; çeviriyi devre dışı bırakma, orijinal yapının korunmasını sağlar.",
         "srt_file_label": "Bir SRT altyazı dosyası yükleyin (Whisper'ın transkripsiyonu yerine kullanılacaktır)",
         "divide_text_label": "Metin bölümlerini yeniden böl:",
         "divide_text_info": "(Deneysel) Mevcut metin segmentlerini kaynak dildeki ayraçla bölmek için bir ayraç girin. Aracı, bu ayraçları tanımlayacak ve buna göre yeni segmentler oluşturacaktır. Birden çok ayıraç belirtmek için | kullanın, örn .: !|?|...|。",
@@ -1963,6 +2139,7 @@ language_data = {
         - FACEBOOK MMS → format `en-facebook-mms VITS` → Suara lebih alami; saat ini, hanya menggunakan CPU.
         - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Sama seperti sebelumnya, tetapi dioptimalkan untuk CPU dan GPU.
         - BARK → format `en_speaker_0-Male BARK` → Kualitas bagus tetapi lambat, dan rentan terhadap halusinasi.
+        - OpenAI TTS → format `>alloy OpenAI-TTS` → Multibahasa tetapi membutuhkan OpenAI API key
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Hanya tersedia untuk Cina (Sederhana), Inggris, Prancis, Jerman, Italia, Portugis, Polandia, Turki, Rusia, Belanda, Ceko, Arab, Spanyol, Hungaria, Korea, dan Jepang.
 
         ---
@@ -2045,6 +2222,8 @@ language_data = {
         "acc_max_info": "Akselerasi maksimum untuk segmen audio yang diterjemahkan untuk menghindari tumpang tindih. Nilai 1.0 mewakili tidak ada akselerasi",
         "acc_rate_label": "Regulasi Tingkat Akselerasi",
         "acc_rate_info": "Regulasi Tingkat Akselerasi: Menyesuaikan akselerasi untuk mengakomodasi segmen yang membutuhkan kecepatan lebih rendah, menjaga kontinuitas, dan mempertimbangkan waktu mulai berikutnya.",
+        "or_label": "Pengurangan Tumpang Tindih",
+        "or_info": "Pengurangan Tumpang Tindih: Memastikan segmen tidak tumpang tindih dengan menyesuaikan waktu mulai berdasarkan waktu selesai sebelumnya; bisa mengganggu sinkronisasi.",
         "aud_mix_label": "Metode Penggabungan Audio",
         "aud_mix_info": "Gabungkan file audio asli dan diterjemahkan untuk membuat output yang seimbang dengan dua mode pencampuran yang tersedia.",
         "vol_ori": "Volume audio asli",
@@ -2057,6 +2236,19 @@ language_data = {
         "burn_subs_label": "Bakar Subtitle",
         "burn_subs_info": "Bakar Subtitle: Menyematkan subtitle ke dalam video, menjadikannya bagian permanen dari konten visual.",
         "whisper_title": "Konfigurasi transkripsi.",
+        "lnum_label": "Literalisasi Angka",
+        "lnum_info": "Literalisasi Angka: Gantikan representasi numerik dengan ekivalen tertulisnya dalam transkrip.",
+        "scle_label": "Pembersihan Suara",
+        "scle_info": "Pembersihan Suara: Tingkatkan vokal, hapus kebisingan latar belakang sebelum transkripsi untuk presisi timestamp maksimum. Operasi ini bisa memakan waktu, terutama dengan file audio yang panjang.",
+        "sd_limit_label": "Batas Durasi Segment",
+        "sd_limit_info": "Tentukan durasi maksimum (dalam detik) untuk setiap segmen. Audio akan diproses menggunakan VAD, membatasi durasi untuk setiap potongan segmen.",
+        "asr_model_info": "Ini mengubah bahasa yang diucapkan menjadi teks menggunakan model 'Whisper' secara default. Gunakan model kustom, misalnya, dengan memasukkan nama repositori 'BELLE-2/Belle-whisper-large-v3-zh' dalam dropdown untuk menggunakan model yang disesuaikan bahasa Cina. Temukan model yang disesuaikan di Hugging Face.",
+        "ctype_label": "Jenis Perhitungan",
+        "ctype_info": "Memilih tipe yang lebih kecil seperti int8 atau float16 dapat meningkatkan kinerja dengan mengurangi penggunaan memori dan meningkatkan throughput komputasi, tetapi dapat mengorbankan presisi dibandingkan dengan tipe data yang lebih besar seperti float32.",
+        "batchz_label": "Ukuran Batch",
+        "batchz_info": "Mengurangi ukuran batch menghemat memori jika GPU Anda memiliki VRAM yang lebih sedikit dan membantu mengelola masalah Out of Memory.",
+        "tsscale_label": "Skala Segmentasi Teks",
+        "tsscale_info": "Bagi teks menjadi segmen berdasarkan kalimat, kata, atau karakter. Segmentasi kata dan karakter menawarkan granularitas yang lebih halus, berguna untuk subjudul; menonaktifkan terjemahan mempertahankan struktur asli.",
         "srt_file_label": "Unggah file subtitle SRT (akan digunakan sebagai gantinya dari transkripsi Whisper)",
         "divide_text_label": "Bagi ulang segmen teks dengan:",
         "divide_text_info": "(Eksperimental) Masukkan pemisah untuk membagi segmen teks yang ada dalam bahasa sumber. Alat ini akan mengidentifikasi kejadian dan membuat segmen baru sesuai. Tentukan beberapa pemisah menggunakan |, misalnya: !|?|...|。",
@@ -2137,6 +2329,7 @@ language_data = {
         - FACEBOOK MMS → formato `en-facebook-mms VITS` → A voz é mais natural; no momento, usa apenas CPU.
         - PIPER TTS → formato `en_US-lessac-high VITS-onnx` → O mesmo que o anterior, mas é otimizado para CPU e GPU.
         - BARK → formato `en_speaker_0-Male BARK` → Boa qualidade, mas lento e propenso a alucinações.
+        - OpenAI TTS → formato `>alloy OpenAI-TTS` → Multilíngue mas requer uma OpenAI API key
         - Coqui XTTS → formato `_XTTS_/AUTOMATIC.wav` → Disponível apenas para Chinês (Simplificado), Inglês, Francês, Alemão, Italiano, Português, Polonês, Turco, Russo, Holandês, Tcheco, Árabe, Espanhol, Húngaro, Coreano e Japonês.
 
         ---
@@ -2219,6 +2412,8 @@ language_data = {
         "acc_max_info": "Aceleração máxima para segmentos de áudio traduzidos para evitar sobreposições. Um valor de 1.0 representa nenhuma aceleração",
         "acc_rate_label": "Regulação da Taxa de Aceleração",
         "acc_rate_info": "Regulação da Taxa de Aceleração: Ajusta a aceleração para acomodar segmentos que exigem menos velocidade, mantendo a continuidade e considerando o tempo de próximo início.",
+        "or_label": "Redução de sobreposição",
+        "or_info": "Redução de sobreposição: Garante que os segmentos não se sobreponham ajustando os horários de início com base nos horários de término anteriores; pode perturbar a sincronização.",
         "aud_mix_label": "Método de Mistura de Áudio",
         "aud_mix_info": "Misture arquivos de áudio original e traduzido para criar uma saída personalizada e equilibrada com dois modos de mistura disponíveis.",
         "vol_ori": "Volume do áudio original",
@@ -2231,6 +2426,19 @@ language_data = {
         "burn_subs_label": "Queimar Legendas",
         "burn_subs_info": "Queimar Legendas: Incorporar legendas no vídeo, tornando-as uma parte permanente do conteúdo visual.",
         "whisper_title": "Configurar transcrição.",
+        "lnum_label": "Literalizar Números",
+        "lnum_info": "Literalizar Números: Substituir representações numéricas por seus equivalentes escritos na transcrição.",
+        "scle_label": "Limpeza de Som",
+        "scle_info": "Limpeza de Som: Aprimorar vocais, remover ruído de fundo antes da transcrição para máxima precisão de marcação de tempo. Esta operação pode levar tempo, especialmente com arquivos de áudio longos.",
+        "sd_limit_label": "Limite de Duração do Segmento",
+        "sd_limit_info": "Especifique a duração máxima (em segundos) para cada segmento. O áudio será processado usando VAD, limitando a duração para cada fragmento de segmento.",
+        "asr_model_info": "Ele converte linguagem falada em texto usando o modelo 'Whisper' por padrão. Use um modelo personalizado, por exemplo, inserindo o nome do repositório 'BELLE-2/Belle-whisper-large-v3-zh' no menu suspenso para utilizar um modelo em chinês finetuned. Encontre modelos finetuned na Hugging Face.",
+        "ctype_label": "Tipo de Cálculo",
+        "ctype_info": "Escolher tipos menores como int8 ou float16 pode melhorar o desempenho, reduzindo o uso de memória e aumentando o throughput computacional, mas pode sacrificar a precisão em comparação com tipos de dados maiores como float32.",
+        "batchz_label": "Tamanho do Lote",
+        "batchz_info": "Reduzir o tamanho do lote economiza memória se sua GPU tiver menos VRAM e ajuda a gerenciar problemas de Memória Insuficiente.",
+        "tsscale_label": "Escala de Segmentação de Texto",
+        "tsscale_info": "Divida o texto em segmentos por frases, palavras ou caracteres. A segmentação por palavras e caracteres oferece granularidade mais fina, útil para legendas; desativar a tradução preserva a estrutura original.",
         "srt_file_label": "Carregar um arquivo de legenda SRT (será usado em vez da transcrição de Whisper)",
         "divide_text_label": "Redividir segmentos de texto por:",
         "divide_text_info": "(Experimental) Insira um separador para dividir os segmentos de texto existentes no idioma de origem. A ferramenta identificará as ocorrências e criará novos segmentos conforme necessário. Especifique vários separadores usando |, por exemplo: !|?|...|。",
@@ -2311,6 +2519,7 @@ language_data = {
           - FACEBOOK MMS → प्रारूप `en-facebook-mms VITS` → आवाज अधिक प्राकृतिक है; वर्तमान में, यह केवल CPU का उपयोग करता है।
           - PIPER TTS → प्रारूप `en_US-lessac-high VITS-onnx` → पिछले वाले के समान, लेकिन यह CPU और GPU दोनों के लिए अनुकूलित है।
           - BARK → प्रारूप `en_speaker_0-Male BARK` → अच्छी गुणवत्ता है लेकिन धीमी, और यह हैलुसिनेशन के लिए प्रवृत्त है।
+          - OpenAI TTS → प्रारूप `>alloy OpenAI-TTS` → बहुभाषी लेकिन इसमें एक OpenAI API key की आवश्यकता है
           - Coqui XTTS → प्रारूप `_XTTS_/AUTOMATIC.wav` → केवल चीनी (सरलीकृत), अंग्रेजी, फ्रेंच, जर्मन, इतालवी, पुर्तगाली, पोलिश, तुर्की, रूसी, डच, चेक, अरबी, स्पैनिश, हंगेरियन, कोरियाई और जापानी के लिए ही उपलब्ध है।
 
           ---
@@ -2393,6 +2602,8 @@ language_data = {
         "acc_max_info": "ओवरलैपिंग से बचने के लिए अनुवादित ऑडियो सेगमेंटों के लिए अधिकतम त्वरण। 1.0 का मान कोई त्वरण नहीं दर्शाता है।",
         "acc_rate_label": "त्वरण दर नियामक",
         "acc_rate_info": "त्वरण दर नियामक: त्वरण को समायोजित करता है ताकि उपभागों को उससे कम गति की आवश्यकता हो, सततता को बनाए रखते हुए और अगले आरंभ के समय को ध्यान में रखते हुए।",
+        "or_label": "ओवरलैप कमी करना",
+        "or_info": "ओवरलैप कमी करना: पिछले समाप्ति समयों के आधार पर शुरुआत समयों को समायोजित करके सेगमेंट को ओवरलैप नहीं होने देता है; समवारण को बिगाड़ सकता है।",
         "aud_mix_label": "ऑडियो मिश्रण विधि",
         "aud_mix_info": "मूल और अनुवादित ऑडियो फ़ाइलों को मिश्रित करें और दो उपलब्ध मिश्रण मोड के साथ एक अनुकूलित, संतुलित उत्पादन बनाएं।",
         "vol_ori": "मूल ऑडियो ध्वनि",
@@ -2405,6 +2616,19 @@ language_data = {
         "burn_subs_label": "उपशीर्षक जलाएं",
         "burn_subs_info": "उपशीर्षक जलाएं: वीडियो में उपशीर्षक एम्बेड करें, जिससे वे दृश्यीय सामग्री का स्थायी हिस्सा बन जाएं।",
         "whisper_title": "कॉन्फ़िगर ट्रांस्क्रिप्शन।",
+        "lnum_label": "संख्याओं का वाचक रूपांतरण",
+        "lnum_info": "संख्याओं का वाचक रूपांतरण: संख्यात्मक प्रतिनिधित्वों को उनके लेखित समकक्षों से प्रतिस्थापित करें ट्रांसक्रिप्ट में।",
+        "scle_label": "ध्वनि की सफाई",
+        "scle_info": "ध्वनि की सफाई: अधिकतम समयचिह्न सटीकता के लिए ध्वनि को बेहतर बनाएं, समय चिह्नों की अधिकता के लिए अधिकतम समयचिह्न सटीकता के लिए पीछे की ध्वनि हटाएं। इस ऑपरेशन में समय लग सकता है, खासकर लंबे ऑडियो फ़ाइलों के साथ।",
+        "sd_limit_label": "सेगमेंट अवधि सीमा",
+        "sd_limit_info": "प्रत्येक सेगमेंट की अधिकतम अवधि (सेकंड में) को निर्दिष्ट करें। ऑडियो को वैड का उपयोग करके प्रोसेस किया जाएगा, प्रत्येक सेगमेंट चंक की अवधि को सीमित करके।",
+        "asr_model_info": "यह डिफ़ॉल्ट रूप से बोली भाषा को पाठ में परिवर्तित करता है 'व्हिस्पर मॉडल' का उपयोग करके। अपना कस्टम मॉडल उपयोग करें, उदाहरण के लिए, ड्रॉपडाउन में रिपॉज़िटरी नाम 'BELLE-2/Belle-whisper-large-v3-zh' दर्ज करके एक चीनी भाषा फ़ाइन ट्यून मॉडल का उपयोग करें। Hugging Face पर फ़ाइन ट्यून मॉडल्स पाएँ।",
+        "ctype_label": "हिसाब प्रकार",
+        "ctype_info": "छोटे प्रकारों जैसे int8 या फ़्लोट16 का चयन करना प्रदर्शन को बढ़ावा दे सकता है, मेमोरी उपयोग को कम करके और गणनात्मक परिचालन बढ़ाकर प्रदर्शन को सुधार सकता है, लेकिन float32 जैसे बड़े डेटा प्रकारों की तुलना में निश्चितता को कट्टरता में बदल सकता है।",
+        "batchz_label": "बैच का आकार",
+        "batchz_info": "यदि आपके पास कम VRAM वाली जीपीयू है, तो बैच का आकार कम करने से मेमोरी बचाई जा सकती है और मेमोरी की कमी की समस्याओं का प्रबंधन किया जा सकता है।",
+        "tsscale_label": "पाठ के विभाजन का पैमाना",
+        "tsscale_info": "पाठ को वाक्य, शब्द या अक्षरों के आधार पर खंडों में विभाजित करें। शब्द और अक्षर विभाजन और लघु ग्रेन्युलरिटी प्रदान करता है, जो उपशीर्षकों के लिए उपयोगी है; अनुवाद को अक्षम करने से मूल संरचना को संरक्षित रखा जाता है।",
         "srt_file_label": "एक SRT उपशीर्षक फ़ाइल अपलोड करें (विस्पर की प्रतिलिपि के बजाय इस्तेमाल की जाएगी)",
         "divide_text_label": "पुनः विभाजित करें टेक्स्ट सेगमेंट द्वारा:",
         "divide_text_info": "(प्रयोगात्मक) मौजूदा पाठ सेगमेंट को विभाजित करने के लिए एक विभाजक दर्ज करें। उपकरण को घटनाओं को पहचानने और उन्हें अनुसार नए सेगमेंट बनाने के लिए। | का उपयोग करके एक से अधिक विभाजक निर्दिष्ट करें, उदा।: !|?|...|。",
@@ -2485,6 +2709,7 @@ language_data = {
         - FACEBOOK MMS → định dạng `en-facebook-mms VITS` → Giọng nói tự nhiên hơn; hiện tại chỉ sử dụng CPU.
         - PIPER TTS → định dạng `en_US-lessac-high VITS-onnx` → Giống như cái trước, nhưng được tối ưu hóa cho cả CPU và GPU.
         - BARK → định dạng `en_speaker_0-Male BARK` → Chất lượng tốt nhưng chậm, và dễ bị ảo giác.
+        - OpenAI TTS → định dạng `>alloy OpenAI-TTS` → Đa ngôn ngữ nhưng cần một OpenAI API key
         - Coqui XTTS → định dạng `_XTTS_/AUTOMATIC.wav` → Chỉ có sẵn cho tiếng Trung (Giản thể), tiếng Anh, tiếng Pháp, tiếng Đức, tiếng Ý, tiếng Bồ Đào Nha, tiếng Ba Lan, tiếng Thổ Nhĩ Kỳ, tiếng Nga, tiếng Hà Lan, tiếng Séc, tiếng Ả Rập, tiếng Tây Ban Nha, tiếng Hungary, tiếng Hàn và tiếng Nhật.
 
         ---
@@ -2567,6 +2792,8 @@ language_data = {
         "acc_max_info": "Tăng tốc tối đa cho các đoạn âm thanh dịch để tránh chồng chéo. Giá trị 1.0 đại diện cho không tăng tốc",
         "acc_rate_label": "Điều Chỉnh Tốc Độ Tăng Tốc",
         "acc_rate_info": "Điều Chỉnh Tốc Độ Tăng Tốc: Điều chỉnh tốc độ tăng tốc để phù hợp với các đoạn yêu cầu tốc độ thấp hơn, duy trì liên tục và xem xét thời gian bắt đầu tiếp theo.",
+        "or_label": "Giảm chồng chéo",
+        "or_info": "Giảm chồng chéo: Đảm bảo các đoạn không chồng chéo bằng cách điều chỉnh thời gian bắt đầu dựa trên thời gian kết thúc trước đó; có thể làm gián đoạn đồng bộ hóa.",
         "aud_mix_label": "Phương pháp Trộn Âm thanh",
         "aud_mix_info": "Trộn các tập tin âm thanh gốc và dịch để tạo ra một đầu ra cân bằng tùy chỉnh với hai chế độ trộn có sẵn.",
         "vol_ori": "Âm lượng âm thanh gốc",
@@ -2579,6 +2806,19 @@ language_data = {
         "burn_subs_label": "Đốt Phụ đề",
         "burn_subs_info": "Đốt Phụ đề: Nhúng phụ đề vào video, biến chúng thành một phần cố định của nội dung hình ảnh.",
         "whisper_title": "Cấu hình chuyển đổi.",
+        "lnum_label": "Biểu Diễn Số Bằng Chữ",
+        "lnum_info": "Biểu Diễn Số Bằng Chữ: Thay thế các biểu diễn số thành các tương đương viết của chúng trong bản ghi âm.",
+        "scle_label": "Dọn Dẹp Âm Thanh",
+        "scle_info": "Dọn Dẹp Âm Thanh: Nâng cao giọng nói, loại bỏ tiếng ồn nền trước khi chuyển đổi để đạt được độ chính xác cao nhất về dấu thời gian. Thao tác này có thể mất thời gian, đặc biệt là với các tệp âm thanh dài.",
+        "sd_limit_label": "Giới Hạn Thời Lượng Đoạn",
+        "sd_limit_info": "Chỉ định thời lượng tối đa (theo giây) cho mỗi đoạn. Âm thanh sẽ được xử lý bằng cách sử dụng VAD, giới hạn thời lượng cho mỗi đoạn.",
+        "asr_model_info": "Nó chuyển đổi ngôn ngữ nói thành văn bản bằng cách sử dụng mô hình 'Whisper' theo mặc định. Sử dụng một mô hình tùy chỉnh, ví dụ, bằng cách nhập tên kho 'BELLE-2/Belle-whisper-large-v3-zh' trong danh sách thả xuống để sử dụng một mô hình đã được điều chỉnh cho ngôn ngữ Trung Quốc. Tìm mô hình đã điều chỉnh trên Hugging Face.",
+        "ctype_label": "Loại Tính Toán",
+        "ctype_info": "Lựa chọn các loại nhỏ hơn như int8 hoặc float16 có thể cải thiện hiệu suất bằng cách giảm việc sử dụng bộ nhớ và tăng thông lượng tính toán, nhưng có thể hy sinh độ chính xác so với các loại dữ liệu lớn hơn như float32.",
+        "batchz_label": "Kích Thước Lô",
+        "batchz_info": "Giảm kích thước lô giúp tiết kiệm bộ nhớ nếu GPU của bạn có ít VRAM và giúp quản lý các vấn đề Cạn Kiệt Bộ Nhớ.",
+        "tsscale_label": "Thước Đo Phân Đoạn Văn Bản",
+        "tsscale_info": "Chia văn bản thành các đoạn theo câu, từ hoặc ký tự. Phân đoạn theo từng từ và ký tự cung cấp độ mịn hơn, hữu ích cho phụ đề; vô hiệu hóa dịch thuật bảo tồn cấu trúc gốc.",
         "srt_file_label": "Tải lên một tập tin phụ đề SRT (sẽ được sử dụng thay vì việc chuyển đổi của Whisper)",
         "divide_text_label": "Chia lại đoạn văn bản bằng:",
         "divide_text_info": "(Thử nghiệm) Nhập một bộ phân cách để chia các đoạn văn bản hiện có trong ngôn ngữ nguồn. Công cụ sẽ nhận dạng các xuất hiện và tạo ra các đoạn mới tương ứng. Chỉ định nhiều bộ phân cách bằng |, ví dụ: !|?|...|。",
@@ -2659,6 +2899,7 @@ language_data = {
         - FACEBOOK MMS → format `en-facebook-mms VITS` → Głos jest bardziej naturalny; obecnie wykorzystuje tylko CPU.
         - PIPER TTS → format `en_US-lessac-high VITS-onnx` → To samo co poprzednie, ale zoptymalizowane zarówno pod CPU, jak i GPU.
         - BARK → format `en_speaker_0-Male BARK` → Dobra jakość, ale wolne działanie, podatne na halucynacje.
+        - OpenAI TTS → format `>alloy OpenAI-TTS` → Wielojęzyczne, ale wymaga klucza OpenAI API
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Dostępne tylko dla języka chińskiego (uproszczonego), angielskiego, francuskiego, niemieckiego, włoskiego, portugalskiego, polskiego, tureckiego, rosyjskiego, niderlandzkiego, czeskiego, arabskiego, hiszpańskiego, węgierskiego, koreańskiego i japońskiego.
 
         ---
@@ -2741,6 +2982,8 @@ language_data = {
         "acc_max_info": "Maksymalne przyspieszenie dla przetłumaczonych segmentów dźwiękowych, aby uniknąć nakładania się. Wartość 1.0 oznacza brak przyspieszenia",
         "acc_rate_label": "Regulacja prędkości przyśpieszania",
         "acc_rate_info": "Regulacja prędkości przyśpieszania: Dostosowuje przyśpieszenie, aby dostosować się do segmentów wymagających mniejszej prędkości, zachowując ciągłość i uwzględniając czas następnego startu.",
+        "or_label": "Redukcja Nakładania",
+        "or_info": "Redukcja Nakładania: Zapewnia, że segmenty się nie nakładają, poprzez dostosowanie czasów rozpoczęcia na podstawie wcześniejszych czasów zakończenia; może zakłócić synchronizację.",
         "aud_mix_label": "Metoda Mieszania Audio",
         "aud_mix_info": "Mieszaj pliki audio oryginalne i przetłumaczone, aby utworzyć spersonalizowane, zrównoważone wyjście z dwoma dostępnymi trybami mieszania.",
         "vol_ori": "Głośność oryginalnego dźwięku",
@@ -2753,6 +2996,19 @@ language_data = {
         "burn_subs_label": "Wypal napisy",
         "burn_subs_info": "Wypal napisy: Osadź napisy w wideo, stając się trwałą częścią treści wizualnej.",
         "whisper_title": "Konfiguracja transkrypcji.",
+        "lnum_label": "Zliteralizuj Liczby",
+        "lnum_info": "Zliteralizuj Liczby: Zastąp numeryczne reprezentacje ich pisemnymi odpowiednikami w transkrypcji.",
+        "scle_label": "Oczyszczanie Dźwięku",
+        "scle_info": "Oczyszczanie Dźwięku: Poprawa głosu, usuwanie szumów tła przed transkrypcją dla najwyższej precyzji znaczników czasowych. Ta operacja może zająć trochę czasu, szczególnie przy długich plikach dźwiękowych.",
+        "sd_limit_label": "Ograniczenie Czasu Trwania Segmentu",
+        "sd_limit_info": "Określ maksymalny czas trwania (w sekundach) dla każdego segmentu. Dźwięk będzie przetwarzany za pomocą VAD, ograniczając czas trwania dla każdego fragmentu segmentu.",
+        "asr_model_info": "Konwertuje mowę na tekst za pomocą modelu „Szept” domyślnie. Użyj niestandardowego modelu, na przykład, wpisując nazwę repozytorium „BELLE-2/Belle-whisper-large-v3-zh” w rozwijanej liście, aby użyć dostosowanego modelu w języku chińskim. Znajdź dostosowane modele na Hugging Face.",
+        "ctype_label": "Typ Obliczeń",
+        "ctype_info": "Wybór mniejszych typów, takich jak int8 lub float16, może poprawić wydajność poprzez zmniejszenie użycia pamięci i zwiększenie przepustowości obliczeniowej, ale może poświęcić precyzję w porównaniu do większych typów danych, takich jak float32.",
+        "batchz_label": "Rozmiar Partii",
+        "batchz_info": "Zmniejszenie rozmiaru partii oszczędza pamięć, jeśli Twój GPU ma mniej VRAM, i pomaga zarządzać problemami z brakiem pamięci.",
+        "tsscale_label": "Skala Segmentacji Tekstu",
+        "tsscale_info": "Podziel tekst na segmenty według zdań, słów lub znaków. Segmentacja według słów i znaków zapewnia drobniejszą granulację, przydatną dla napisów; wyłączenie tłumaczenia zachowuje pierwotną strukturę.",
         "srt_file_label": "Prześlij plik napisów SRT (będzie używany zamiast transkrypcji Whisper)",
         "divide_text_label": "Podziel segmenty tekstu przez:",
         "divide_text_info": "(Eksperymentalne) Wprowadź separator do podziału istniejących segmentów tekstu w języku źródłowym. Narzędzie zidentyfikuje wystąpienia i utworzy nowe segmenty zgodnie z nimi. Wprowadź kilka separatorów, używając |, np.: !|?|...|。",
@@ -2833,6 +3089,7 @@ language_data = {
         - FACEBOOK MMS → format `en-facebook-mms VITS` → Rösten är mer naturlig; för tillfället använder den endast CPU.
         - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Samma som den föregående, men den är optimerad för både CPU och GPU.
         - BARK → format `en_speaker_0-Male BARK` → Bra kvalitet men långsam och benägen för hallucinationer.
+        - OpenAI TTS → format `>alloy OpenAI-TTS` → Multispråkigt men kräver en OpenAI API-nyckel
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Endast tillgängligt för kinesiska (förenklad), engelska, franska, tyska, italienska, portugisiska, polska, turkiska, ryska, nederländska, tjeckiska, arabiska, spanska, ungerska, koreanska och japanska.
 
         ---
@@ -2915,6 +3172,8 @@ language_data = {
         "acc_max_info": "Maximal acceleration för översatta ljudsegment för att undvika överlappning. En värde på 1,0 representerar ingen acceleration",
         "acc_rate_label": "Accelerationshastighetsreglering",
         "acc_rate_info": "Accelerationshastighetsreglering: Justerar accelerationen för att passa segment som kräver lägre hastighet, vilket bibehåller kontinuitet och överväger nästa starttid.",
+        "or_label": "Överlappningsreducering",
+        "or_info": "Överlappningsreducering: Säkerställer att segment inte överlappar genom att justera starttider baserat på tidigare sluttider; kan störa synkroniseringen.",
         "aud_mix_label": "Ljudmixningsmetod",
         "aud_mix_info": "Blanda original- och översatta ljudfiler för att skapa en anpassad, balanserad utdata med två tillgängliga blandningslägen.",
         "vol_ori": "Volym ursprungligt ljud",
@@ -2927,6 +3186,19 @@ language_data = {
         "burn_subs_label": "Bränn undertexter",
         "burn_subs_info": "Bränn undertexter: Bädda in undertexter i videon, vilket gör dem till en permanent del av det visuella innehållet.",
         "whisper_title": "Konfigurera transkription.",
+        "lnum_label": "Literalisera Siffror",
+        "lnum_info": "Literalisera Siffror: Ersätt numeriska representationer med deras skrivna motsvarigheter i transkriptet.",
+        "scle_label": "Ljudstädning",
+        "scle_info": "Ljudstädning: Förbättra röster, ta bort bakgrundsljud innan transkribering för högsta tidsstämpelprecision. Denna operation kan ta tid, särskilt med långa ljudfiler.",
+        "sd_limit_label": "Segmentvaraktighetsbegränsning",
+        "sd_limit_info": "Ange den maximala varaktigheten (i sekunder) för varje segment. Ljudet kommer att bearbetas med VAD och begränsa varaktigheten för varje segmentbit.",
+        "asr_model_info": "Det konverterar talat språk till text med hjälp av standardmodellen 'Whisper'. Använd en anpassad modell, till exempel genom att ange lagringsnamnet 'BELLE-2/Belle-whisper-large-v3-zh' i rullgardinsmenyn för att använda en anpassad modell för kinesiska. Hitta finjusterade modeller på Hugging Face.",
+        "ctype_label": "Beräkningstyp",
+        "ctype_info": "Att välja mindre typer som int8 eller float16 kan förbättra prestanda genom att minska minnesanvändningen och öka den beräkningsmässiga genomströmningen, men kan offra precisionen jämfört med större datatyper som float32.",
+        "batchz_label": "Batchstorlek",
+        "batchz_info": "Att minska batchstorleken sparar minne om din GPU har mindre VRAM och hjälper till att hantera minnesproblem.",
+        "tsscale_label": "Text segmenteringsskala",
+        "tsscale_info": "Dela upp texten i segment efter meningar, ord eller tecken. Ordet och teckensegmentering ger finare granularitet, användbart för undertexter; inaktivering av översättning bevarar den ursprungliga strukturen.",
         "srt_file_label": "Ladda upp en SRT-undertextsfil (kommer att användas istället för Whisper-transkriptionen)",
         "divide_text_label": "Dela upp textsegment med:",
         "divide_text_info": "(Experimentell) Ange en avgränsare för att dela upp befintliga textsegment på källspråket. Verktyget kommer att identifiera förekomster och skapa nya segment därefter. Ange flera avgränsare med |, t.ex.: !|?|...|。",
@@ -3007,6 +3279,7 @@ language_data = {
         - FACEBOOK MMS → 형식 `en-facebook-mms VITS` → 음성이 더 자연스럽지만 현재 CPU만 사용됩니다.
         - PIPER TTS → 형식 `en_US-lessac-high VITS-onnx` → 이전 것과 동일하지만 CPU와 GPU 모두 최적화되었습니다.
         - BARK → 형식 `en_speaker_0-Male BARK` → 품질은 좋지만 느리고 환각에 취약합니다.
+        - OpenAI TTS → 형식 `>alloy OpenAI-TTS` → 다국어지만 OpenAI API 키가 필요합니다
         - Coqui XTTS → 형식 `_XTTS_/AUTOMATIC.wav` → 중국어 (간체), 영어, 프랑스어, 독일어, 이탈리아어, 포르투갈어, 폴란드어, 터키어, 러시아어, 네덜란드어, 체코어, 아랍어, 스페인어, 헝가리어, 한국어 및 일본어만 사용할 수 있습니다.
 
         ---
@@ -3089,6 +3362,8 @@ language_data = {
         "acc_max_info": "중첩을 피하기 위해 번역된 오디오 세그먼트에 대한 최대 가속도. 값이 1.0이면 가속도가 없음을 의미합니다",
         "acc_rate_label": "가속도 조절",
         "acc_rate_info": "가속도 조절: 속도가 느린 세그먼트에 대응하기 위해 가속도를 조절하여 연속성을 유지하고 다음 시작 시간을 고려합니다.",
+        "or_label": "중첩 감소",
+        "or_info": "중첩 감소: 이전 종료 시간을 기반으로 시작 시간을 조정하여 세그먼트가 겹치지 않도록 합니다. 동기화를 방해할 수 있습니다.",
         "aud_mix_label": "오디오 혼합 방법",
         "aud_mix_info": "원본 및 번역된 오디오 파일을 혼합하여 두 가지 사용 가능한 혼합 모드로 사용자 정의된 균형 잡힌 출력을 만듭니다.",
         "vol_ori": "원본 오디오 볼륨",
@@ -3101,6 +3376,19 @@ language_data = {
         "burn_subs_label": "자막 불러오기",
         "burn_subs_info": "자막 불러오기: 자막을 비디오에 임베드하여 시각 콘텐츠의 영구적인 부분으로 만듭니다.",
         "whisper_title": "전사 구성.",
+        "lnum_label": "숫자를 문자로 변환",
+        "lnum_info": "숫자를 문자로 변환: 텍스트에서 숫자 표현을 해당되는 글자로 대체하십시오.",
+        "scle_label": "소리 정리",
+        "scle_info": "소리 정리: 음성을 향상시키고 타임 스탬프 정확도를 위해 전사하기 전에 배경 소음을 제거하십시오. 이 작업은 특히 긴 오디오 파일의 경우 시간이 걸릴 수 있습니다.",
+        "sd_limit_label": "세그먼트 기간 제한",
+        "sd_limit_info": "각 세그먼트의 최대 기간(초)을 지정하십시오. 오디오는 VAD를 사용하여 각 세그먼트 조각의 기간을 제한하여 처리됩니다.",
+        "asr_model_info": "기본적으로 '속삭임 모델'을 사용하여 구어를 텍스트로 변환합니다. 예를 들어, 중국어 언어 파인튜닝 모델을 사용하려면 드롭다운에 'BELLE-2/Belle-whisper-large-v3-zh' 저장소 이름을 입력하십시오. Hugging Face에서 파인튜닝된 모델을 찾을 수 있습니다.",
+        "ctype_label": "계산 유형",
+        "ctype_info": "int8 또는 float16과 같은 더 작은 유형을 선택하면 메모리 사용을 줄이고 계산 처리량을 증가시켜 성능을 향상시킬 수 있지만 float32와 같은 큰 데이터 유형에 비해 정밀성을 희생할 수 있습니다.",
+        "batchz_label": "일괄 크기",
+        "batchz_info": "일괄 크기를 줄이면 GPU의 VRAM이 적은 경우 메모리를 절약할 수 있으며 메모리 부족 문제를 관리하는 데 도움이됩니다.",
+        "tsscale_label": "텍스트 분할 규모",
+        "tsscale_info": "문장, 단어 또는 문자별로 텍스트를 세그먼트로 나눕니다. 단어 및 문자 분할은 자막에 유용한 더 세밀한 세분성을 제공합니다. 번역 비활성화는 원래 구조를 보존합니다.",
         "srt_file_label": "SRT 자막 파일 업로드(전사 대신 사용됨)",
         "divide_text_label": "다음에 따라 텍스트 세그먼트를 분할:",
         "divide_text_info": "(실험적) 기존 텍스트 세그먼트를 분할하기 위해 구분 기호를 입력하세요. 도구는 발생한 사례를 식별하고 그에 따라 새 세그먼트를 생성합니다. |를 사용하여 여러 구분 기호를 지정하세요. 예: !|?|...|。",
@@ -3181,6 +3469,7 @@ language_data = {
         - FACEBOOK MMS → स्वरूप `en-facebook-mms VITS` → ध्वनी अधिक प्राकृतिक आहे; ह्या क्षणी, हे केवळ CPU वापरते.
         - PIPER TTS → स्वरूप `en_US-lessac-high VITS-onnx` → म्हणजे अखेरचा, परंतु ह्यात CPU आणि GPU दोन्हीत अनुकूलित केले आहे.
         - BARK → स्वरूप `en_speaker_0-Male BARK` → चांगली गुणवत्ता परंतु मंद, आणि हे हल्ल्यांसाठी आदर्श आहे.
+        - OpenAI TTS → स्वरूप `>alloy OpenAI-TTS` → बहुभाषिक आहे पण OpenAI API की आवश्यकता आहे
         - Coqui XTTS → स्वरूप `_XTTS_/AUTOMATIC.wav` → केवळ उपलब्ध आहे: चिनी (सरलीकृत), इंग्रजी, फ्रेंच, जर्मन, इटालियन, पोर्तुगीज, पोलिश, तुर्की, रशियन, डच, चेक, अरबी, स्पॅनिश, हंगेरियन, कोरियन आणि जपानी.
 
         ---
@@ -3261,6 +3550,8 @@ language_data = {
         "acc_max_info": "ओव्हरलॅपिंग टाळण्यासाठी अनुवादित ऑडियो सेगमेंटसाठी अधिकतम एक्सेलरेशन. 1.0 ची एक मूल्य अधिकतम एक्सेलरेशन प्रतिनिधित्व करते",
         "acc_rate_label": "वेगवर्धी दर व्यवस्थापन",
         "acc_rate_info": "वेगवर्धी दर व्यवस्थापन: अल्प गतीचे आवश्यक असलेले क्षेत्र समायोजित करण्यासाठी वेगवर्धी व्यवस्थापन करते, सततता ठेवते आणि पुढील सुरुवातीचा वेळ मलान घेतला जातो.",
+        "or_label": "ओव्हरलॅप कमी करा",
+        "or_info": "ओव्हरलॅप कमी करा: मागील समाप्तीच्या वेळेस आधारित सुरुवातीच्या वेळा समायोजित करून सेगमेंट ओव्हरलॅप होण्यास रोखते; समकालिकरण अडचणी उत्पन्न करू शकतो.",
         "aud_mix_label": "ऑडियो मिक्सिंग पद्धत",
         "aud_mix_info": "स्वच्छ आणि संतुलित आउटपुट सादर करण्यासाठी मूळ आणि अनुवादित ऑडियो फाईल्स एकत्रित करण्यासाठी आवश्यक दोन मिक्सिंग मोड्युल्या सोडल्या आहेत.",
         "vol_ori": "मूळ ऑडियोची व्हॉल्यूम",
@@ -3273,6 +3564,19 @@ language_data = {
         "burn_subs_label": "सबटायटल्स जळवा",
         "burn_subs_info": "सबटायटल्स जळवा: व्हिडिओमध्ये सबटायटल्स आजार करा, त्यांना दृश्यांतराचा कोणताही स्थायी भाग बनवून करा.",
         "whisper_title": "वाचन विक्रमण संरचना.",
+        "lnum_label": "संख्या शब्दांतर",
+        "lnum_info": "संख्या शब्दांतर: अंकांचे प्रतिनिधित्व लेखित सर्वकाशांमध्ये बदला करा.",
+        "scle_label": "आवाज स्वच्छता",
+        "scle_info": "आवाज स्वच्छता: वादला तयार करण्यापूर्वी आवाज आणि बॅकग्राऊंड ध्वनी काढा. हे काम वेगवेगळ्या आवाज फाईल्ससह करता येऊ शकते.",
+        "sd_limit_label": "सेगमेंट अवधी सीमा",
+        "sd_limit_info": "प्रत्येक सेगमेंटसाठी कोणत्याही अवधीचा महासूचीत (सेकंदांमध्ये) सुनिश्चित करा. ऑडिओ वाडचा वापर करून प्रत्येक सेगमेंटच्या तुकड्याची अवधी सीमित करण्यात येईल.",
+        "asr_model_info": "जीवनाचा मूळ 'फिस्फिंग' मॉडेल वापरून बोललेली भाषा ते टेक्स्टमध्ये बदलते. उदाहरणार्थ, चीनी भाषेतील फायनट्यून्ड मॉडेल वापरण्यासाठी ड्रॉपडाऊनमध्ये 'BELLE-2/Belle-whisper-large-v3-zh' संग्रह नाव नोंदवा. Hugging Face वर फायनट्यून्ड मॉडेल्स शोधा.",
+        "ctype_label": "गणना प्रकार",
+        "ctype_info": "int8 किंवा float16 आढळवून कमी डेटा प्रकारांमध्ये निर्देशन करणे कामाची वेगवेगळी प्रदर्शन करू शकते आणि गणना द्वारे अपेक्षित क्षमतेची वाढवू शकते, परंतु float32 आणि इतर मोठ्या डेटा प्रकारांपेक्षा निश्चितता कुठल्या प्रकारे कमी करू शकते.",
+        "batchz_label": "बॅच आकार",
+        "batchz_info": "आपल्याला कमी VRAM असलेले GPU असल्यास बॅच आकार कमी करणे मेमरी झटका आणू शकते आणि मेमरी नसलेली समस्या व्यवस्थापित करण्यास मदत करू शकते.",
+        "tsscale_label": "टेक्स्ट सेगमेंटेशन पैमाना",
+        "tsscale_info": "पाठाचे सेगमेंट वाक्य, शब्द किंवा अक्षरांमध्ये वागवा. शब्द आणि अक्षर सेगमेंटेशन उपशीर्षकसाठी उपयुक्त तंत्रज्ञान उपलब्ध करून देतात; अनुवाद बंद करणे मूल संरचना संरक्षित करते.",
         "srt_file_label": "एसआरटी उपशीर्षक फाईल अपलोड करा (व्हिस्परच्या विवेचनाच्या विरोधात वापरली जाईल)",
         "divide_text_label": "टेक्स्ट सेगमेंट्स पुनर्विभाजित करा:",
         "divide_text_info": "(प्रयोगशील) स्रोत भाषेतील विद्यमान टेक्स्ट सेगमेंट्सचा विभाग करण्यासाठी एक विभाजक प्रविष्ट करा. टूलला उपलब्धींना ओळखण्यासाठी आणि नुकसानकर्ता करण्यासाठी त्यामुळे नवीन सेगमेंट्स निर्मित करते. | चा वापर करून अनेक विभाजक स्पष्ट करा, उदा.: !|?|...|।",
@@ -3353,6 +3657,7 @@ language_data = {
         - FACEBOOK MMS → format `en-facebook-mms VITS` → Səsi daha doğaldır; ancaq ancaq CPU istifadə edir.
         - PIPER TTS → format `en_US-lessac-high VITS-onnx` → Əvvəlki ilə eynidir, ancaq hem CPU, hem də GPU üçün optimalaşdırılmışdır.
         - BARK → format `en_speaker_0-Male BARK` → Yaxşı keyfiyyətli, ancaq yavaş və halüsinasiyalara meyllidir.
+        - OpenAI TTS → format `>alloy OpenAI-TTS` → Çoxdilli, lakin OpenAI API açarı tələb olunur
         - Coqui XTTS → format `_XTTS_/AUTOMATIC.wav` → Yalnız Çin (Sadələşdirilmiş), İngilis, Fransız, Alman, İtalyan, Portuqal, Poliş, Türk, Rus, Holland, Çex, Ərəb, İspan, Macar, Korey və Yapon dilində mövcuddur.
 
         ---
@@ -3435,6 +3740,8 @@ language_data = {
         "acc_max_info": "Üstünlük təşkil etməmək üçün tərcümə olunmuş audio segmentlərinin maksimum sürəti. 1.0 dəyəri heç bir sürəti təşkil etmir",
         "acc_rate_label": "Sürətin Artımının Tənzimlənməsi",
         "acc_rate_info": "Sürətin Artımının Tənzimlənməsi: Sürəti az olan segmentlərə uyğun olaraq sürəti tənzimləyir, davam etməni qoruyur və növbəti başlanğıcın vaxtını nəzərə alır.",
+        "or_label": "Üstünlüklərin Azaldılması",
+        "or_info": "Üstünlüklərin Azaldılması: Segmentlərin bir-birinin üstündə olmamasını təmin edir, əvvəlki bitiş vaxtlarına əsasən başlanğıc vaxtlarını tənzimləyərək; sinxronlaşmaya mane ola bilər.",
         "aud_mix_label": "Audio qarışdırma metodları",
         "aud_mix_info": "Orijinal və tərcümə olunmuş audio fayllarını qarışdıraraq iki mövcud qarışdırma rejimi ilə xüsusi, dengəli bir çıxış yaradın.",
         "vol_ori": "Orijinal səsin səsi",
@@ -3447,6 +3754,19 @@ language_data = {
         "burn_subs_label": "Altyazıları Yanma",
         "burn_subs_info": "Altyazıları Yanma: Altyazıları videoya ilave edərək, onları görünən məzmunun daimi bir hissəsi halına gətirin.",
         "whisper_title": "Tərcümə edilən mətnin konfiqurasiyası.",
+        "lnum_label": "Rəqəmləri Litarallarlaşdırmaq",
+        "lnum_info": "Rəqəmləri Litarallarlaşdırmaq: Sayısal təsvirləri onların yazılı müqabilələri ilə əvəzləyin.",
+        "scle_label": "Səs Təmizliyi",
+        "scle_info": "Səs Təmizliyi: Maksimum vaxt damğası dəqiqliyi üçün səsi yaxşılaşdırın, transkripsiyadan əvvəl fon gürültüsünü çıxarın. Bu əməliyyat uzun səs faylları ilə xüsusilə vaxt ala bilər.",
+        "sd_limit_label": "Segment Müddəti Məhdudiyyəti",
+        "sd_limit_info": "Hər bir segment üçün maksimum müddəti (saniyə) təyin edin. Səs VAD-dan istifadə edilərək hər bir segment parçasının müddəti məhdudlaşdırılacaq.",
+        "asr_model_info": "Bu, default olaraq danışılan dilə mətni 'Əfsus' modeli istifadə edərək mətnə çevirir. Xüsusi model istifadə edin, məsələn, çin dilində fayin-tuninq edilmiş model istifadə etmək üçün 'BELLE-2/Belle-whisper-large-v3-zh' depozit adını keçid menyusuna daxil edin. Hugging Face-də fayin-tuninq edilmiş modelləri tapın.",
+        "ctype_label": "Hesablama Növü",
+        "ctype_info": "int8 və ya float16 kimi kiçik növ seçmək yaddaş istifadəsini azaldaraq və hesablama nəzarətini artıraraq performansı yaxşılaşdıra bilər, lakin float32 kimi daha böyük veri növlərinə nisbətən dəqiqliyi fəda etmək olar.",
+        "batchz_label": "Toplu Ölçüsü",
+        "batchz_info": "Toplu ölçüsünü azaldaraq, əğer GPU-nuzun az VRAM varsa, yaddaş qənaət etmək mümkündür və Yaddaşsız Yaddaş problemə idarə edə bilər.",
+        "tsscale_label": "Mətn Segmentlərinin Masshtabı",
+        "tsscale_info": "Mətni cümlə, söz və ya simvollarla segmentlərə bölmək. Söz və simvol bölməsi, subtitrlər üçün faydalı olan daha dəqiqliyi təmin edir; tərcüməni söndürmək asal strukturu qoruyur.",
         "srt_file_label": "Bir SRT subtitri faylı yükləyin (Fısıldağın transkripsiyası əvəzinə istifadə olunacaq)",
         "divide_text_label": "Mətn segmentlərini bölmək üçün ayırıcı daxil edin:",
         "divide_text_info": "(Təcrübəli) Mövcud mətn segmentlərini böləcək bir ayırıcı daxil edin. Alətlər tez-tez yaradır və uyğun gələn yerlərdə yeni segmentlər yaradır. Birdən çox ayırıcı daxil edin, |, misal: !|?|...|。",
@@ -3500,5 +3820,387 @@ language_data = {
         "cv_aux": "- Səsçi doğru şəkildə aşkar edilmirsə tətbiq ediləcək səs.",
         "cv_button_apply": "KONFiQURASiYANI TƏTBiQ EDiN",
         "tab_help": "Kömək",
+    },
+
+    "persian": {
+        "description": """
+        ### 🎥 **با SoniTranslate به راحتی ویدئوها را ترجمه کنید!** 📽️
+
+        یک ویدئو، فایل زیرنویس، فایل صوتی را آپلود کنید یا یک لینک ویدئوی URL ارائه دهید. 📽️ **دفترچه یادداشت به‌روز شده را از مخزن رسمی دریافت کنید: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        دستورالعمل‌های استفاده را در تب `Help` ببینید. بیایید با ترجمه ویدئوها سرگرم شویم! 🚀🎉
+        """,
+        "tutorial": """
+        # 🔰 **دستورالعمل استفاده:**
+
+        1. 📤 یک **ویدئو**، **فایل زیرنویس**، **فایل صوتی** را آپلود کنید یا 🌐 **لینک URL** به یک ویدئو مانند یوتیوب ارائه دهید.
+
+        2. 🌍 زبانی را که می‌خواهید **ویدئو را به آن ترجمه کنید** انتخاب کنید.
+
+        3. 🗣️ تعداد **افراد گوینده** در ویدئو را مشخص کنید و **برای هرکدام یک صدای متن به گفتار مناسب** برای زبان ترجمه انتخاب کنید.
+
+        4. 🚀 دکمه '**ترجمه**' را فشار دهید تا نتایج را دریافت کنید.
+
+        ---
+
+        # 🧩 **SoniTranslate از موتورهای مختلف TTS (متن به گفتار) پشتیبانی می‌کند، که شامل:**
+        - EDGE-TTS → فرمت `en-AU-WilliamNeural-Male` → سریع و دقیق.
+        - FACEBOOK MMS → فرمت `en-facebook-mms VITS` → صدای طبیعی‌تر؛ در حال حاضر فقط از CPU استفاده می‌کند.
+        - PIPER TTS → فرمت `en_US-lessac-high VITS-onnx` → مانند قبلی، اما برای CPU و GPU بهینه‌سازی شده است.
+        - BARK → فرمت `en_speaker_0-Male BARK` → کیفیت خوب ولی کند و مستعد هذیان.
+        - OpenAI TTS → فرمت `>alloy OpenAI-TTS` → چندزبانه اما نیاز به کلید API OpenAI دارد.
+        - Coqui XTTS → فرمت `_XTTS_/AUTOMATIC.wav` → فقط برای چینی (ساده‌شده)، انگلیسی، فرانسوی، آلمانی، ایتالیایی، پرتغالی، لهستانی، ترکی، روسی، هلندی، چک، عربی، اسپانیایی، مجارستانی، کره‌ای و ژاپنی در دسترس است.
+
+        ---
+
+        # 🎤 چگونه از صداهای R.V.C. و R.V.C.2 استفاده کنیم (اختیاری) 🎶
+
+        هدف اعمال R.V.C. به TTS تولید شده است 🎙️
+
+        1. در تب `Custom Voice R.V.C.` مدل‌های مورد نیاز را دانلود کنید 📥 می‌توانید از لینک‌های Hugging Face و Google Drive در قالب‌های zip، pth، یا index استفاده کنید. همچنین می‌توانید مخازن کامل HF را دانلود کنید، اما این گزینه خیلی پایدار نیست 😕
+
+        2. حالا به `Replace voice: TTS to R.V.C.` بروید و جعبه `enable` را تیک بزنید ✅ پس از این، می‌توانید مدل‌هایی را که می‌خواهید به هر سخنگوی TTS اعمال کنید انتخاب کنید 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. روش F0 که برای همه R.V.C. اعمال خواهد شد تنظیم کنید 🎛️
+
+        4. دکمه `APPLY CONFIGURATION` را فشار دهید تا تغییرات اعمال شود 🔄
+
+        5. به تب ترجمه ویدئو بازگردید و بر روی 'Translate' کلیک کنید ▶️ حالا ترجمه با اعمال R.V.C. انجام خواهد شد 🗣️
+
+        نکته: می‌توانید از `Test R.V.C.` استفاده کنید تا بهترین TTS یا تنظیمات را برای اعمال به R.V.C. آزمایش و پیدا کنید 🧪🔍
+
+        ---
+
+        """,
+        "tab_translate": "ترجمه ویدئو",
+        "video_source": "منبع ویدئو را انتخاب کنید",
+        "link_label": "لینک رسانه.",
+        "link_info": "مثال: www.youtube.com/watch?v=g_9rPvbENUw",
+        "link_ph": "لینک URL را اینجا وارد کنید...",
+        "dir_label": "مسیر ویدئو.",
+        "dir_info": "مثال: /usr/home/my_video.mp4",
+        "dir_ph": "مسیر را اینجا وارد کنید...",
+        "sl_label": "زبان مبدا",
+        "sl_info": "این زبان اصلی ویدئو است",
+        "tat_label": "ترجمه صوتی به",
+        "tat_info": "زبان مقصد را انتخاب کنید و همچنین مطمئن شوید که TTS مربوط به آن زبان را انتخاب کنید.",
+        "num_speakers": "تعداد افراد گوینده در ویدئو را انتخاب کنید.",
+        "min_sk": "حداقل گوینده‌ها",
+        "max_sk": "حداکثر گوینده‌ها",
+        "tts_select": "صدای مورد نظر برای هر گوینده را انتخاب کنید.",
+        "sk1": "گوینده TTS 1",
+        "sk2": "گوینده TTS 2",
+        "sk3": "گوینده TTS 3",
+        "sk4": "گوینده TTS 4",
+        "sk5": "گوینده TTS 5",
+        "sk6": "گوینده TTS 6",
+        "sk7": "گوینده TTS 7",
+        "sk8": "گوینده TTS 8",
+        "sk9": "گوینده TTS 9",
+        "sk10": "گوینده TTS 10",
+        "sk11": "گوینده TTS 11",
+        "sk12": "گوینده TTS 12",
+        "vc_title": "تقلید صدا در زبان‌های مختلف",
+        "vc_subtitle": """
+        ### صدای یک فرد را در زبان‌های مختلف بازتولید کنید.
+        در حالی که با اکثر صداها به درستی کار می‌کند، ممکن است در هر مورد به صورت کامل عمل نکند.
+        تقلید صدا تنها لحن گوینده مرجع را بازتولید می‌کند، بدون لهجه و احساسات که توسط مدل پایه TTS تعیین می‌شوند و توسط مبدل بازتولید نمی‌شوند.
+        این کار نمونه‌های صوتی را از صدای اصلی هر گوینده گرفته و پردازش می‌کند.
+        """,
+        "vc_active_label": "تقلید صدا فعال است",
+        "vc_active_info": "تقلید صدا فعال: لحن گوینده اصلی را بازتولید می‌کند",
+        "vc_method_label": "روش",
+        "vc_method_info": "یک روش برای فرآیند تقلید صدا انتخاب کنید",
+        "vc_segments_label": "حداکثر نمونه‌ها",
+        "vc_segments_info": "حداکثر نمونه‌ها: تعداد نمونه‌های صوتی که برای فرآیند تولید خواهند شد، بیشتر بهتر است اما ممکن است نویز اضافه کند",
+        "vc_dereverb_label": "حذف اکو",
+        "vc_dereverb_info": "حذف اکو: حذف اکو صوتی از نمونه‌های صوتی.",
+        "vc_remove_label": "حذف نمونه‌های قبلی",
+        "vc_remove_info": "حذف نمونه‌های قبلی: حذف نمونه‌های قبلی تولید شده، بنابراین نمونه‌های جدید نیاز به تولید دارند.",
+        "xtts_title": "ایجاد TTS بر اساس یک فایل صوتی",
+        "xtts_subtitle": "یک فایل صوتی کوتاه با صدای حداکثر 10 ثانیه آپلود کنید. با استفاده از XTTS، یک TTS جدید با صدای مشابه به فایل صوتی ارائه شده ایجاد خواهد شد.",
+        "xtts_file_label": "یک فایل صوتی کوتاه با صدا آپلود کنید",
+        "xtts_name_label": "نام برای TTS",
+        "xtts_name_info": "یک نام ساده استفاده کنید",
+        "xtts_dereverb_label": "حذف اکو صوتی",
+        "xtts_dereverb_info": "حذف اکو صوتی: حذف اکو از صوت",
+        "xtts_button": "پردازش صوت و افزودن آن به انتخابگر TTS",
+        "xtts_footer": "تولید صدای XTTS به طور خودکار: می‌توانید از `_XTTS_/AUTOMATIC.wav` در انتخابگر TTS برای تولید خودکار بخش‌ها برای هر گوینده هنگام تولید ترجمه استفاده کنید.",
+        "extra_setting": "تنظیمات پیشرفته",
+        "acc_max_label": "حداکثر شتاب صوتی",
+        "acc_max_info": "حداکثر شتاب برای بخش‌های صوتی ترجمه شده برای جلوگیری از تداخل. مقدار 1.0 نمایانگر بدون شتاب است",
+        "acc_rate_label": "تنظیم نرخ شتاب",
+        "acc_rate_info": "تنظیم نرخ شتاب: تنظیم شتاب برای سازگاری با بخش‌هایی که نیاز به سرعت کمتری دارند، حفظ پیوستگی و در نظر گرفتن زمان شروع بعدی.",
+        "or_label": "کاهش تداخل",
+        "or_info": "کاهش تداخل: اطمینان از عدم تداخل بخش‌ها با تنظیم زمان شروع بر اساس زمان پایان قبلی؛ ممکن است همگام‌سازی را مختل کند.",
+        "aud_mix_label": "روش ترکیب صوتی",
+        "aud_mix_info": "میکس فایل‌های صوتی اصلی و ترجمه شده برای ایجاد خروجی سفارشی و متعادل با دو حالت میکس موجود.",
+        "vol_ori": "حجم صدای اصلی",
+        "vol_tra": "حجم صدای ترجمه شده",
+        "voiceless_tk_label": "مسیر بدون صدا",
+        "voiceless_tk_info": "مسیر بدون صدا: حذف صدای اصلی قبل از ترکیب آن با صدای ترجمه شده.",
+        "sub_type": "نوع زیرنویس",
+        "soft_subs_label": "زیرنویس نرم",
+        "soft_subs_info": "زیرنویس نرم: زیرنویس‌های اختیاری که بینندگان می‌توانند آنها را هنگام تماشا روشن یا خاموش کنند.",
+        "burn_subs_label": "زیرنویس سوخته",
+        "burn_subs_info": "زیرنویس سوخته: تعبیه زیرنویس‌ها در ویدئو، که آنها را به بخشی دائمی از محتوای بصری تبدیل می‌کند.",
+        "whisper_title": "پیکربندی رونوشت.",
+        "lnum_label": "نوشتاری اعداد",
+        "lnum_info": "نوشتاری اعداد: جایگزین نمایش عددی با معادل‌های نوشتاری آنها در رونوشت.",
+        "scle_label": "پاکسازی صدا",
+        "scle_info": "پاکسازی صدا: تقویت صداها، حذف نویز پس‌زمینه قبل از رونوشت برای دقت زمان‌بندی بالا. این عملیات ممکن است زمان ببرد، به ویژه با فایل‌های صوتی طولانی.",
+        "sd_limit_label": "حداکثر مدت زمان بخش",
+        "sd_limit_info": "حداکثر مدت زمان برای هر بخش را مشخص کنید. صوت با استفاده از VAD پردازش خواهد شد، و مدت زمان برای هر بخش محدود خواهد شد.",
+        "asr_model_info": "این مدل زبان گفتاری را به متن تبدیل می‌کند و از مدل 'Whisper' به‌صورت پیش‌فرض استفاده می‌کند. از یک مدل سفارشی استفاده کنید، برای مثال، با وارد کردن نام مخزن 'BELLE-2/Belle-whisper-large-v3-zh' در لیست کشویی برای استفاده از مدل چینی فاین‌تیون شده. مدل‌های فاین‌تیون شده را در Hugging Face پیدا کنید.",
+        "ctype_label": "نوع محاسبه",
+        "ctype_info": "انتخاب انواع کوچکتر مانند int8 یا float16 می‌تواند عملکرد را با کاهش استفاده از حافظه و افزایش توان محاسباتی بهبود بخشد، اما ممکن است دقت را نسبت به انواع داده‌های بزرگ‌تر مانند float32 فدا کند.",
+        "batchz_label": "اندازه دسته",
+        "batchz_info": "کاهش اندازه دسته حافظه را ذخیره می‌کند اگر GPU شما VRAM کمتری دارد و کمک می‌کند به مدیریت مشکلات کمبود حافظه.",
+        "tsscale_label": "مقیاس بخش‌بندی متن",
+        "tsscale_info": "تقسیم متن به بخش‌ها با جملات، کلمات، یا کاراکترها. بخش‌بندی کلمه و کاراکتر دانه‌بندی بیشتری ارائه می‌دهد که برای زیرنویس‌ها مفید است؛ غیرفعال کردن ترجمه ساختار اصلی را حفظ می‌کند.",
+        "srt_file_label": "یک فایل زیرنویس SRT آپلود کنید (به جای رونوشت Whisper استفاده خواهد شد)",
+        "divide_text_label": "تقسیم مجدد بخش‌های متن توسط:",
+        "divide_text_info": "(آزمایشی) یک جداکننده برای تقسیم بخش‌های موجود متن در زبان منبع وارد کنید. ابزار وقوع‌ها را شناسایی کرده و بخش‌های جدید را بر اساس آن ایجاد می‌کند. چندین جداکننده را با | مشخص کنید، به عنوان مثال: !|?|...|。",
+        "diarization_label": "مدل دیاریزیشن",
+        "tr_process_label": "فرآیند ترجمه",
+        "out_type_label": "نوع خروجی",
+        "out_name_label": "نام فایل",
+        "out_name_info": "نام فایل خروجی",
+        "task_sound_label": "صدای وضعیت کار",
+        "task_sound_info": "صدای وضعیت کار: پخش صدای هشدار نشان‌دهنده تکمیل کار یا خطاها در حین اجرا.",
+        "cache_label": "بازیابی پیشرفت",
+        "cache_info": "بازیابی پیشرفت: ادامه فرآیند از آخرین نقطه توقف.",
+        "preview_info": "پیش‌نمایش ویدئو را به 10 ثانیه برای آزمایش برش می‌دهد. لطفاً آن را غیرفعال کنید تا ویدئوی کامل را دریافت کنید.",
+        "edit_sub_label": "ویرایش زیرنویس‌های تولید شده",
+        "edit_sub_info": "ویرایش زیرنویس‌های تولید شده: به شما امکان می‌دهد ترجمه را در دو مرحله انجام دهید. ابتدا با دکمه 'GET SUBTITLES AND EDIT' زیرنویس‌ها را بگیرید و ویرایش کنید، و سپس با دکمه 'TRANSLATE' ویدئو را تولید کنید",
+        "button_subs": "GET SUBTITLES AND EDIT",
+        "editor_sub_label": "زیرنویس‌های تولید شده",
+        "editor_sub_info": "می‌توانید متن زیرنویس‌های تولید شده را اینجا ویرایش کنید. قبل از کلیک بر روی دکمه 'TRANSLATE' می‌توانید تغییرات را در گزینه‌های رابط ایجاد کنید، به جز 'زبان منبع'، 'ترجمه صوتی به' و 'حداکثر گوینده‌ها'، تا از بروز خطاها جلوگیری شود. پس از اتمام، دکمه 'TRANSLATE' را فشار دهید.",
+        "editor_sub_ph": "ابتدا دکمه 'GET SUBTITLES AND EDIT' را فشار دهید تا زیرنویس‌ها را دریافت کنید",
+        "button_translate": "TRANSLATE",
+        "output_result_label": "دانلود ویدئوی ترجمه شده",
+        "sub_ori": "زیرنویس‌ها",
+        "sub_tra": "زیرنویس‌های ترجمه شده",
+        "ht_token_info": "یکی از مراحل مهم قبول موافقتنامه مجوز برای استفاده از Pyannote است. شما نیاز به داشتن یک حساب کاربری در Hugging Face و قبول مجوز برای استفاده از مدل‌ها دارید: https://huggingface.co/pyannote/speaker-diarization و https://huggingface.co/pyannote/segmentation. کلید TOKEN خود را اینجا بگیرید: https://hf.co/settings/tokens",
+        "ht_token_ph": "کلید TOKEN را اینجا وارد کنید...",
+        "tab_docs": "ترجمه اسناد",
+        "docs_input_label": "منبع سند را انتخاب کنید",
+        "docs_input_info": "می‌تواند PDF، DOCX، TXT، یا متن باشد",
+        "docs_source_info": "این زبان اصلی متن است",
+        "chunk_size_label": "حداکثر تعداد کاراکترهایی که TTS در هر بخش پردازش خواهد کرد",
+        "chunk_size_info": "مقدار 0 یک مقدار پویا و سازگارتر برای TTS اختصاص می‌دهد.",
+        "docs_button": "شروع پل تبدیل زبان",
+        "cv_url_info": "مدل‌های R.V.C. را به صورت خودکار از URL دانلود کنید. می‌توانید از لینک‌های HuggingFace یا Drive استفاده کنید و می‌توانید چندین لینک را شامل کنید، هرکدام با کاما جدا شده باشند. مثال: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+        "replace_title": "تعویض صدا: TTS به R.V.C.",
+        "sec1_title": "### 1. برای فعال‌سازی استفاده، آن را به عنوان فعال علامت بزنید.",
+        "enable_replace": "این را بررسی کنید تا استفاده از مدل‌ها فعال شود.",
+        "sec2_title": "### 2. صدایی را که به هر TTS هر گوینده اعمال خواهد شد انتخاب کنید و تنظیمات را اعمال کنید.",
+        "sec2_subtitle": "بسته به تعداد <گوینده TTS> که استفاده می‌کنید، هرکدام به مدل مربوطه خود نیاز دارند. علاوه بر این، یک مدل کمکی نیز وجود دارد که در صورت عدم تشخیص صحیح گوینده استفاده می‌شود.",
+        "cv_tts1": "صدایی را برای گوینده 1 انتخاب کنید.",
+        "cv_tts2": "صدایی را برای گوینده 2 انتخاب کنید.",
+        "cv_tts3": "صدایی را برای گوینده 3 انتخاب کنید.",
+        "cv_tts4": "صدایی را برای گوینده 4 انتخاب کنید.",
+        "cv_tts5": "صدایی را برای گوینده 5 انتخاب کنید.",
+        "cv_tts6": "صدایی را برای گوینده 6 انتخاب کنید.",
+        "cv_tts7": "صدایی را برای گوینده 7 انتخاب کنید.",
+        "cv_tts8": "صدایی را برای گوینده 8 انتخاب کنید.",
+        "cv_tts9": "صدایی را برای گوینده 9 انتخاب کنید.",
+        "cv_tts10": "صدایی را برای گوینده 10 انتخاب کنید.",
+        "cv_tts11": "صدایی را برای گوینده 11 انتخاب کنید.",
+        "cv_tts12": "صدایی را برای گوینده 12 انتخاب کنید.",
+        "cv_aux": "- صدایی که در صورت عدم تشخیص موفقیت‌آمیز گوینده اعمال خواهد شد.",
+        "cv_button_apply": "اعمال تنظیمات",
+        "tab_help": "کمک",
+    },
+
+    "afrikaans": {
+        "description": """
+        ### 🎥 **Vertaal video's maklik met SoniTranslate!** 📽️
+
+        Laai 'n video, onderskrif, klanklêer op of verskaf 'n URL-videolink. 📽️ **Kry die opgedateerde notaboek van die amptelike repository: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+
+        Sien die tab 'Hulp' vir instruksies oor hoe om dit te gebruik. Kom ons begin pret hê met videovertaal! 🚀🎉
+        """,
+        "tutorial": """
+        # 🔰 **Instruksies vir gebruik:**
+
+        1. 📤 Laai 'n **video**, **onderskriflêer**, **klanklêer** op of verskaf 'n 🌐 **URL link** na 'n video soos YouTube.
+
+        2. 🌍 Kies die taal waarin jy die **video wil vertaal**.
+
+        3. 🗣️ Spesifiseer die **aantal mense wat praat** in die video en **ken elkeen 'n teks-na-spraak-stem toe** wat geskik is vir die vertalingstaal.
+
+        4. 🚀 Druk die '**Vertaal**' knoppie om die resultate te verkry.
+
+        ---
+
+        # 🧩 **SoniTranslate ondersteun verskillende TTS (Teks-na-Spraak) enjins, wat is:**
+        - EDGE-TTS → formaat `en-AU-WilliamNeural-Male` → Vinnig en akkuraat.
+        - FACEBOOK MMS → formaat `en-facebook-mms VITS` → Die stem is meer natuurlik; op die oomblik gebruik dit net CPU.
+        - PIPER TTS → formaat `en_US-lessac-high VITS-onnx` → Dieselfde as die vorige een, maar dit is geoptimaliseer vir beide CPU en GPU.
+        - BARK → formaat `en_speaker_0-Male BARK` → Goeie kwaliteit maar stadig, en dit is geneig tot hallusinasies.
+        - OpenAI TTS → formaat `>alloy OpenAI-TTS` → Veeltalig maar dit benodig 'n OpenAI API sleutel.
+        - Coqui XTTS → formaat `_XTTS_/AUTOMATIC.wav` → Slegs beskikbaar vir Vereenvoudigde Chinees, Engels, Frans, Duits, Italiaans, Portugees, Pools, Turks, Russies, Nederlands, Tsjeggies, Arabies, Spaans, Hongaars, Koreaans en Japanees.
+
+        ---
+
+        # 🎤 Hoe om R.V.C. en R.V.C.2 Stemmen te Gebruik (Opsioneel) 🎶
+
+        Die doel is om 'n R.V.C. toe te pas op die gegenereerde TTS (Teks-na-Spraak) 🎙️
+
+        1. In die `Aangepaste Stem R.V.C.` tab, laai die modelle af wat jy benodig 📥 Jy kan skakels van Hugging Face en Google Drive in formate soos zip, pth, of index gebruik. Jy kan ook volledige HF-ruimte-repositories aflaai, maar hierdie opsie is nie baie stabiel nie 😕
+
+        2. Gaan nou na `Vervang stem: TTS na R.V.C.` en merk die `aktiveer` boks ✅ Na dit, kan jy die modelle kies wat jy wil toepas op elke TTS spreker 👩‍🦰👨‍🦱👩‍🦳👨‍🦲
+
+        3. Pas die F0 metode aan wat toegepas sal word op alle R.V.C. 🎛️
+
+        4. Druk `PAS KONFIGURASIE TOE` om die veranderinge wat jy gemaak het toe te pas 🔄
+
+        5. Gaan terug na die videovertaal tab en klik op 'Vertaal' ▶️ Nou sal die vertaling gedoen word met die toepassing van die R.V.C. 🗣️
+
+        Wenke: Jy kan `Toets R.V.C.` gebruik om te eksperimenteer en die beste TTS of konfigurasies te vind om op die R.V.C. toe te pas 🧪🔍
+
+        ---
+
+        """,
+        "tab_translate": "Videovertaal",
+        "video_source": "Kies Video Bron",
+        "link_label": "Media link.",
+        "link_info": "Voorbeeld: www.youtube.com/watch?v=g_9rPvbENUw",
+        "link_ph": "URL gaan hier...",
+        "dir_label": "Video Pad.",
+        "dir_info": "Voorbeeld: /usr/home/my_video.mp4",
+        "dir_ph": "Pad gaan hier...",
+        "sl_label": "Bron taal",
+        "sl_info": "Dit is die oorspronklike taal van die video",
+        "tat_label": "Vertaal klank na",
+        "tat_info": "Kies die teikentaal en maak ook seker om die ooreenstemmende TTS vir daardie taal te kies.",
+        "num_speakers": "Kies hoeveel mense praat in die video.",
+        "min_sk": "Min sprekers",
+        "max_sk": "Max sprekers",
+        "tts_select": "Kies die stem wat jy vir elke spreker wil hê.",
+        "sk1": "TTS Spreker 1",
+        "sk2": "TTS Spreker 2",
+        "sk3": "TTS Spreker 3",
+        "sk4": "TTS Spreker 4",
+        "sk5": "TTS Spreker 5",
+        "sk6": "TTS Spreker 6",
+        "sk7": "TTS Spreker 7",
+        "sk8": "TTS Spreker 8",
+        "sk9": "TTS Spreker 9",
+        "sk10": "TTS Spreker 10",
+        "sk11": "TTS Spreker 11",
+        "sk12": "TTS Spreker 12",
+        "vc_title": "Stem Nabootsing in Verskillende Tale",
+        "vc_subtitle": """
+        ### Herhaal 'n persoon se stem oor verskeie tale.
+        Terwyl effektief met die meeste stemme wanneer gepas gebruik, mag dit nie perfek wees in elke geval nie.
+        Stem Nabootsing herhaal slegs die verwysingspreker se toon, sonder aksent en emosie, wat deur die basispreker TTS model beheer word en nie deur die omskakelaar nageboots word nie.
+        Dit sal oudio monsters van die hoof oudio neem vir elke spreker en hulle verwerk.
+        """,
+        "vc_active_label": "Aktiewe Stem Nabootsing",
+        "vc_active_info": "Aktiewe Stem Nabootsing: Herhaal die oorspronklike spreker se toon",
+        "vc_method_label": "Metode",
+        "vc_method_info": "Kies 'n metode vir die Stem Nabootsing proses",
+        "vc_segments_label": "Max monsters",
+        "vc_segments_info": "Max monsters: Is die aantal oudio monsters wat gegenereer sal word vir die proses, meer is beter maar dit kan geraas byvoeg",
+        "vc_dereverb_label": "Dereverb",
+        "vc_dereverb_info": "Dereverb: Pas vokale dereverb toe op die oudio monsters.",
+        "vc_remove_label": "Verwyder vorige monsters",
+        "vc_remove_info": "Verwyder vorige monsters: Verwyder die vorige monsters wat gegenereer is, sodat nuwe monsters geskep moet word.",
+        "xtts_title": "Skep 'n TTS gebaseer op 'n oudio",
+        "xtts_subtitle": "Laai 'n oudio lêer van maksimum 10 sekondes op met 'n stem. Deur XTTS te gebruik, sal 'n nuwe TTS geskep word met 'n stem soortgelyk aan die verskafde oudio lêer.",
+        "xtts_file_label": "Laai 'n kort oudio op met die stem",
+        "xtts_name_label": "Naam vir die TTS",
+        "xtts_name_info": "Gebruik 'n eenvoudige naam",
+        "xtts_dereverb_label": "Dereverb oudio",
+        "xtts_dereverb_info": "Dereverb oudio: Pas vokale dereverb toe op die oudio",
+        "xtts_button": "Verwerk die oudio en sluit dit in die TTS keurder in",
+        "xtts_footer": "Genereer stem xtts outomaties: Jy kan `_XTTS_/AUTOMATIC.wav` gebruik in die TTS keurder om outomaties segmente te genereer vir elke spreker wanneer die vertaling gegenereer word.",
+        "extra_setting": "Gevorderde Instellings",
+        "acc_max_label": "Max Oudio versnelling",
+        "acc_max_info": "Maksimum versnelling vir vertaalde oudio segmente om oorvleueling te vermy. 'n Waarde van 1.0 verteenwoordig geen versnelling nie",
+        "acc_rate_label": "Versnelling Reguleringskoers",
+        "acc_rate_info": "Versnelling Reguleringskoers: Pas versnelling aan om segmente wat minder spoed benodig te akkommodeer, handhaaf kontinuïteit en oorweeg volgende-begin tydsberekening.",
+        "or_label": "Oorvleueling Reduksie",
+        "or_info": "Oorvleueling Reduksie: Verseker segmente oorvleuel nie deur begin tye aan te pas gebaseer op vorige eind tye; kan sinkronisasie versteur.",
+        "aud_mix_label": "Oudio Meng Metode",
+        "aud_mix_info": "Meng oorspronklike en vertaalde oudio lêers om 'n aangepaste, gebalanseerde uitset te skep met twee beskikbare mengmodusse.",
+        "vol_ori": "Volume oorspronklike oudio",
+        "vol_tra": "Volume vertaalde oudio",
+        "voiceless_tk_label": "Stemlose Snit",
+        "voiceless_tk_info": "Stemlose Snit: Verwyder die oorspronklike oudio stemme voordat dit met die vertaalde oudio gekombineer word.",
+        "sub_type": "Onderskrif tipe",
+        "soft_subs_label": "Sagte Onderskrifte",
+        "soft_subs_info": "Sagte Onderskrifte: Opsionele onderskrifte wat kykers kan aanskakel of afskakel terwyl hulle die video kyk.",
+        "burn_subs_label": "Brand Onderskrifte",
+        "burn_subs_info": "Brand Onderskrifte: Inbed onderskrifte in die video, maak hulle 'n permanente deel van die visuele inhoud.",
+        "whisper_title": "Konfigureer transkripsie.",
+        "lnum_label": "Literaliseer Nommer",
+        "lnum_info": "Literaliseer Nommer: Vervang numeriese verteenwoordigings met hul geskrewe ekwivalente in die transkripsie.",
+        "scle_label": "Klank Opruiming",
+        "scle_info": "Klank Opruiming: Versterk vokale, verwyder agtergrondgeraas voor transkripsie vir uiterste tydstempel presisie. Hierdie operasie kan tyd neem, veral met lang oudio lêers.",
+        "sd_limit_label": "Segmentduur Beperking",
+        "sd_limit_info": "Spesifiseer die maksimum duur (in sekondes) vir elke segment. Die oudio sal verwerk word met VAD, wat die duur vir elke segment stuk beperk.",
+        "asr_model_info": "Dit omskakel gesproke taal na teks met die 'Whisper model' by verstek. Gebruik 'n aangepaste model, byvoorbeeld, deur die repository naam 'BELLE-2/Belle-whisper-large-v3-zh' in die dropdown in te voer om 'n Chinees taal fyn-afgestelde model te gebruik. Vind fyn-afgestelde modelle op Hugging Face.",
+        "ctype_label": "Reken tipe",
+        "ctype_info": "Kies kleiner tipes soos int8 of float16 kan prestasie verbeter deur geheuegebruik te verminder en berekeningstempo te verhoog, maar kan presisie opoffer in vergelyking met groter datatipes soos float32.",
+        "batchz_label": "Batch grootte",
+        "batchz_info": "Verkleining van die batch grootte bespaar geheue as jou GPU minder VRAM het en help om Uit-van-Geheue probleme te bestuur.",
+        "tsscale_label": "Teks Segmentasie Skale",
+        "tsscale_info": "Verdeel teks in segmente deur sinne, woorde, of karakters. Woord en karakter segmentasie bied fyner granulariteit, nuttig vir onderskrifte; deaktiveer vertaling behou oorspronklike struktuur.",
+        "srt_file_label": "Laai 'n SRT onderskriflêer op (sal gebruik word in plaas van die transkripsie van Whisper)",
+        "divide_text_label": "Her-verdeel teks segmente deur:",
+        "divide_text_info": "(Eksperimenteel) Voer 'n skeier in om bestaande teks segmente in die brontaal te verdeel. Die hulpmiddel sal voorkomste identifiseer en nuwe segmente dienooreenkomstig skep. Spesifiseer verskeie skeiers met behulp van |, bv.: !|?|...|。",
+        "diarization_label": "Diarisering model",
+        "tr_process_label": "Vertaal proses",
+        "out_type_label": "Uitvoer tipe",
+        "out_name_label": "Lêer naam",
+        "out_name_info": "Die naam van die uitvoer lêer",
+        "task_sound_label": "Taak Status Klank",
+        "task_sound_info": "Taak Status Klank: Speel 'n klank waarskuwing wat taak voltooiing of foute tydens uitvoering aandui.",
+        "cache_label": "Herstel Vordering",
+        "cache_info": "Herstel Vordering: Gaan voort met die proses vanaf die laaste kontrolepunt.",
+        "preview_info": "Voorskou sny die video tot slegs 10 sekondes vir toetsdoeleindes. Skakel dit asseblief af om die volle video duur te kry.",
+        "edit_sub_label": "Wysig gegenereerde onderskrifte",
+        "edit_sub_info": "Wysig gegenereerde onderskrifte: Laat jou toe om die vertaling in 2 stappe uit te voer. Eerstens met die 'KRY ONDERSKRIFTE EN WYSIG' knoppie, kry jy die onderskrifte om dit te wysig, en dan met die 'VERTAAL' knoppie, kan jy die video genereer.",
+        "button_subs": "KRY ONDERSKRIFTE EN WYSIG",
+        "editor_sub_label": "Gegenereerde onderskrifte",
+        "editor_sub_info": "Voel vry om die teks in die gegenereerde onderskrifte hier te wysig. Jy kan veranderinge aan die koppelvlak opsies maak voordat jy die 'VERTAAL' knoppie druk, behalwe vir 'Bron taal', 'Vertaal klank na', en 'Max sprekers', om foute te vermy. Sodra jy klaar is, klik die 'VERTAAL' knoppie.",
+        "editor_sub_ph": "Druk eers 'KRY ONDERSKRIFTE EN WYSIG' om die onderskrifte te kry",
+        "button_translate": "VERTAAL",
+        "output_result_label": "LAAI VERTAALDE VIDEO AF",
+        "sub_ori": "Onderskrifte",
+        "sub_tra": "Vertaalde onderskrifte",
+        "ht_token_info": "Een belangrike stap is om die lisensie-ooreenkoms te aanvaar vir die gebruik van Pyannote. Jy moet 'n rekening hê op Hugging Face en die lisensie aanvaar om die modelle te gebruik: https://huggingface.co/pyannote/speaker-diarization en https://huggingface.co/pyannote/segmentation. Kry jou SLEUTEL TOKEN hier: https://hf.co/settings/tokens",
+        "ht_token_ph": "Token gaan hier...",
+        "tab_docs": "Dokument vertaling",
+        "docs_input_label": "Kies Dokument Bron",
+        "docs_input_info": "Dit kan 'n PDF, DOCX, TXT, of teks wees",
+        "docs_source_info": "Dit is die oorspronklike taal van die teks",
+        "chunk_size_label": "Max aantal karakters wat die TTS per segment sal verwerk",
+        "chunk_size_info": "'n Waarde van 0 ken 'n dinamiese en meer versoenbare waarde toe vir die TTS.",
+        "docs_button": "Begin Taal Omskakelingsbrug",
+        "cv_url_info": "Laai outomaties die R.V.C. modelle af van die URL. Jy kan skakels van HuggingFace of Drive gebruik, en jy kan verskeie skakels insluit, elkeen geskei deur 'n komma. Voorbeeld: https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.pth, https://huggingface.co/sail-rvc/yoimiya-jp/blob/main/model.index",
+        "replace_title": "Vervang stem: TTS na R.V.C.",
+        "sec1_title": "### 1. Om die gebruik te aktiveer, merk dit as aktief.",
+        "enable_replace": "Merk dit om die gebruik van die modelle te aktiveer.",
+        "sec2_title": "### 2. Kies 'n stem wat toegepas sal word op elke TTS van elke ooreenstemmende spreker en pas die konfigurasies toe.",
+        "sec2_subtitle": "Afhangende van hoeveel <TTS Spreker> jy sal gebruik, benodig elkeen sy onderskeie model. Daar is ook 'n hulp een indien 'n spreker nie korrek opgespoor word nie.",
+        "cv_tts1": "Kies die stem om toe te pas vir Spreker 1.",
+        "cv_tts2": "Kies die stem om toe te pas vir Spreker 2.",
+        "cv_tts3": "Kies die stem om toe te pas vir Spreker 3.",
+        "cv_tts4": "Kies die stem om toe te pas vir Spreker 4.",
+        "cv_tts5": "Kies die stem om toe te pas vir Spreker 5.",
+        "cv_tts6": "Kies die stem om toe te pas vir Spreker 6.",
+        "cv_tts7": "Kies die stem om toe te pas vir Spreker 7.",
+        "cv_tts8": "Kies die stem om toe te pas vir Spreker 8.",
+        "cv_tts9": "Kies die stem om toe te pas vir Spreker 9.",
+        "cv_tts10": "Kies die stem om toe te pas vir Spreker 10.",
+        "cv_tts11": "Kies die stem om toe te pas vir Spreker 11.",
+        "cv_tts12": "Kies die stem om toe te pas vir Spreker 12.",
+        "cv_aux": "- Stem om toe te pas in geval 'n Spreker nie suksesvol opgespoor word nie.",
+        "cv_button_apply": "PAS KONFIGURASIE TOE",
+        "tab_help": "Hulp",
     },
 }
