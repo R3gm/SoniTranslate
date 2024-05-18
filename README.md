@@ -243,7 +243,25 @@ Feel free to customize these arguments according to your preferences and require
 
 Welcome to contributions from the community! If you have any ideas, bug reports, or feature requests, please open an issue or submit a pull request. For more information, please refer to the contribution guidelines.
 
+## Credits
 
+This project leverages a number of open-source projects. We would like to acknowledge and thank the contributors of the following repositories:
+
+- [PyTorch](https://github.com/pytorch/pytorch)
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [Gradio](https://github.com/gradio-app/gradio)
+- [edge-tts](https://github.com/rany2/edge-tts)
+- [deep-translator](https://github.com/nidhaloff/deep-translator)
+- [pyannote-audio](https://github.com/pyannote/pyannote-audio)
+- [WhisperX](https://github.com/m-bain/whisperX)
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
+- [CTranslate2](https://github.com/OpenNMT/CTranslate2)
+- [Transformers](https://github.com/huggingface/transformers)
+- [FFmpeg](https://github.com/FFmpeg/FFmpeg)
+- [Piper](https://github.com/rhasspy/piper)
+- [Coqui TTS](https://github.com/coqui-ai/TTS)
+- [pypdf](https://github.com/py-pdf/pypdf)
+- [OpenVoice](https://github.com/myshell-ai/OpenVoice)
 
 ## License
 Although the code is licensed under Apache 2, the models or weights may have commercial restrictions, as seen with pyannote diarization.
