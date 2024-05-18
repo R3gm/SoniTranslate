@@ -26,11 +26,12 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 | es            | Spanish    |
 | it            | Italian    |
 | ja            | Japanese   |
-| zh            | Chinese    |
 | nl            | Dutch      |
 | uk            | Ukrainian  |
 | pt            | Portuguese |
 | ar            | Arabic     |
+| zh            | Chinese - Simplified      |
+| zh-TW         | Chinese - Traditional     |
 | cs            | Czech      |
 | da            | Danish     |
 | fi            | Finnish    |
@@ -76,6 +77,61 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 | ro            | Romanian   |
 | si            | Sinhala    |
 | su            | Sundanese  |
+| et            | Estonian                  |
+| mk            | Macedonian                |
+| sw            | Swahili                   |
+| af            | Afrikaans                 |
+| bs            | Bosnian                   |
+| la            | Latin                     |
+| my            | Myanmar Burmese           |
+| no            | Norwegian                 |
+| as            | Assamese                  |
+| eu            | Basque                    |
+| ha            | Hausa                     |
+| ht            | Haitian Creole            |
+| hy            | Armenian                  |
+| lo            | Lao                       |
+| mg            | Malagasy                  |
+| mn            | Mongolian                 |
+| mt            | Maltese                   |
+| pa            | Punjabi                   |
+| ps            | Pashto                    |
+| sl            | Slovenian                 |
+| sn            | Shona                     |
+| so            | Somali                    |
+| tg            | Tajik                     |
+| tk            | Turkmen                   |
+| tt            | Tatar                     |
+| uz            | Uzbek                     |
+| yo            | Yoruba                    |
+
+### Non-transcription
+
+| Language Code | Language   |
+|---------------|------------|
+| ay | Aymara |
+| bm | Bambara |
+| ceb | Cebuano |
+| ny | Chichewa |
+| dv | Divehi |
+| doi | Dogri |
+| ee | Ewe |
+| gn | Guarani |
+| ilo | Iloko |
+| rw | Kinyarwanda|
+| kri | Krio |
+| ku | Kurdish |
+| ky | Kirghiz |
+| lg | Ganda |
+| mai | Maithili |
+| or | Oriya |
+| om | Oromo |
+| qu | Quechua |
+| sm | Samoan |
+| ti | Tigrinya |
+| ts | Tsonga |
+| ak | Akan |
+| ug | Uighur |
 
 ## Example:
 
@@ -209,6 +265,7 @@ The app_rvc.py script supports command-line arguments to customize its behavior.
 | --language       | english | String | Selects the interface language. Available options: arabic, azerbaijani, chinese_zh_cn, english, french, german, hindi, indonesian, italian, japanese, korean, marathi, polish, portuguese, russian, spanish, swedish, turkish, ukrainian, vietnamese. |
 | --verbosity_level| info    | String | Sets the verbosity level of the logger: debug, info, warning, error, or critical. |
 | --public_url     |    | Boolean | Enables a public link. |
+| --cpu_mode     |    | Boolean | Enable CPU mode to run the program without utilizing GPU acceleration. |
 | --logs_in_gui    |    | Boolean | Shows the operations performed in Logs (obsolete). |
 
 Example usage:
@@ -219,6 +276,22 @@ This command sets the theme to a custom theme and selects French as the interfac
 Feel free to customize these arguments according to your preferences and requirements.
 
 ## 📖 News
+
+🔥 2024/18/05: New Update Details
+   - Added option Overlap Reduction
+   - OpenAI API Key Integration for Transcription, translation, and TTS
+   - More output types: subtitles by speaker, separate audio sound, and video only with subtitles
+   - Access to a better-performing version of Whisper for transcribing speech on the [Hugging Face Whisper page](https://huggingface.co/models?pipeline_tag=automatic-speech-recognition&sort=trending&search=whisper). Copy the repository ID and paste it into the 'Whisper ASR model' section in 'Advanced Settings'; e.g., `kotoba-tech/kotoba-whisper-v1.1` for Japanese transcription [available here](https://huggingface.co/kotoba-tech/kotoba-whisper-v1.1)
+   - Support for ASS subtitles and batch processing with subtitles
+   - Vocal enhancement before transcription
+   - Added CPU mode with `app_rvc.py --cpu_mode`
+   - TTS now supports up to 12 speakers
+   - OpenVoiceV2 integration for voice imitation
+   - PDF to videobook (displays images from the PDF)
+   - GUI language translation in Persian and Afrikaans
+   - **New Language Support**:
+     - **Complete support**: Estonian, Macedonian, Malay, Swahili, Afrikaans, Bosnian, Latin, Myanmar Burmese, Norwegian, Traditional Chinese, Assamese, Basque, Hausa, Haitian Creole, Armenian, Lao, Malagasy, Mongolian, Maltese, Punjabi, Pashto, Slovenian, Shona, Somali, Tajik, Turkmen, Tatar, Uzbek, and Yoruba
+     - **Non-transcription**: Aymara, Bambara, Cebuano, Chichewa, Divehi, Dogri, Ewe, Guarani, Iloko, Kinyarwanda, Krio, Kurdish, Kirghiz, Ganda, Maithili, Oriya, Oromo, Quechua, Samoan, Tigrinya, Tsonga, Akan, and Uighur
 
 🔥 2024/03/02: Preserve file names in output. Multiple archives can now be submitted simultaneously by specifying their paths, directories or URLs separated by commas. Processing of a full YouTube playlist. About [supported sites URL](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md), please be aware that not all sites may work optimally. Added option for disabling diarization. Implemented soft subtitles. Format output (MP3, MP4, MKV, WAV, and OGG), and resolved issues related to file reading and diarization.
 
