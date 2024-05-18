@@ -1,12 +1,48 @@
 from .utils import remove_files
 import os, shutil, subprocess, time, shlex, sys # noqa
 from .logging_setup import logger
+import json
+
+ERROR_INCORRECT_CODEC_PARAMETERS = [
+    "prores",  # mov
+    "ffv1",  # mkv
+    "msmpeg4v3",  # avi
+    "wmv2",  # wmv
+    "theora",  # ogv
+]  # fix final merge
+
+TESTED_CODECS = [
+    "h264",  # mp4
+    "h265",  # mp4
+    "vp9",  # webm
+    "mpeg4",  # mp4
+    "mpeg2video",  # mpg
+    "mjpeg",  # avi
+]
 
 
 class OperationFailedError(Exception):
     def __init__(self, message="The operation did not complete successfully."):
         self.message = message
         super().__init__(self.message)
+
+
+def get_video_codec(video_file):
+    command_base = rf'ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of json "{video_file}"'
+    command = shlex.split(command_base)
+    try:
+        process = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
+        )
+        output, _ = process.communicate()
+        codec_info = json.loads(output.decode('utf-8'))
+        codec_name = codec_info['streams'][0]['codec_name']
+        return codec_name
+    except Exception as error:
+        logger.debug(str(error))
+        return None
 
 
 def audio_preprocessor(preview, base_audio, audio_wav, use_cuda=False):
@@ -57,8 +93,14 @@ def audio_video_preprocessor(
             )
             mp4_ = f'ffmpeg -y -i "{video}" -ss 00:00:20 -t 00:00:10 -c:v libx264 -c:a aac -strict experimental Video.mp4'
         else:
-            # Check if the file ends with ".mp4" extension
-            if video.endswith(".mp4"):
+            video_codec = get_video_codec(video)
+            if not video_codec:
+                logger.debug("No video codec found in video")
+            else:
+                logger.info(f"Video codec: {video_codec}")
+
+            # Check if the file ends with ".mp4" extension or is valid codec
+            if video.endswith(".mp4") or video_codec in TESTED_CODECS:
                 destination_path = os.path.join(os.getcwd(), "Video.mp4")
                 shutil.copy(video, destination_path)
                 time.sleep(0.5)
@@ -68,7 +110,8 @@ def audio_video_preprocessor(
                     mp4_ = f'ffmpeg -y -i "{video}" -c copy Video.mp4'
             else:
                 logger.warning(
-                    "File does not have the '.mp4' extension. Converting video."
+                    "File does not have the '.mp4' extension  or a "
+                    "supported codec. Converting video to mp4 (codec: h264)."
                 )
                 mp4_ = f'ffmpeg -y -i "{video}" -c:v libx264 -c:a aac -strict experimental Video.mp4'
     else:

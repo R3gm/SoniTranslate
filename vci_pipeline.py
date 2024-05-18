@@ -128,7 +128,7 @@ class VC(object):
             f0 = torchcrepe.filter.mean(f0, 3)
             f0[pd < 0.1] = 0
             f0 = f0[0].cpu().numpy()
-        elif f0_method == "rmvpe":
+        elif "rmvpe" in f0_method:
             if hasattr(self, "model_rmvpe") == False:
                 from lib.rmvpe import RMVPE
 
@@ -136,7 +136,12 @@ class VC(object):
                 self.model_rmvpe = RMVPE(
                     "rmvpe.pt", is_half=self.is_half, device=self.device
                 )
-            f0 = self.model_rmvpe.infer_from_audio(x, thred=0.03)
+            thred = 0.03
+            if "+" in f0_method:
+                f0 = self.model_rmvpe.pitch_based_audio_inference(x, thred, f0_min, f0_max)
+            else:
+                f0 = self.model_rmvpe.infer_from_audio(x, thred)
+
         f0 *= pow(2, f0_up_key / 12)
         # with open("test.txt","w")as f:f.write("\n".join([str(i)for i in f0.tolist()]))
         tf0 = self.sr // self.window  # f0 points per second
