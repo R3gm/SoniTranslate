@@ -125,7 +125,9 @@ def media_out(
     soft_subtitles=False,
     subtitle_files="disable",
 ):
-    if not media_out_name:
+    if media_out_name:
+        base_name = media_out_name + "_origin"
+    else:
         if os.path.exists(media_file):
             base_name = get_no_ext_filename(media_file)
         else:
