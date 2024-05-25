@@ -14,6 +14,11 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 ## SonyTranslate's web UI, which features a browser interface built on the Gradio library.
 ![image](https://github.com/R3gm/SoniTranslate/assets/114810545/0d71fbf4-e9f0-4f8f-944e-8f3f1ea6a019)
 
+## Using the project: A video guide
+
+For a comprehensive understanding of the project, we highly recommend watching this video tutorial by [DEV-MalletteS](https://github.com/DEV-MalletteS). You can watch it on YouTube by clicking the thumbnail below:
+
+[![Watch the video](https://img.youtube.com/vi/SmGkFaSzq_Q/0.jpg)](https://www.youtube.com/watch?v=SmGkFaSzq_Q)
 
 
 ## Supported languages for translation 
@@ -159,7 +164,7 @@ Before you start installing and using SoniTranslate, there are a few things you 
 1. Install the NVIDIA drivers for CUDA 11.8.0, NVIDIA CUDA is a parallel computing platform and programming model that enables developers to use the power of NVIDIA graphics processing units (GPUs) to speed up compute-intensive tasks. You can find the drivers [here](https://developer.nvidia.com/cuda-toolkit-archive). Follow the instructions on the website to download and install the drivers.
 2. Accept the license agreement for using Pyannote. You need to have an account on Hugging Face and `accept the license to use the models`: https://huggingface.co/pyannote/speaker-diarization and https://huggingface.co/pyannote/segmentation
 3. Create a [huggingface token](https://huggingface.co/settings/tokens). Hugging Face is a natural language processing platform that provides access to state-of-the-art models and tools. You will need to create a token in order to use some of the automatic model download features in SoniTranslate. Follow the instructions on the Hugging Face website to create a token.
-4. Install [Anaconda](https://www.anaconda.com/). Anaconda is a free and open-source distribution of Python and R. It includes a package manager called conda that makes it easy to install and manage Python environments and packages. Follow the instructions on the Anaconda website to download and install Anaconda on your system.
+4. Install [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.anaconda.com/free/miniconda/miniconda-install/). Anaconda is a free and open-source distribution of Python and R. It includes a package manager called conda that makes it easy to install and manage Python environments and packages. Follow the instructions on the Anaconda website to download and install Anaconda on your system.
 5. Install Git for your system. Git is a version control system that helps you track changes to your code and collaborate with other developers. You can install Git with Anaconda by running `conda install -c anaconda git -y` in your terminal (Do this after step 1 in the following section.). If you have trouble installing Git via Anaconda, you can use the following link instead:
    - [Git for Linux](https://git-scm.com/download/linux)
 
@@ -191,7 +196,7 @@ pip install -r requirements_extra.txt -v
 pip install onnxruntime-gpu
 ```
 
-4. Install [ffmpeg](https://ffmpeg.org/download.html). FFmpeg is a free software project that produces libraries and programs for handling multimedia data. You will need it to process audio and video files. You can install ffmpeg with Anaconda by running `conda install -y ffmpeg` in your terminal. If you have trouble installing ffmpeg via Anaconda, you can use the following link instead: (https://ffmpeg.org/ffmpeg.html). Once it is installed, make sure it is in your PATH by running `ffmpeg -h` in your terminal. If you don't get an error message, you're good to go.
+4. Install [ffmpeg](https://ffmpeg.org/download.html). FFmpeg is a free software project that produces libraries and programs for handling multimedia data. You will need it to process audio and video files. You can install ffmpeg with Anaconda by running `conda install -y ffmpeg` in your terminal (recommended). If you have trouble installing ffmpeg via Anaconda, you can use the following link instead: (https://ffmpeg.org/ffmpeg.html). Once it is installed, make sure it is in your PATH by running `ffmpeg -h` in your terminal. If you don't get an error message, you're good to go.
 
 5. Optional install:
 
@@ -262,7 +267,7 @@ The app_rvc.py script supports command-line arguments to customize its behavior.
 | Argument command | Default | Value | Description |
 |------------------|---------|-------|-------------|
 | --theme          | Taithrah/Minimal | String | Sets the theme for the interface. Themes can be found in the [Theme Gallery](https://huggingface.co/spaces/gradio/theme-gallery). |
-| --language       | english | String | Selects the interface language. Available options: arabic, azerbaijani, chinese_zh_cn, english, french, german, hindi, indonesian, italian, japanese, korean, marathi, polish, portuguese, russian, spanish, swedish, turkish, ukrainian, vietnamese. |
+| --language       | english | String | Selects the interface language. Available options: afrikaans, arabic, azerbaijani, chinese_zh_cn, english, french, german, hindi, indonesian, italian, japanese, korean, marathi, persian, polish, portuguese, russian, spanish, swedish, turkish, ukrainian, vietnamese. |
 | --verbosity_level| info    | String | Sets the verbosity level of the logger: debug, info, warning, error, or critical. |
 | --public_url     |    | Boolean | Enables a public link. |
 | --cpu_mode     |    | Boolean | Enable CPU mode to run the program without utilizing GPU acceleration. |
