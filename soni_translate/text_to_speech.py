@@ -299,7 +299,7 @@ def uromanize(input_string):
             stderr=subprocess.PIPE,
         )
         stdout, stderr = process.communicate()
-    script_path = os.path.join("./uroman", "bin", "uroman.pl")
+    script_path = os.path.join("./uroman", "uroman", "uroman.pl")
 
     command = ["perl", script_path]
 
