@@ -17,7 +17,11 @@ from lib.audio import load_audio
 import soundfile as sf
 import edge_tts
 import asyncio
-from soni_translate.utils import remove_directory_contents, create_directories
+from soni_translate.utils import (
+    remove_directory_contents,
+    create_directories,
+    write_chunked,
+)
 from scipy import signal
 from time import time as ttime
 import faiss
@@ -437,10 +441,12 @@ class ClassVoices:
             output_audio_path = new_path
 
         # Save file
-        sf.write(
+        write_chunked(
             file=output_audio_path,
             samplerate=final_sr,
-            data=audio_opt
+            data=audio_opt,
+            format="ogg",
+            subtype="vorbis",
         )
 
         self.model_config[task_id]["result"].append(output_audio_path)

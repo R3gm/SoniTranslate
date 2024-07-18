@@ -15,6 +15,7 @@ from .utils import (
     remove_directory_contents,
     remove_files,
     run_command,
+    write_chunked,
 )
 import numpy as np
 from typing import Any, Dict
@@ -59,7 +60,7 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         # Read audio data from the TemporaryFile using soundfile
         audio_data, samplerate = sf.read(f)
         f.close()  # Close the TemporaryFile
-        sf.write(
+        write_chunked(
             filename, audio_data, samplerate, format="ogg", subtype="vorbis"
         )
 
@@ -73,7 +74,7 @@ def error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename):
         sample_rate_aux = 22050
         duration = float(segment["end"]) - float(segment["start"])
         data = np.zeros(int(sample_rate_aux * duration)).astype(np.float32)
-        sf.write(
+        write_chunked(
             filename, data, sample_rate_aux, format="ogg", subtype="vorbis"
         )
         logger.error("Audio will be replaced -> [silent audio].")
@@ -181,7 +182,7 @@ def segments_egde_tts(filtered_edge_segments, TRANSLATE_AUDIO_TO, is_gui):
             # os.remove(temp_file)
 
             # Save file
-            sf.write(
+            write_chunked(
                 file=filename,
                 samplerate=sample_rate,
                 data=data,
@@ -256,7 +257,7 @@ def segments_bark_tts(
                 speech_output.cpu().numpy().squeeze().astype(np.float32),
                 sampling_rate,
             )
-            sf.write(
+            write_chunked(
                 file=filename,
                 samplerate=sampling_rate,
                 data=data_tts,
@@ -362,7 +363,7 @@ def segments_vits_tts(filtered_vits_segments, TRANSLATE_AUDIO_TO):
                 sampling_rate,
             )
             # Save file
-            sf.write(
+            write_chunked(
                 file=filename,
                 samplerate=sampling_rate,
                 data=data_tts,
@@ -667,7 +668,7 @@ def segments_coqui_tts(
                 sampling_rate,
             )
             # Save file
-            sf.write(
+            write_chunked(
                 file=filename,
                 samplerate=sampling_rate,
                 data=data_tts,
@@ -855,7 +856,7 @@ def segments_vits_onnx_tts(filtered_onnx_vits_segments, TRANSLATE_AUDIO_TO):
                 sampling_rate,
             )
             # Save file
-            sf.write(
+            write_chunked(
                 file=filename,
                 samplerate=sampling_rate,
                 data=data_tts,
@@ -925,7 +926,7 @@ def segments_openai_tts(
                 sampling_rate,
             )
 
-            sf.write(
+            write_chunked(
                 file=filename,
                 samplerate=sampling_rate,
                 data=data_tts,
@@ -1509,7 +1510,7 @@ def toneconverter_freevc(
                 target_wav=original_wav_audio_segment,
             )
 
-            sf.write(
+            write_chunked(
                 file=save_path,
                 samplerate=tts.voice_converter.vc_config.audio.output_sample_rate,
                 data=wav,

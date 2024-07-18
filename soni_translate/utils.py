@@ -3,6 +3,8 @@ from .logging_setup import logger
 from urllib.parse import urlparse
 from IPython.utils import capture
 import re
+import soundfile as sf
+import numpy as np
 
 VIDEO_EXTENSIONS = [
     ".mp4",
@@ -64,6 +66,31 @@ def run_command(command):
     ):  # or not os.path.exists(mono_path) or os.path.getsize(mono_path) == 0:
         logger.error("Error comnand")
         raise Exception(errors.decode())
+
+
+def write_chunked(
+    file,
+    data,
+    samplerate,
+    subtype=None,
+    endian=None,
+    format=None,
+    closefd=True,
+    chunk_size=0x1000
+):
+
+    data = np.asarray(data)
+    if data.ndim == 1:
+        channels = 1
+    else:
+        channels = data.shape[1]
+    with sf.SoundFile(
+        file, 'w', samplerate, channels,
+        subtype, endian, format, closefd
+    ) as f:
+        num_chunks = (len(data) + chunk_size - 1) // chunk_size
+        for chunk in np.array_split(data, num_chunks, axis=0):
+            f.write(chunk)
 
 
 def print_tree_directory(root_dir, indent=""):
