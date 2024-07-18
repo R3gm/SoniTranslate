@@ -357,7 +357,7 @@ def add_border_to_image(
 
     bordered_img = ImageOps.expand(resized_img, padding, fill=border_color)
 
-    bordered_img.save(image_path)
+    bordered_img.save(image_path, format='PNG')
 
     return image_path
 
@@ -506,6 +506,8 @@ def doc_to_txtximg_pages(
         images = []
         for image_file_object in page.images:
             img_name = f"{images_folder}{i:04d}_{count:02d}_{image_file_object.name}"
+            if not img_name.lower().endswith('.png'):
+                img_name = os.path.splitext(img_name)[0] + '.png'
             images.append(img_name)
             with open(img_name, "wb") as fp:
                 fp.write(image_file_object.data)
