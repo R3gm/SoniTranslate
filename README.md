@@ -163,7 +163,7 @@ Before you start installing and using SoniTranslate, there are a few things you 
 
 1. Install the NVIDIA drivers for CUDA 11.8.0, NVIDIA CUDA is a parallel computing platform and programming model that enables developers to use the power of NVIDIA graphics processing units (GPUs) to speed up compute-intensive tasks. You can find the drivers [here](https://developer.nvidia.com/cuda-toolkit-archive). Follow the instructions on the website to download and install the drivers.
 2. Accept the license agreement for using Pyannote. You need to have an account on Hugging Face and `accept the license to use the models`: https://huggingface.co/pyannote/speaker-diarization and https://huggingface.co/pyannote/segmentation
-3. Create a [huggingface token](https://huggingface.co/settings/tokens). Hugging Face is a natural language processing platform that provides access to state-of-the-art models and tools. You will need to create a token in order to use some of the automatic model download features in SoniTranslate. Follow the instructions on the Hugging Face website to create a token.
+3. Create a [huggingface token](https://huggingface.co/settings/tokens). Hugging Face is a natural language processing platform that provides access to state-of-the-art models and tools. You will need to create a token in order to use some of the automatic model download features in SoniTranslate. Follow the instructions on the Hugging Face website to create a token. When you are creating the new Access Token in Hugging Face, make sure to tick "Read access to contents of all public gated repos you can access".
 4. Install [Anaconda](https://www.anaconda.com/) or [Miniconda](https://docs.anaconda.com/free/miniconda/miniconda-install/). Anaconda is a free and open-source distribution of Python and R. It includes a package manager called conda that makes it easy to install and manage Python environments and packages. Follow the instructions on the Anaconda website to download and install Anaconda on your system.
 5. Install Git for your system. Git is a version control system that helps you track changes to your code and collaborate with other developers. You can install Git with Anaconda by running `conda install -c anaconda git -y` in your terminal (Do this after step 1 in the following section.). If you have trouble installing Git via Anaconda, you can use the following link instead:
    - [Git for Linux](https://git-scm.com/download/linux)
@@ -179,6 +179,7 @@ To install SoniTranslate, follow these steps:
 ```
 conda create -n sonitr python=3.10 -y
 conda activate sonitr
+python -m pip install pip==23.1.2
 conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 
@@ -259,6 +260,24 @@ conda env remove -n sonitr
 ```
 
 With the `sonitr` environment removed, you can start over with a fresh installation.
+
+### Notes
+
+- Alternatively, you can set your Hugging Face token as a permanent environment variable with:
+
+```
+conda activate sonitr
+conda env config vars set YOUR_HF_TOKEN="YOUR_HUGGING_FACE_TOKEN_HERE"
+conda deactivate
+```
+
+-  To use OpenAI's GPT API for translation, tts or transcription, set up your OpenAI API key as an environment variable in quotes:
+
+```
+conda activate sonitr
+conda env config vars set OPENAI_API_KEY="your-api-key-here"
+conda deactivate
+```
 
 ## Command line arguments
 
