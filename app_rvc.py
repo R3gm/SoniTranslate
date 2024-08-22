@@ -433,8 +433,8 @@ class SoniTranslate(SoniTrCache):
         enable_cache=True,
         custom_voices=False,
         custom_voices_workers=1,
-        is_gui=False,
         transcription_vocabulary="",
+        is_gui=False,
         progress=gr.Progress(),
     ):
         if not YOUR_HF_TOKEN:
