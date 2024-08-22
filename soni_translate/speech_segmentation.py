@@ -180,9 +180,9 @@ def transcribe_speech(
 
     # https://github.com/openai/whisper/discussions/277
     prompt = "以下是普通话的句子。" if SOURCE_LANGUAGE == "zh" else custom_vocab
-    SOURCE_LANGUAGE = (
-        SOURCE_LANGUAGE if SOURCE_LANGUAGE != "zh-TW" else "zh"
-    )
+    SOURCE_LANGUAGE = SOURCE_LANGUAGE if SOURCE_LANGUAGE != "zh-TW" else "zh"
+
+    logger.debug(f"transcription vocabulary: {prompt}, type: {type(prompt)}")
     asr_options = {
         "initial_prompt": prompt,
         "suppress_numerals": literalize_numbers
