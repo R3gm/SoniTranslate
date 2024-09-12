@@ -115,6 +115,7 @@ LANGUAGES = {
     "Tatar (tt)": "tt",
     "Uzbek (uz)": "uz",
     "Yoruba (yo)": "yo",
+    "Tagalog (tl)": "tl",
     **LANGUAGES_UNIDIRECTIONAL
 }
 
@@ -181,6 +182,7 @@ EXTRA_ALIGN = {
     "tt": "anton-l/wav2vec2-large-xlsr-53-tatar",
     "uz": "",  # Mekhriddin/wav2vec2-large-xls-r-300m-uzbek-colab
     "yo": "ogbi/wav2vec2-large-mms-1b-yoruba-test",
+    "tl": "Khalsuu/filipino-wav2vec2-l-xls-r-300m-official",
 }
 
 
@@ -477,6 +479,7 @@ VITS_VOICES_LIST = {
     "ak-facebook-mms VITS": "facebook/mms-tts-aka",
     "ug_script_arabic-facebook-mms VITS": "facebook/mms-tts-uig-script_arabic",
     "ug_script_cyrillic-facebook-mms VITS": "facebook/mms-tts-uig-script_cyrillic",
+    "tl-facebook-mms VITS": "facebook/mms-tts-tgl",
 }
 
 OPENAI_TTS_CODES = [
