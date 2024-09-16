@@ -13,3 +13,4 @@ nest_asyncio
 gTTS
 gradio_client==0.10.1
 IPython
+fastapi==0.112.2
