@@ -2,6 +2,7 @@
 torch>=2.1.0+cu118
 torchvision>=0.16.0+cu118
 torchaudio>=2.1.0+cu118
+ctranslate2<=4.4.0
 yt-dlp
 gradio==4.19.2
 pydub==0.25.1
