@@ -1,34 +1,10 @@
 # flake8: noqa
-
-news = """ ## 📖 News
-
-        🔥 2024/05/18: Overlap reduction. OpenAI API key integration for transcription, translation, and TTS. Output type: subtitles by speaker, separate audio sound, and video only with subtitles. Now you have access to a better-performing version of Whisper for transcribing speech. For example, you can use `kotoba-tech/kotoba-whisper-v1.1` for Japanese transcription, available [here](https://huggingface.co/kotoba-tech/kotoba-whisper-v1.1). You can find these improved models on the [Hugging Face Whisper page](https://huggingface.co/models?pipeline_tag=automatic-speech-recognition&sort=trending&search=whisper). Simply copy the repository ID and paste it into the 'Whisper ASR model' in 'Advanced Settings'. Support for ass subtitles and batch processing with subtitles. Vocal enhancement before transcription. Added CPU mode with `app_rvc.py --cpu_mode`. TTS now supports up to 12 speakers. OpenVoiceV2 has been integrated for voice imitation. PDF to videobook (displays images from the PDF).
-
-        🔥 2024/03/02: Preserve file names in output. Multiple archives can now be submitted simultaneously by specifying their paths, directories or URLs separated by commas. Added option for disabling diarization. Implemented soft subtitles. Format output (MP3, MP4, MKV, WAV, and OGG), and resolved issues related to file reading and diarization.
-
-        🔥 2024/02/22: Added freevc for voice imitation, fixed voiceless track, divide segments. New languages support. New translations of the GUI. With subtitle file, no align and the media file is not needed to process the SRT file. Burn subtitles to video. Queue can accept multiple tasks simultaneously. Sound alert notification. Continue process from last checkpoint. Acceleration rate regulation
-
-        🔥 2024/01/16: Expanded language support, the introduction of whisper large v3, configurable GUI options, integration of BARK, Facebook-mms, Coqui XTTS, and Piper-TTS. Additional features included audio separation utilities, XTTS WAV creation,  use an SRT file as a base for translation, document translation, manual speaker editing, and flexible output options (video, audio, subtitles).
-
-        🔥 2023/10/29: Edit the translated subtitle, download it, adjust volume and speed options.
-
-        🔥 2023/08/03: Changed default options and added directory view of downloads..
-
-        🔥 2023/08/02: Added support for Arabic, Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Korean, Persian, Polish, Russian, Turkish, Urdu, Hindi, and Vietnamese languages. 🌐
-
-        🔥 2023/08/01: Add options for use R.V.C. models.
-
-        🔥 2023/07/27: Fix some bug processing the video and audio.
-
-        🔥 2023/07/26: New UI and add mix options.
-        """
-
 language_data = {
     "english": {
         "description": """
-        ### 🎥 **Translate videos easily with SoniTranslate!** 📽️
+        ### 🎥 **Translate videos easily ** 📽️
 
-        Upload a video, subtitle, audio file or provide a URL video link. 📽️ **Gets the updated notebook from the official repository.: [SoniTranslate](https://github.com/R3gm/SoniTranslate)!**
+        Upload a video, subtitle, audio file or provide a URL video link. 📽️ **
 
         See the tab `Help` for instructions on how to use it. Let's start having fun with video translation! 🚀🎉
         """,
