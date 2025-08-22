@@ -60,7 +60,7 @@ conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit -y
 
 4. Install PyTorch using conda
 ```
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=11.8 -c pytorch -c nvidia -y
 ```
 
 5. Install required packages:
