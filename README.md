@@ -1,6 +1,10 @@
-# 🎥 SoniTranslate 🈷️
+# Recall.ai - API for meeting transcription
 
-🎬 Video Translation with Synchronized Audio 🌐
+If you’re looking for a meeting transcription API, consider checking out [Recall.ai](https://www.recall.ai/product/meeting-transcription-api?utm_source=github&utm_medium=sponsorship&utm_campaign=r3gm-sonitranslate), an API that records Zoom, Google Meet, Microsoft Teams, in-person meetings, and more.
+
+<h1 align="center">🎥 SoniTranslate 🈷️</h1>
+
+## 🎬 Video Translation with Synchronized Audio 🌐
 
 SonyTranslate is a powerful and user-friendly web application that allows you to easily translate videos into different languages. This repository hosts the code for the SonyTranslate web UI, which is built with the Gradio library to provide a seamless and interactive user experience.
 
