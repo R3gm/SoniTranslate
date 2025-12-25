@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-python -m pip install --upgrade pip setuptools wheel
+python -m pip install --upgrade "pip<24.1" setuptools wheel
 
 # Pin build-time Cython for packages like PyAV (av==10.*) that are not
 # compatible with Cython 3 in build isolation.
