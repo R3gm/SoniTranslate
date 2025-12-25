@@ -1,6 +1,30 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {"ghcr.io/devcontainers-contrib/features/ffmpeg-apt-get:1": {},
-    "ghcr.io/devcontainers-contrib/features/yt-dlp:2": {}
+  "name": "SoniTranslate",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "forwardPorts": [
+    7860
+  ],
+  "containerEnv": {
+    "PYTHONUNBUFFERED": "1"
+    // Add "INSTALL_XTTS": "1" or "INSTALL_CUDA_REQS": "1" to install extra deps.
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
+    }
   }
+  // Optional GPU support (requires NVIDIA Container Toolkit on host):
+  // "runArgs": ["--gpus", "all"]
 }
