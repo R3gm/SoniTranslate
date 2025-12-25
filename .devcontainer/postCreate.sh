@@ -3,6 +3,14 @@ set -euo pipefail
 
 python -m pip install --upgrade pip setuptools wheel
 
+# Pin build-time Cython for packages like PyAV (av==10.*) that are not
+# compatible with Cython 3 in build isolation.
+CONSTRAINTS_FILE="$(pwd)/.devcontainer/constraints.txt"
+if [[ -f "${CONSTRAINTS_FILE}" ]]; then
+  export PIP_CONSTRAINT="${CONSTRAINTS_FILE}"
+fi
+python -m pip install "Cython<3"
+
 # Base dependencies for most local development tasks.
 if [[ -f requirements_base.txt ]]; then
   python -m pip install -r requirements_base.txt

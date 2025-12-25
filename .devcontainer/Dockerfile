@@ -8,6 +8,14 @@ RUN apt-get update \
         ffmpeg \
         git \
         build-essential \
+        pkg-config \
+        libavformat-dev \
+        libavcodec-dev \
+        libavdevice-dev \
+        libavutil-dev \
+        libavfilter-dev \
+        libswscale-dev \
+        libswresample-dev \
         libsndfile1 \
         libportaudio2 \
         libasound2 \
