@@ -213,3 +213,4 @@ whisper_api_audio_parts/
 uroman/
 pdf_images/
 .conda/
+.idea/

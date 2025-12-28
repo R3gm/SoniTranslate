@@ -3,6 +3,10 @@ from deep_translator import GoogleTranslator
 from itertools import chain
 import copy
 from .language_configuration import fix_code_language, INVERTED_LANGUAGES
+from .pt_br_normalization import (
+    is_pt_br_language,
+    normalize_pt_br_segments,
+)
 from .logging_setup import logger
 import re
 import json
@@ -275,7 +279,10 @@ def gpt_sequential(segments, model, target, source=None):
     client = OpenAI()
     progress_bar = tqdm(total=len(segments), desc="Translating")
 
-    lang_tg = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[target]).strip()
+    if is_pt_br_language(target):
+        lang_tg = "Brazilian Portuguese"
+    else:
+        lang_tg = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[target]).strip()
     lang_sc = ""
     if source:
         lang_sc = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[source]).strip()
@@ -328,7 +335,10 @@ def gpt_batch(segments, model, target, token_batch_limit=900, source=None):
     encoding = tiktoken.get_encoding("cl100k_base")
     client = OpenAI()
 
-    lang_tg = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[target]).strip()
+    if is_pt_br_language(target):
+        lang_tg = "Brazilian Portuguese"
+    else:
+        lang_tg = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[target]).strip()
     lang_sc = ""
     if source:
         lang_sc = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[source]).strip()
@@ -427,30 +437,43 @@ def translate_text(
     token_batch_limit=1000,
 ):
     """Translates text segments using a specified process."""
+    def maybe_normalize_pt_br(translated_segments):
+        if translation_process == "disable_translation":
+            return translated_segments
+        if is_pt_br_language(target):
+            return normalize_pt_br_segments(translated_segments)
+        return translated_segments
+
     match translation_process:
         case "google_translator_batch":
-            return translate_batch(
+            translated_segments = translate_batch(
                 segments,
                 fix_code_language(target),
                 chunk_size,
                 fix_code_language(source)
             )
+            return maybe_normalize_pt_br(translated_segments)
         case "google_translator":
-            return translate_iterative(
+            translated_segments = translate_iterative(
                 segments,
                 fix_code_language(target),
                 fix_code_language(source)
             )
+            return maybe_normalize_pt_br(translated_segments)
         case model if model in ["gpt-3.5-turbo-0125", "gpt-4-turbo-preview"]:
-            return gpt_sequential(segments, model, target, source)
+            translated_segments = gpt_sequential(
+                segments, model, target, source
+            )
+            return maybe_normalize_pt_br(translated_segments)
         case model if model in ["gpt-3.5-turbo-0125_batch", "gpt-4-turbo-preview_batch",]:
-            return gpt_batch(
+            translated_segments = gpt_batch(
                 segments,
                 translation_process.replace("_batch", ""),
                 target,
                 token_batch_limit,
                 source
             )
+            return maybe_normalize_pt_br(translated_segments)
         case "disable_translation":
             return segments
         case _:

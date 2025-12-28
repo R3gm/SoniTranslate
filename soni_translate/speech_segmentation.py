@@ -169,6 +169,9 @@ def transcribe_speech(
         - result: Transcription result as a dictionary.
     """
 
+    if SOURCE_LANGUAGE and str(SOURCE_LANGUAGE).lower() in ["pt-br", "pt_br"]:
+        SOURCE_LANGUAGE = "pt"
+
     if asr_model == "OpenAI_API_Whisper":
         if literalize_numbers:
             logger.info(

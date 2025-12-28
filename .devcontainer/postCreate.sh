@@ -30,3 +30,36 @@ fi
 if [[ "${INSTALL_CUDA_REQS:-}" == "1" ]] && [[ -f requirements.txt ]]; then
   python -m pip install -r requirements.txt
 fi
+
+# Seed Codex CLI config from the host when available.
+CODEX_HOST_DIR="/tmp/.codex-host"
+CODEX_TARGET_DIR="${HOME}/.codex"
+mkdir -p "${CODEX_TARGET_DIR}"
+if [[ -f "${CODEX_HOST_DIR}/auth.json" ]]; then
+  install -m 600 "${CODEX_HOST_DIR}/auth.json" "${CODEX_TARGET_DIR}/auth.json"
+fi
+if [[ -f "${CODEX_HOST_DIR}/config.toml" ]]; then
+  install -m 600 "${CODEX_HOST_DIR}/config.toml" "${CODEX_TARGET_DIR}/config.toml"
+fi
+
+# Seed SSH keys/config from the host when available.
+SSH_HOST_DIR="/tmp/.ssh-host"
+SSH_TARGET_DIR="${HOME}/.ssh"
+mkdir -p "${SSH_TARGET_DIR}"
+chmod 700 "${SSH_TARGET_DIR}"
+if [[ -d "${SSH_HOST_DIR}" ]]; then
+  for ssh_file in "${SSH_HOST_DIR}/"id_* "${SSH_HOST_DIR}/"known_hosts "${SSH_HOST_DIR}/"config; do
+    if [[ -f "${ssh_file}" ]]; then
+      install -m 600 "${ssh_file}" "${SSH_TARGET_DIR}/$(basename "${ssh_file}")"
+    fi
+  done
+  if [[ -d "${SSH_HOST_DIR}/"config.d ]]; then
+    mkdir -p "${SSH_TARGET_DIR}/config.d"
+    chmod 700 "${SSH_TARGET_DIR}/config.d"
+    for cfg in "${SSH_HOST_DIR}/"config.d/*; do
+      if [[ -f "${cfg}" ]]; then
+        install -m 600 "${cfg}" "${SSH_TARGET_DIR}/config.d/$(basename "${cfg}")"
+      fi
+    done
+  fi
+fi

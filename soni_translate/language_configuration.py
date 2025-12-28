@@ -48,6 +48,7 @@ LANGUAGES = {
     "Persian (fa)": "fa",  # no aux gTTS
     "Polish (pl)": "pl",
     "Portuguese (pt)": "pt",
+    "Portuguese (pt-BR)": "pt-BR",
     "Russian (ru)": "ru",
     "Spanish (es)": "es",
     "Turkish (tr)": "tr",
@@ -187,14 +188,33 @@ EXTRA_ALIGN = {
 
 
 def fix_code_language(translate_to, syntax="google"):
+    if not translate_to:
+        return translate_to
+
     if syntax == "google":
         # google-translator, gTTS
-        replace_lang_code = {"zh": "zh-CN", "he": "iw", "zh-cn": "zh-CN"}
+        replace_lang_code = {
+            "zh": "zh-CN",
+            "he": "iw",
+            "zh-cn": "zh-CN",
+            "pt-br": "pt",
+            "pt_br": "pt",
+        }
     elif syntax == "coqui":
         # coqui-xtts
-        replace_lang_code = {"zh": "zh-cn", "zh-CN": "zh-cn", "zh-TW": "zh-cn"}
+        replace_lang_code = {
+            "zh": "zh-cn",
+            "zh-CN": "zh-cn",
+            "zh-TW": "zh-cn",
+            "pt-br": "pt",
+            "pt_br": "pt",
+        }
 
-    new_code_lang = replace_lang_code.get(translate_to, translate_to)
+    translate_to = str(translate_to).strip()
+    new_code_lang = replace_lang_code.get(
+        translate_to,
+        replace_lang_code.get(translate_to.lower(), translate_to),
+    )
     logger.debug(f"Fix code {translate_to} -> {new_code_lang}")
     return new_code_lang
 
@@ -525,6 +545,7 @@ LANGUAGE_CODE_IN_THREE_LETTERS = {
     "fa": "per",
     "pl": "pol",
     "pt": "por",
+    "pt-BR": "por",
     "ru": "rus",
     "es": "spa",
     "tr": "tur",

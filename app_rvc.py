@@ -140,6 +140,68 @@ class TTS_Info:
         return list_tts
 
 
+def _normalize_language_label(language_label):
+    if not language_label:
+        return ""
+    return LANGUAGES.get(language_label, language_label)
+
+
+def _voice_matches_lang(voice_name, lang_code):
+    if not voice_name or not lang_code:
+        return False
+    voice = voice_name.lower()
+    code = str(lang_code).lower()
+
+    if code in ["pt-br", "pt_br"]:
+        return "pt-br" in voice or "pt_br" in voice
+    if code == "pt":
+        return (
+            voice.startswith("pt-")
+            or voice.startswith("pt_")
+            or "pt-facebook-mms" in voice
+            or voice.startswith("pt_speaker")
+        )
+
+    return voice.startswith(f"{code}-") or voice.startswith(f"{code}_")
+
+
+def _pick_voice_by_lang(voices, lang_code, gender=None, exclude=None):
+    if not voices:
+        return None
+    matches = [
+        voice for voice in voices
+        if _voice_matches_lang(voice, lang_code) and voice != exclude
+    ]
+    if not matches:
+        return None
+    if gender:
+        for voice in matches:
+            if f"-{gender}".lower() in voice.lower():
+                return voice
+    return matches[0]
+
+
+def _suggest_tts_voices(language_label, voices):
+    lang_code = _normalize_language_label(language_label)
+
+    primary = _pick_voice_by_lang(voices, lang_code, "Female")
+    secondary = _pick_voice_by_lang(voices, lang_code, "Male", exclude=primary)
+
+    if lang_code in ["pt-br", "pt_br"]:
+        if not primary:
+            primary = _pick_voice_by_lang(voices, "pt", "Female")
+        if not secondary:
+            secondary = _pick_voice_by_lang(
+                voices, "pt", "Male", exclude=primary
+            )
+        if not primary:
+            primary = _pick_voice_by_lang(voices, "pt")
+        if not secondary:
+            secondary = _pick_voice_by_lang(voices, "pt", exclude=primary)
+
+    return primary, secondary
+
+
 def prog_disp(msg, percent, is_gui, progress=None):
     logger.info(msg)
     if is_gui:
@@ -1638,6 +1700,22 @@ def create_gui(theme, logs_in_gui=False):
                             tts_voice10,
                             tts_voice11,
                         ],
+                    )
+
+                    def update_tts_defaults(target_lang_label):
+                        voices = SoniTr.tts_info.tts_list()
+                        voice00, voice01 = _suggest_tts_voices(
+                            target_lang_label, voices
+                        )
+                        return [
+                            gr.update(value=voice00) if voice00 else gr.update(),
+                            gr.update(value=voice01) if voice01 else gr.update(),
+                        ]
+
+                    TRANSLATE_AUDIO_TO.change(
+                        update_tts_defaults,
+                        inputs=TRANSLATE_AUDIO_TO,
+                        outputs=[tts_voice00, tts_voice01],
                     )
 
                     with gr.Column():

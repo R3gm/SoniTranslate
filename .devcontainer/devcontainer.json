@@ -6,6 +6,10 @@
   },
   "remoteUser": "vscode",
   "postCreateCommand": "bash .devcontainer/postCreate.sh",
+  "mounts": [
+    "source=${localEnv:HOME}/.codex,target=/tmp/.codex-host,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.ssh,target=/tmp/.ssh-host,type=bind,consistency=cached"
+  ],
   "forwardPorts": [
     7860
   ],
@@ -21,7 +25,8 @@
       },
       "extensions": [
         "ms-python.python",
-        "ms-python.vscode-pylance"
+        "ms-python.vscode-pylance",
+        "openai.chatgpt@prerelease"
       ]
     }
   }
