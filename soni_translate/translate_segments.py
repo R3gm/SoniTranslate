@@ -2,6 +2,7 @@ from tqdm import tqdm
 from deep_translator import GoogleTranslator
 from itertools import chain
 import copy
+import os
 from .language_configuration import fix_code_language, INVERTED_LANGUAGES
 from .logging_setup import logger
 import re
@@ -15,12 +16,18 @@ TRANSLATION_PROCESS_OPTIONS = [
     "gpt-3.5-turbo-0125",
     "gpt-4-turbo-preview_batch",
     "gpt-4-turbo-preview",
+    "MiniMax-M2.5_batch",
+    "MiniMax-M2.5",
+    "MiniMax-M2.7_batch",
+    "MiniMax-M2.7",
     "disable_translation",
 ]
 DOCS_TRANSLATION_PROCESS_OPTIONS = [
     "google_translator",
     "gpt-3.5-turbo-0125",
     "gpt-4-turbo-preview",
+    "MiniMax-M2.5",
+    "MiniMax-M2.7",
     "disable_translation",
 ]
 
@@ -213,6 +220,11 @@ def call_gpt_translate(
         ]
     )
     result = response.choices[0].message.content
+    # Strip thinking tags (e.g. from MiniMax models) before parsing
+    result = re.sub(r"<think>.*?</think>\s*", "", result, flags=re.DOTALL)
+    # Strip markdown code fences if present
+    result = re.sub(r"^```(?:json)?\s*\n?", "", result.strip(), flags=re.MULTILINE)
+    result = re.sub(r"\n?```\s*$", "", result.strip(), flags=re.MULTILINE)
     logger.debug(f"Result: {str(result)}")
 
     try:
@@ -267,12 +279,28 @@ def call_gpt_translate(
         return translation
 
 
-def gpt_sequential(segments, model, target, source=None):
+def _create_minimax_client():
+    """Create an OpenAI-compatible client for MiniMax API."""
+    from openai import OpenAI
+
+    api_key = os.environ.get("MINIMAX_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "To use MiniMax for translation, please set up your MiniMax API "
+            "key as an environment variable: "
+            "export MINIMAX_API_KEY='your-api-key-here'. Or change the "
+            "translation process in Advanced settings."
+        )
+    return OpenAI(api_key=api_key, base_url="https://api.minimax.io/v1")
+
+
+def gpt_sequential(segments, model, target, source=None, client=None):
     from openai import OpenAI
 
     translated_segments = copy.deepcopy(segments)
 
-    client = OpenAI()
+    if client is None:
+        client = OpenAI()
     progress_bar = tqdm(total=len(segments), desc="Translating")
 
     lang_tg = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[target]).strip()
@@ -318,7 +346,7 @@ def gpt_sequential(segments, model, target, source=None):
     return translated_segments
 
 
-def gpt_batch(segments, model, target, token_batch_limit=900, source=None):
+def gpt_batch(segments, model, target, token_batch_limit=900, source=None, client=None):
     from openai import OpenAI
     import tiktoken
 
@@ -326,7 +354,8 @@ def gpt_batch(segments, model, target, token_batch_limit=900, source=None):
     progress_bar = tqdm(total=len(segments), desc="Translating")
     segments_copy = copy.deepcopy(segments)
     encoding = tiktoken.get_encoding("cl100k_base")
-    client = OpenAI()
+    if client is None:
+        client = OpenAI()
 
     lang_tg = re.sub(r'\([^)]*\)', '', INVERTED_LANGUAGES[target]).strip()
     lang_sc = ""
@@ -450,6 +479,20 @@ def translate_text(
                 target,
                 token_batch_limit,
                 source
+            )
+        case model if model in ["MiniMax-M2.5", "MiniMax-M2.7"]:
+            return gpt_sequential(
+                segments, model, target, source,
+                client=_create_minimax_client()
+            )
+        case model if model in ["MiniMax-M2.5_batch", "MiniMax-M2.7_batch"]:
+            return gpt_batch(
+                segments,
+                translation_process.replace("_batch", ""),
+                target,
+                token_batch_limit,
+                source,
+                client=_create_minimax_client()
             )
         case "disable_translation":
             return segments

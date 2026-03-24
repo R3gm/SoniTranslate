@@ -2,6 +2,7 @@ from gtts import gTTS
 import edge_tts, asyncio, json, glob # noqa
 from tqdm import tqdm
 import librosa, os, re, torch, gc, subprocess # noqa
+import requests
 from .language_configuration import (
     fix_code_language,
     BARK_VOICES_LIST,
@@ -940,6 +941,86 @@ def segments_openai_tts(
 
 
 # =====================================
+# MINIMAX TTS
+# =====================================
+
+
+def segments_minimax_tts(filtered_minimax_tts_segments, TRANSLATE_AUDIO_TO):
+    api_key = os.environ.get("MINIMAX_API_KEY")
+    if not api_key:
+        raise TTS_OperationError(
+            "MINIMAX_API_KEY environment variable is not set. "
+            "Please set it to use MiniMax TTS."
+        )
+
+    sampling_rate = 24000
+
+    for segment in tqdm(filtered_minimax_tts_segments["segments"]):
+        speaker = segment["speaker"]  # noqa
+        text = segment["text"].strip()
+        start = segment["start"]
+        tts_name = segment["tts_name"]
+
+        # Extract voice_id from tts_name (e.g. ">Wise_Woman MiniMax-TTS")
+        voice_id = tts_name.split()[0][1:]
+
+        # make the tts audio
+        filename = f"audio/{start}.ogg"
+        logger.info(f"{text} >> {filename}")
+
+        try:
+            response = requests.post(
+                "https://api.minimax.io/v1/t2a_v2",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "speech-2.8-hd",
+                    "text": text,
+                    "voice_setting": {
+                        "voice_id": voice_id,
+                        "speed": 1.0,
+                    },
+                    "audio_setting": {
+                        "format": "mp3",
+                    },
+                },
+                timeout=60,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            if "data" not in result or "audio" not in result["data"]:
+                raise TTS_OperationError(
+                    f"MiniMax TTS returned unexpected response: {result}"
+                )
+
+            audio_hex = result["data"]["audio"]
+            audio_bytes = bytes.fromhex(audio_hex)
+
+            # Write mp3 to temp file, then read and convert
+            temp_file = filename[:-3] + "mp3"
+            with open(temp_file, "wb") as f:
+                f.write(audio_bytes)
+
+            data, sample_rate = sf.read(temp_file)
+            data = pad_array(data, sample_rate)
+
+            write_chunked(
+                file=filename,
+                samplerate=sample_rate,
+                data=data,
+                format="ogg",
+                subtype="vorbis",
+            )
+            verify_saved_file_and_size(filename)
+
+        except Exception as error:
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
+
+
+# =====================================
 # Select task TTS
 # =====================================
 
@@ -1022,6 +1103,7 @@ def audio_segmentation_to_voice(
     pattern_coqui = re.compile(r".+\.(wav|mp3|ogg|m4a)$")
     pattern_vits_onnx = re.compile(r".* VITS-onnx$")
     pattern_openai_tts = re.compile(r".* OpenAI-TTS$")
+    pattern_minimax_tts = re.compile(r".* MiniMax-TTS$")
 
     all_segments = result_diarize["segments"]
 
@@ -1035,6 +1117,9 @@ def audio_segmentation_to_voice(
     speakers_openai_tts = find_spkr(
         pattern_openai_tts, speaker_to_voice, all_segments
     )
+    speakers_minimax_tts = find_spkr(
+        pattern_minimax_tts, speaker_to_voice, all_segments
+    )
 
     # Filter method in segments
     filtered_edge = filter_by_speaker(speakers_edge, all_segments)
@@ -1043,6 +1128,7 @@ def audio_segmentation_to_voice(
     filtered_coqui = filter_by_speaker(speakers_coqui, all_segments)
     filtered_vits_onnx = filter_by_speaker(speakers_vits_onnx, all_segments)
     filtered_openai_tts = filter_by_speaker(speakers_openai_tts, all_segments)
+    filtered_minimax_tts = filter_by_speaker(speakers_minimax_tts, all_segments)
 
     # Infer
     if filtered_edge["segments"]:
@@ -1072,6 +1158,9 @@ def audio_segmentation_to_voice(
     if filtered_openai_tts["segments"]:
         logger.info(f"OpenAI TTS: {speakers_openai_tts}")
         segments_openai_tts(filtered_openai_tts, TRANSLATE_AUDIO_TO)  # wav
+    if filtered_minimax_tts["segments"]:
+        logger.info(f"MiniMax TTS: {speakers_minimax_tts}")
+        segments_minimax_tts(filtered_minimax_tts, TRANSLATE_AUDIO_TO)
 
     [result.pop("tts_name", None) for result in result_diarize["segments"]]
     return [
@@ -1080,7 +1169,8 @@ def audio_segmentation_to_voice(
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
-        speakers_openai_tts
+        speakers_openai_tts,
+        speakers_minimax_tts,
     ]
 
 
@@ -1099,7 +1189,8 @@ def accelerate_segments(
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
-        speakers_openai_tts
+        speakers_openai_tts,
+        speakers_minimax_tts,
     ) = valid_speakers
 
     create_directories(f"{folder_output}/audio/")
