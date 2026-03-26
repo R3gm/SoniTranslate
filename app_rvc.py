@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 import gradio as gr
 from soni_translate.logging_setup import (
     logger,
@@ -40,6 +42,7 @@ from soni_translate.language_configuration import (
     BARK_VOICES_LIST,
     VITS_VOICES_LIST,
     OPENAI_TTS_MODELS,
+    camb_tts_voices_list,
 )
 from soni_translate.utils import (
     remove_files,
@@ -120,6 +123,7 @@ class TTS_Info:
         self.list_bark = list(BARK_VOICES_LIST.keys())
         self.list_vits = list(VITS_VOICES_LIST.keys())
         self.list_openai_tts = OPENAI_TTS_MODELS
+        self.list_camb_tts = camb_tts_voices_list()
         self.piper_enabled = piper_enabled
         self.list_vits_onnx = (
             piper_tts_voices_list() if self.piper_enabled else []
@@ -135,6 +139,7 @@ class TTS_Info:
             + self.list_bark
             + self.list_vits
             + self.list_openai_tts
+            + self.list_camb_tts
             + self.list_vits_onnx
         )
         return list_tts
@@ -1133,9 +1138,11 @@ class SoniTranslate(SoniTrCache):
             burn_subtitles_to_video
         ], {}):
             # Merge new audio + video
+            # Use AAC encoding (-c:a aac) instead of -c:a copy because the
+            # mix audio is MP3, and MP3-in-MP4 won't play on macOS/QuickTime.
             remove_files(video_output_file)
             run_command(
-                f"ffmpeg -i {base_video_file} -i {mix_audio_file} -c:v copy -c:a copy -map 0:v -map 1:a -shortest {video_output_file}"
+                f"ffmpeg -i {base_video_file} -i {mix_audio_file} -c:v copy -c:a aac -b:a 192k -map 0:v -map 1:a -shortest {video_output_file}"
             )
 
         output = media_out(

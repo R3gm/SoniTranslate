@@ -130,6 +130,13 @@ def edge_tts_voices_list():
             voice_entry["Gender"] = line.split(": ")[1]
             voices.append(voice_entry)
 
+    # Fallback: parse table format (newer edge-tts versions)
+    if not voices:
+        for line in lines:
+            parts = line.split()
+            if len(parts) >= 2 and "-" in parts[0] and parts[1] in ("Male", "Female"):
+                voices.append({"Name": parts[0], "Gender": parts[1]})
+
     formatted_voices = [
         f"{entry['Name']}-{entry['Gender']}" for entry in voices
     ]
@@ -940,6 +947,112 @@ def segments_openai_tts(
 
 
 # =====================================
+# CAMB AI TTS
+# =====================================
+
+
+def segments_camb_tts(
+    filtered_camb_tts_segments, TRANSLATE_AUDIO_TO
+):
+    import requests
+    import os as _os
+
+    api_key = _os.getenv("CAMB_API_KEY", "")
+    if not api_key:
+        raise TTS_OperationError(
+            "CAMB_API_KEY environment variable is required for CAMB AI TTS"
+        )
+
+    sampling_rate = 24000
+    CAMB_API_BASE = "https://client.camb.ai/apis"
+
+    for segment in tqdm(filtered_camb_tts_segments["segments"]):
+        speaker = segment["speaker"]  # noqa
+        text = segment["text"].strip()
+        start = segment["start"]
+        tts_name = segment["tts_name"]
+
+        # Parse voice_id from tts_name
+        # Format: ">voice_id name [gender] CAMB-TTS"
+        voice_id = int(tts_name.split()[0][1:])  # Remove '>' prefix
+
+        # Map SoniTranslate language code to CAMB locale
+        CAMB_LANG_MAP = {
+            "ar": "ar-sa", "zh": "zh-cn", "zh-CN": "zh-cn",
+            "zh-TW": "zh-cn", "nl": "nl-nl", "en": "en-us",
+            "fr": "fr-fr", "de": "de-de", "hi": "hi-in",
+            "id": "id-id", "it": "it-it", "ja": "ja-jp",
+            "ko": "ko-kr", "pl": "pl-pl", "pt": "pt-br",
+            "ru": "ru-ru", "es": "es-es", "tr": "tr-tr",
+            "ta": "ta-in", "te": "te-in", "bn": "bn-in",
+        }
+        camb_lang = CAMB_LANG_MAP.get(
+            TRANSLATE_AUDIO_TO, "en-us"
+        )
+
+        # make the tts audio
+        filename = f"audio/{start}.ogg"
+        logger.info(f"{text} >> {filename}")
+
+        try:
+            response = requests.post(
+                f"{CAMB_API_BASE}/tts-stream",
+                headers={
+                    "x-api-key": api_key,
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "text": text,
+                    "voice_id": voice_id,
+                    "language": camb_lang,
+                    "speech_model": "mars-flash",
+                    "output_configuration": {"format": "wav"},
+                },
+            )
+            response.raise_for_status()
+
+            audio_bytes = response.content
+
+            # Parse WAV properly — find the 'data' chunk offset
+            # instead of hardcoding a header size
+            import struct
+            data_offset = 12  # skip RIFF header
+            while data_offset < len(audio_bytes) - 8:
+                chunk_id = audio_bytes[data_offset:data_offset + 4]
+                chunk_size = struct.unpack(
+                    '<I', audio_bytes[data_offset + 4:data_offset + 8]
+                )[0]
+                if chunk_id == b'data':
+                    data_offset += 8
+                    break
+                data_offset += 8 + chunk_size
+            else:
+                data_offset = 0  # fallback: treat as raw PCM
+
+            speech_output = np.frombuffer(
+                audio_bytes[data_offset:], dtype=np.int16
+            )
+
+            # Save file
+            data_tts = pad_array(
+                speech_output,
+                sampling_rate,
+            )
+
+            write_chunked(
+                file=filename,
+                samplerate=sampling_rate,
+                data=data_tts,
+                format="ogg",
+                subtype="vorbis",
+            )
+            verify_saved_file_and_size(filename)
+
+        except Exception as error:
+            error_handling_in_tts(error, segment, TRANSLATE_AUDIO_TO, filename)
+
+
+# =====================================
 # Select task TTS
 # =====================================
 
@@ -1022,6 +1135,7 @@ def audio_segmentation_to_voice(
     pattern_coqui = re.compile(r".+\.(wav|mp3|ogg|m4a)$")
     pattern_vits_onnx = re.compile(r".* VITS-onnx$")
     pattern_openai_tts = re.compile(r".* OpenAI-TTS$")
+    pattern_camb_tts = re.compile(r".* CAMB-TTS$")
 
     all_segments = result_diarize["segments"]
 
@@ -1035,6 +1149,9 @@ def audio_segmentation_to_voice(
     speakers_openai_tts = find_spkr(
         pattern_openai_tts, speaker_to_voice, all_segments
     )
+    speakers_camb_tts = find_spkr(
+        pattern_camb_tts, speaker_to_voice, all_segments
+    )
 
     # Filter method in segments
     filtered_edge = filter_by_speaker(speakers_edge, all_segments)
@@ -1043,6 +1160,7 @@ def audio_segmentation_to_voice(
     filtered_coqui = filter_by_speaker(speakers_coqui, all_segments)
     filtered_vits_onnx = filter_by_speaker(speakers_vits_onnx, all_segments)
     filtered_openai_tts = filter_by_speaker(speakers_openai_tts, all_segments)
+    filtered_camb_tts = filter_by_speaker(speakers_camb_tts, all_segments)
 
     # Infer
     if filtered_edge["segments"]:
@@ -1072,6 +1190,9 @@ def audio_segmentation_to_voice(
     if filtered_openai_tts["segments"]:
         logger.info(f"OpenAI TTS: {speakers_openai_tts}")
         segments_openai_tts(filtered_openai_tts, TRANSLATE_AUDIO_TO)  # wav
+    if filtered_camb_tts["segments"]:
+        logger.info(f"CAMB AI TTS: {speakers_camb_tts}")
+        segments_camb_tts(filtered_camb_tts, TRANSLATE_AUDIO_TO)  # wav
 
     [result.pop("tts_name", None) for result in result_diarize["segments"]]
     return [
@@ -1080,7 +1201,8 @@ def audio_segmentation_to_voice(
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
-        speakers_openai_tts
+        speakers_openai_tts,
+        speakers_camb_tts,
     ]
 
 
@@ -1099,7 +1221,8 @@ def accelerate_segments(
         speakers_vits,
         speakers_coqui,
         speakers_vits_onnx,
-        speakers_openai_tts
+        speakers_openai_tts,
+        speakers_camb_tts,
     ) = valid_speakers
 
     create_directories(f"{folder_output}/audio/")

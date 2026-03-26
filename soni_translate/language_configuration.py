@@ -505,6 +505,49 @@ OPENAI_TTS_MODELS = [
     ">shimmer HD OpenAI-TTS"
 ]
 
+# CAMB AI TTS voices - fetched dynamically from the API
+# Format: ">voice_id voice_name CAMB-TTS"
+# The language is passed separately at TTS time based on the target language,
+# so voices are not language-specific in the dropdown.
+
+CAMB_GENDER_MAP = {1: "Male", 2: "Female"}
+
+
+def camb_tts_voices_list():
+    """Fetch available voices from the CAMB AI API."""
+    import os
+    import requests
+    import logging
+
+    logger = logging.getLogger(__name__)
+    api_key = os.getenv("CAMB_API_KEY", "")
+    if not api_key:
+        logger.info("CAMB_API_KEY not set, CAMB TTS voices disabled")
+        return []
+
+    try:
+        response = requests.get(
+            "https://client.camb.ai/apis/list-voices",
+            headers={"x-api-key": api_key},
+            timeout=30,
+        )
+        response.raise_for_status()
+        voices = response.json()
+
+        formatted = []
+        for v in voices:
+            voice_id = v.get("id")
+            name = v.get("voice_name", "unknown")
+            gender = CAMB_GENDER_MAP.get(v.get("gender"), "")
+            label = f"{name} {gender}".strip()
+            formatted.append(f">{voice_id} {label} CAMB-TTS")
+
+        logger.info(f"Loaded {len(formatted)} CAMB TTS voices")
+        return sorted(formatted)
+    except Exception as error:
+        logger.warning(f"Failed to fetch CAMB TTS voices: {error}")
+        return []
+
 LANGUAGE_CODE_IN_THREE_LETTERS = {
     "Automatic detection": "aut",
     "ar": "ara",
