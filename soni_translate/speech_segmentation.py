@@ -59,9 +59,7 @@ WHISPER_MODELS_PATH = './WHISPER_MODELS'
 
 
 def openai_api_whisper(
-    input_audio_file,
-    source_lang=None,
-    chunk_duration=1800
+    input_audio_file, source_lang=None, chunk_duration=1800, custom_vocab=""
 ):
 
     info = sf.info(input_audio_file)
@@ -99,6 +97,7 @@ def openai_api_whisper(
           language=language,
           response_format="verbose_json",
           timestamp_granularities=["segment"],
+            prompt=custom_vocab,
         )
 
         try:
@@ -152,6 +151,7 @@ def transcribe_speech(
     SOURCE_LANGUAGE,
     literalize_numbers=True,
     segment_duration_limit=15,
+    custom_vocab="",
 ):
     """
     Transcribe speech using a whisper model.
@@ -162,6 +162,7 @@ def transcribe_speech(
     - compute_type (str): Type of compute to be used (e.g., 'int8', 'float16').
     - batch_size (int): Batch size for transcription.
     - SOURCE_LANGUAGE (str): Source language for transcription.
+    - custom_vocab (str): Comma separated words for better transcription
 
     Returns:
     - Tuple containing:
@@ -175,13 +176,13 @@ def transcribe_speech(
                 "OpenAI's API Whisper does not support "
                 "the literalization of numbers."
             )
-        return openai_api_whisper(audio_wav, SOURCE_LANGUAGE)
+        return openai_api_whisper(audio_wav, SOURCE_LANGUAGE, custom_vocab=custom_vocab)
 
     # https://github.com/openai/whisper/discussions/277
-    prompt = "以下是普通话的句子。" if SOURCE_LANGUAGE == "zh" else None
-    SOURCE_LANGUAGE = (
-        SOURCE_LANGUAGE if SOURCE_LANGUAGE != "zh-TW" else "zh"
-    )
+    prompt = "以下是普通话的句子。" if SOURCE_LANGUAGE == "zh" else custom_vocab
+    SOURCE_LANGUAGE = SOURCE_LANGUAGE if SOURCE_LANGUAGE != "zh-TW" else "zh"
+
+    logger.debug(f"transcription vocabulary: {prompt}, type: {type(prompt)}")
     asr_options = {
         "initial_prompt": prompt,
         "suppress_numerals": literalize_numbers
