@@ -283,6 +283,14 @@ conda env config vars set OPENAI_API_KEY="your-api-key-here"
 conda deactivate
 ```
 
+-  To use [MiniMax](https://www.minimaxi.com/) for translation (MiniMax-M2.5, MiniMax-M2.7) or TTS (speech-2.8-hd with 12 voices), set up your MiniMax API key:
+
+```
+conda activate sonitr
+conda env config vars set MINIMAX_API_KEY="your-minimax-api-key-here"
+conda deactivate
+```
+
 ## Command line arguments
 
 The app_rvc.py script supports command-line arguments to customize its behavior. Here's a brief guide on how to use them:
@@ -363,6 +371,7 @@ This project leverages a number of open-source projects. We would like to acknow
 - [Coqui TTS](https://github.com/coqui-ai/TTS)
 - [pypdf](https://github.com/py-pdf/pypdf)
 - [OpenVoice](https://github.com/myshell-ai/OpenVoice)
+- [MiniMax](https://www.minimaxi.com/) - LLM translation and TTS provider
 
 ## License
 Although the code is licensed under Apache 2, the models or weights may have commercial restrictions, as seen with pyannote diarization.

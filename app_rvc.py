@@ -40,6 +40,7 @@ from soni_translate.language_configuration import (
     BARK_VOICES_LIST,
     VITS_VOICES_LIST,
     OPENAI_TTS_MODELS,
+    MINIMAX_TTS_MODELS,
 )
 from soni_translate.utils import (
     remove_files,
@@ -120,6 +121,7 @@ class TTS_Info:
         self.list_bark = list(BARK_VOICES_LIST.keys())
         self.list_vits = list(VITS_VOICES_LIST.keys())
         self.list_openai_tts = OPENAI_TTS_MODELS
+        self.list_minimax_tts = MINIMAX_TTS_MODELS
         self.piper_enabled = piper_enabled
         self.list_vits_onnx = (
             piper_tts_voices_list() if self.piper_enabled else []
@@ -135,6 +137,7 @@ class TTS_Info:
             + self.list_bark
             + self.list_vits
             + self.list_openai_tts
+            + self.list_minimax_tts
             + self.list_vits_onnx
         )
         return list_tts
@@ -265,6 +268,16 @@ def check_openai_api_key():
             "as an environment variable in Linux as follows: "
             "export OPENAI_API_KEY='your-api-key-here'. Or change the "
             "translation process in Advanced settings."
+        )
+
+
+def check_minimax_api_key():
+    if not os.environ.get("MINIMAX_API_KEY"):
+        raise ValueError(
+            "To use MiniMax for translation or TTS, please set up your "
+            "MiniMax API key as an environment variable: "
+            "export MINIMAX_API_KEY='your-api-key-here'. Or change the "
+            "translation process / TTS voice in settings."
         )
 
 
@@ -452,6 +465,9 @@ class SoniTranslate(SoniTrCache):
             or "OpenAI-TTS" in tts_voice00
         ):
             check_openai_api_key()
+
+        if "MiniMax" in translate_process or "MiniMax-TTS" in tts_voice00:
+            check_minimax_api_key()
 
         if media_file is None:
             media_file = (
@@ -1276,6 +1292,8 @@ class SoniTranslate(SoniTrCache):
     ):
         if "gpt" in translate_process:
             check_openai_api_key()
+        if "MiniMax" in translate_process or "MiniMax-TTS" in tts_voice00:
+            check_minimax_api_key()
 
         SOURCE_LANGUAGE = LANGUAGES[origin_language]
         if translate_process != "disable_translation":
