@@ -121,18 +121,20 @@ def edge_tts_voices_list():
         logger.debug(str(error))
         lines = []
 
-    voices = []
-    for line in lines:
-        if line.startswith("Name: "):
-            voice_entry = {}
-            voice_entry["Name"] = line.split(": ")[1]
-        elif line.startswith("Gender: "):
-            voice_entry["Gender"] = line.split(": ")[1]
-            voices.append(voice_entry)
+    formatted_voices = []
 
-    formatted_voices = [
-        f"{entry['Name']}-{entry['Gender']}" for entry in voices
-    ]
+    for line in lines:
+        line = line.strip()
+
+        if not line or line.startswith("Name") or line.startswith("---"):
+            continue
+
+        parts = line.split()
+
+        if len(parts) >= 2:
+            name = parts[0]
+            gender = parts[1]
+            formatted_voices.append(f"{name}-{gender}")
 
     if not formatted_voices:
         logger.warning(

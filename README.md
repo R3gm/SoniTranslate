@@ -1,6 +1,10 @@
-# 🎥 SoniTranslate 🈷️
+# Recall.ai - API for meeting transcription
 
-🎬 Video Translation with Synchronized Audio 🌐
+If you’re looking for a meeting transcription API, consider checking out [Recall.ai](https://www.recall.ai/product/meeting-transcription-api?utm_source=github&utm_medium=sponsorship&utm_campaign=r3gm-sonitranslate), an API that records Zoom, Google Meet, Microsoft Teams, in-person meetings, and more.
+
+<h1 align="center">🎥 SoniTranslate 🈷️</h1>
+
+## 🎬 Video Translation with Synchronized Audio 🌐
 
 SonyTranslate is a powerful and user-friendly web application that allows you to easily translate videos into different languages. This repository hosts the code for the SonyTranslate web UI, which is built with the Gradio library to provide a seamless and interactive user experience.
 
@@ -9,7 +13,7 @@ SonyTranslate is a powerful and user-friendly web application that allows you to
 | ----------- | ---- |
 | 📙 Colab Notebook | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/R3gm/SoniTranslate/blob/main/SoniTranslate_Colab.ipynb) |
 | 🎉 Repository | [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?style=flat-square&logo=github)](https://github.com/R3gm/SoniTranslate/) |
-| 🚀 Online DEMO | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/r3gm/SoniTranslate_translate_audio_of_a_video_content) |
+| 🚀 Online DEMO | [![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/r3gm/video_dubbing_sonitr_demo) |
 
 ## SonyTranslate's web UI, which features a browser interface built on the Gradio library.
 ![image](https://github.com/R3gm/SoniTranslate/assets/114810545/0d71fbf4-e9f0-4f8f-944e-8f3f1ea6a019)
@@ -179,8 +183,8 @@ To install SoniTranslate, follow these steps:
 ```
 conda create -n sonitr python=3.10 -y
 conda activate sonitr
-python -m pip install pip==23.1.2
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+python -m pip install pip==23.1.2 Setuptools==80.6.0
+conda install pytorch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 
 2. Clone this github repository and navigate to it:
