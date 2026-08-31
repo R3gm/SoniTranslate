@@ -1566,7 +1566,6 @@ if __name__ == "__main__":
     audio_segmentation_to_voice(
         result_diarize,
         TRANSLATE_AUDIO_TO="en",
-        max_accelerate_audio=2.1,
         is_gui=True,
         tts_voice00="en-facebook-mms VITS",
         tts_voice01="en-CA-ClaraNeural-Female",
