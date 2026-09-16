@@ -433,6 +433,7 @@ class SoniTranslate(SoniTrCache):
         enable_cache=True,
         custom_voices=False,
         custom_voices_workers=1,
+        transcription_vocabulary="",
         is_gui=False,
         progress=gr.Progress(),
     ):
@@ -713,6 +714,7 @@ class SoniTranslate(SoniTrCache):
                         SOURCE_LANGUAGE,
                         literalize_numbers,
                         segment_duration_limit,
+                        custom_vocab=transcription_vocabulary,
                     )
                 logger.debug(
                     "Transcript complete, "
@@ -1866,6 +1868,11 @@ def create_gui(theme, logs_in_gui=False):
                                 label=lg_conf["ctype_label"],
                                 info=lg_conf["ctype_info"],
                             )
+                            transcription_vocabulary_gui = gr.Textbox(
+                                label=lg_conf["transcription_custom_vocabulary_label"],
+                                value="",
+                                info=lg_conf["transcription_custom_vocabulary_info"],
+                            )
                             batch_size = gr.Slider(
                                 minimum=1,
                                 maximum=32,
@@ -2657,6 +2664,7 @@ def create_gui(theme, logs_in_gui=False):
                 enable_cache_gui,
                 enable_custom_voice,
                 workers_custom_voice,
+                transcription_vocabulary_gui,
                 is_gui_dummy_check,
             ],
             outputs=subs_edit_space,
@@ -2724,6 +2732,7 @@ def create_gui(theme, logs_in_gui=False):
                 enable_cache_gui,
                 enable_custom_voice,
                 workers_custom_voice,
+                transcription_vocabulary_gui,
                 is_gui_dummy_check,
             ],
             outputs=video_output,

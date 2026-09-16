@@ -163,6 +163,8 @@ language_data = {
         "srt_file_label": "Upload an SRT subtitle file (will be used instead of the transcription of Whisper)",
         "divide_text_label": "Redivide text segments by:",
         "divide_text_info": "(Experimental) Enter a separator to split existing text segments in the source language. The tool will identify occurrences and create new segments accordingly. Specify multiple separators using |, e.g.: !|?|...|。",
+        "transcription_custom_vocabulary_label": "Custom Vocabulary for transcription",
+        "transcription_custom_vocabulary_info": "Enter comma(,) separated vocabulary/keywords for better transcription quality (for eg. phising, vishing)",
         "diarization_label": "Diarization model",
         "tr_process_label": "Translation process",
         "out_type_label": "Output type",
