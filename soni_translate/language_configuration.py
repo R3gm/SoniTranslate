@@ -505,6 +505,21 @@ OPENAI_TTS_MODELS = [
     ">shimmer HD OpenAI-TTS"
 ]
 
+MINIMAX_TTS_MODELS = [
+    ">Wise_Woman MiniMax-TTS",
+    ">Deep_Voice_Man MiniMax-TTS",
+    ">Friendly_Person MiniMax-TTS",
+    ">Inspirational_girl MiniMax-TTS",
+    ">sweet_girl MiniMax-TTS",
+    ">cute_boy MiniMax-TTS",
+    ">lovely_girl MiniMax-TTS",
+    ">English_Graceful_Lady MiniMax-TTS",
+    ">English_Insightful_Speaker MiniMax-TTS",
+    ">English_radiant_girl MiniMax-TTS",
+    ">English_Persuasive_Man MiniMax-TTS",
+    ">English_Lucky_Robot MiniMax-TTS",
+]
+
 LANGUAGE_CODE_IN_THREE_LETTERS = {
     "Automatic detection": "aut",
     "ar": "ara",
